@@ -1,73 +1,77 @@
-# React + TypeScript + Vite
+# Wanderplan – Personal Travel Planner 🌍
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Wanderplan is a polished, single-user travel planning application designed to help you organize every aspect of your upcoming adventures. Built for the modern traveler, it runs entirely in your browser and ensures your data is private and secure by using local IndexedDB storage.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Key Features
 
-## React Compiler
+- **Dashboard**: A beautiful, card-based interface providing an bird's-eye view of all your trips.
+- **Flight Management**: Add and track flight options, including airlines, flight numbers, and real-time status tracking. Includes a side-by-side comparison view to help you choose the best option.
+- **Accommodation (Stays)**: Manage hotel, Airbnb, or hostel bookings with full check-in/out details and pricing.
+- **Activities Planner**: Build your itinerary by adding attractions, tours, and bookings.
+- **Drag-and-Drop Itinerary**: A dedicated "Planner" view where you can visually organize your confirmed activities and stays day-by-day.
+- **Smart Notes**: A dedicated space for trip-specific notes with auto-saving and helpful AI-powered travel insights.
+- **Personalization**: Upload your own cover images for each trip to make your dashboard uniquely yours.
+- **Import/Export**: Easily back up your data or move it to another device by exporting trips as JSON files.
+- **Dark Mode**: A sleek interface that adapts to your preference, whether you're planning in full daylight or late at night.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🛠️ Technical Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Wanderplan is built using modern frontend technologies for performance and reliability:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **Frontend**: [React 19](https://react.dev/) with [TypeScript](https://www.typescriptlang.org/)
+- **Build Tool**: [Vite](https://vitejs.dev/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **UI Components**: [shadcn/ui](https://ui.shadcn.com/) (built on Radix UI)
+- **Database**: [Dexie.js](https://dexie.org/) (for robust IndexedDB management)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Drag & Drop**: [@hello-pangea/dnd](https://github.com/hello-pangea/dnd)
+- **Icons**: [Lucide React](https://lucide.dev/)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🚀 Getting Started
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Prerequisites
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- [Node.js](https://nodejs.org/) (v18 or higher recommended)
+- [npm](https://www.npmjs.com/)
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd travel_management_app
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
+
+4. Open your browser and navigate to `http://localhost:5173`.
+
+---
+
+## 🔒 Privacy & Data
+
+Wanderplan values your privacy. **All data is stored locally in your browser's IndexedDB.** No information is ever sent to a server. You can use the **Export** feature to create manual backups of your trip data.
+
+---
+
+## 📸 Screenshots & Documentation
+
+Detailed development walkthroughs and implementation plans can be found in the `.gemini/antigravity/brain` directory (internal to the project assistant).
+
+---
+
+*Planned and implemented as a high-performance, local-first web application.*
