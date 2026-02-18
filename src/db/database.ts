@@ -15,7 +15,7 @@ export class TravelDB extends Dexie {
       trips: '++id, status, startDate, endDate, createdAt',
       flights: '++id, tripId, isConfirmed, departureTime',
       accommodations: '++id, tripId, isConfirmed, checkIn',
-      activities: '++id, tripId, date, isConfirmed, order',
+      activities: '++id, tripId, name, date, isConfirmed, order',
       notes: '++id, tripId, updatedAt',
     })
   }

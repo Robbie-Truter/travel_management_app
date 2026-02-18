@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Plane, Hotel, Compass, Calendar, StickyNote, Plus, BarChart2, MapPin } from 'lucide-react'
+import { ArrowLeft, Plane, Hotel, Compass, Calendar, StickyNote, Plus, BarChart2, MapPin, LayoutGrid } from 'lucide-react'
 import { AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { Badge, statusLabels } from '@/components/ui/Badge'
@@ -14,13 +14,15 @@ import { AccommodationCard, AccommodationForm, AccommodationComparison } from '@
 import { ActivityCard, ActivityForm } from '@/components/activities/ActivityComponents'
 import { PlannerTimeline } from '@/components/planner/PlannerTimeline'
 import { NoteEditor } from '@/components/notes/NoteEditor'
+import { TripOverview } from '@/components/overview/TripOverview'
 import { formatDate, tripDuration } from '@/lib/utils'
 import { cn } from '@/lib/utils'
-import type { Flight, Accommodation, Activity, TripStatus } from '@/db/types'
+import type { Flight, Accommodation, Activity, Trip, TripStatus } from '@/db/types'
 
-type Tab = 'flights' | 'accommodations' | 'activities' | 'planner' | 'notes'
+type Tab = 'overview' | 'flights' | 'accommodations' | 'activities' | 'planner' | 'notes'
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
+  { id: 'overview', label: 'Overview', icon: LayoutGrid },
   { id: 'flights', label: 'Flights', icon: Plane },
   { id: 'accommodations', label: 'Stays', icon: Hotel },
   { id: 'activities', label: 'Activities', icon: Compass },
@@ -33,7 +35,7 @@ export function TripPage() {
   const navigate = useNavigate()
   const id = Number(tripId)
   const trip = useTrip(id)
-  const [activeTab, setActiveTab] = useState<Tab>('flights')
+  const [activeTab, setActiveTab] = useState<Tab>('overview')
 
   // Flights
   const { flights, addFlight, updateFlight, deleteFlight, confirmFlight } = useFlights(id)
@@ -55,7 +57,7 @@ export function TripPage() {
   if (!trip) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-[var(--color-text-muted)]">Trip not found</p>
+        <p className="text-text-muted">Trip not found</p>
       </div>
     )
   }
@@ -100,7 +102,7 @@ export function TripPage() {
       </div>
 
       {/* Tabs */}
-      <div className="bg-[var(--color-surface)] border-b border-[var(--color-border)] flex-shrink-0">
+      <div className="bg-surface border-b border-border shrink-0">
         <div className="flex overflow-x-auto px-4">
           {TABS.map(tab => {
             const Icon = tab.icon
@@ -111,8 +113,8 @@ export function TripPage() {
                 className={cn(
                   'flex items-center gap-2 px-4 py-3.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
                   activeTab === tab.id
-                    ? 'border-sage-500 text-sage-600 dark:text-sage-400'
-                    : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                    ? 'border-lavender-500 text-lavender-600 dark:text-lavender-400'
+                    : 'border-transparent text-text-secondary hover:text-text-primary'
                 )}
               >
                 <Icon size={15} />
@@ -133,12 +135,22 @@ export function TripPage() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
           >
+            {/* OVERVIEW */}
+            {activeTab === 'overview' && (
+              <TripOverview
+                trip={trip as Trip}
+                flights={flights}
+                accommodations={accommodations}
+                activities={activities}
+              />
+            )}
+
             {/* FLIGHTS */}
             {activeTab === 'flights' && (
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-semibold text-[var(--color-text-primary)]">
-                    Flights <span className="text-[var(--color-text-muted)] font-normal text-sm">({flights.length})</span>
+                  <h2 className="font-semibold text-text-primary">
+                    Flights <span className="text-text-muted font-normal text-sm">({flights.length})</span>
                   </h2>
                   <div className="flex gap-2">
                     {flights.length >= 2 && (
@@ -235,8 +247,8 @@ export function TripPage() {
             {activeTab === 'activities' && (
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-semibold text-[var(--color-text-primary)]">
-                    Activities <span className="text-[var(--color-text-muted)] font-normal text-sm">({activities.length})</span>
+                  <h2 className="font-semibold text-text-primary">
+                    Activities <span className="text-text-muted font-normal text-sm">({activities.length})</span>
                   </h2>
                   <Button variant="primary" size="sm" onClick={() => { setEditingAct(undefined); setActFormOpen(true) }}>
                     <Plus size={14} />Add Activity
@@ -294,7 +306,7 @@ export function TripPage() {
             {activeTab === 'notes' && (
               <div>
                 <div className="mb-4">
-                  <h2 className="font-semibold text-[var(--color-text-primary)]">Notes & Tips</h2>
+                  <h2 className="font-semibold text-text-primary">Notes & Tips</h2>
                 </div>
                 <NoteEditor tripId={id} />
               </div>
@@ -319,10 +331,10 @@ function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface-3)] flex items-center justify-center mb-3">
-        <Icon size={24} className="text-[var(--color-text-muted)]" />
+      <div className="w-14 h-14 rounded-2xl bg-surface-3 flex items-center justify-center mb-3">
+        <Icon size={24} className="text-text-muted" />
       </div>
-      <p className="text-sm text-[var(--color-text-secondary)] mb-4">{label}</p>
+      <p className="text-sm text-text-secondary mb-4">{label}</p>
       <Button variant="primary" size="sm" onClick={action}>
         <Plus size={14} />{actionLabel}
       </Button>

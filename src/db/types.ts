@@ -8,6 +8,7 @@ export interface Trip {
   endDate: string
   status: TripStatus
   description?: string
+  budget?: string
   coverImage?: string // base64 encoded image
   createdAt: string
   updatedAt: string
@@ -55,6 +56,7 @@ export interface Activity {
   notes?: string
   duration?: number // minutes
   cost?: number
+  name: string;
   currency: string
   isConfirmed: boolean
   order: number
