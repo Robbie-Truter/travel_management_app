@@ -1,4 +1,5 @@
 export type TripStatus = 'planning' | 'booked' | 'ongoing' | 'completed' | 'cancelled'
+export type Currency = 'USD' | 'EUR' | 'ZAR'
 
 export interface Trip {
   id?: number
@@ -24,7 +25,7 @@ export interface Flight {
   departureTime: string
   arrivalTime: string
   price: number
-  currency: string
+  currency: Currency
   bookingLink?: string
   notes?: string
   isConfirmed: boolean
@@ -40,7 +41,7 @@ export interface Accommodation {
   checkIn: string
   checkOut: string
   price: number
-  currency: string
+  currency: Currency
   bookingLink?: string
   notes?: string
   isConfirmed: boolean
@@ -51,13 +52,12 @@ export interface Activity {
   id?: number
   tripId: number
   date: string
-  title: string
   link?: string
   notes?: string
   duration?: number // minutes
   cost?: number
-  name: string;
-  currency: string
+  name: string
+  currency: Currency
   isConfirmed: boolean
   order: number
   createdAt: string

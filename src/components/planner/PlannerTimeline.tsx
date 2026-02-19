@@ -142,7 +142,7 @@ export function PlannerTimeline({
                                 <Compass size={12} className="text-lavender-500" />
                               </div>
                               <div className="min-w-0 flex-1">
-                                <p className="text-xs font-medium text-text-primary truncate">{activity.title}</p>
+                                <p className="text-xs font-medium text-text-primary truncate">{activity.name}</p>
                                 {activity.cost !== undefined && activity.cost > 0 && (
                                   <p className="text-xs text-text-muted">{formatCurrency(activity.cost, activity.currency)}</p>
                                 )}
@@ -184,7 +184,7 @@ function StaticPlannerCard({ item }: { item: PlannerItem }) {
       const a = item.data as Accommodation
       return `${a.name} (check-in)`
     }
-    return (item.data as Activity).title
+    return (item.data as Activity).name
   }
 
   return (

@@ -119,7 +119,7 @@ function SidebarContent({
           }}
           className="flex items-center gap-2.5 cursor-pointer"
         >
-          <div className="w-8 h-8 rounded-lg bg-lavender-300 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-lavender-500 flex items-center justify-center">
             <Plane size={16} className="text-white" />
           </div>
           <span className="font-bold text-lg text-text-primary">Wanderplan</span>

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal, ConfirmDialog } from '@/components/ui/Modal'
 import { Input, Select, Textarea } from '@/components/ui/Input'
 import { formatCurrency, formatDuration } from '@/lib/utils'
-import type { Activity } from '@/db/types'
+import type { Activity, Currency } from '@/db/types'
 
 interface ActivityCardProps {
   activity: Activity
@@ -22,23 +22,23 @@ export function ActivityCard({ activity, onEdit, onDelete, onConfirm }: Activity
   return (
     <>
       <motion.div layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-        <Card className={activity.isConfirmed ? 'border-sage-300 dark:border-sage-700' : ''}>
+        <Card className={activity.isConfirmed ? 'border-sage-500 dark:border-sage-500' : ''}>
           <CardContent className="pt-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-lavender-100 dark:bg-lavender-900/30 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-lavender-100 dark:bg-lavender-900/30 flex items-center justify-center shrink-0">
                   <Compass size={16} className="text-lavender-500" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-semibold text-sm text-[var(--color-text-primary)] truncate">{activity.title}</p>
+                  <p className="font-semibold text-sm text-text-primary truncate">{activity.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     {activity.duration && (
-                      <span className="text-xs text-[var(--color-text-muted)] flex items-center gap-1">
+                      <span className="text-xs text-text-muted flex items-center gap-1">
                         <Clock size={11} />{formatDuration(activity.duration)}
                       </span>
                     )}
                     {activity.cost !== undefined && activity.cost > 0 && (
-                      <span className="text-xs text-[var(--color-text-muted)] flex items-center gap-1">
+                      <span className="text-xs text-text-muted flex items-center gap-1">
                         <DollarSign size={11} />{formatCurrency(activity.cost, activity.currency)}
                       </span>
                     )}
@@ -53,7 +53,7 @@ export function ActivityCard({ activity, onEdit, onDelete, onConfirm }: Activity
               {activity.isConfirmed ? <Badge variant="confirmed"><CheckCircle size={10} />Confirmed</Badge> : <Badge variant="option">Option</Badge>}
             </div>
             {activity.notes && (
-              <p className="mt-2 text-xs text-[var(--color-text-muted)] bg-[var(--color-surface-3)] rounded-lg px-3 py-2">{activity.notes}</p>
+              <p className="mt-2 text-xs text-text-muted bg-surface-3 rounded-lg px-3 py-2">{activity.notes}</p>
             )}
           </CardContent>
           <CardFooter className="justify-end">
@@ -74,7 +74,7 @@ export function ActivityCard({ activity, onEdit, onDelete, onConfirm }: Activity
         onClose={() => setDeleteOpen(false)}
         onConfirm={() => { onDelete(activity.id!); setDeleteOpen(false) }}
         title="Delete Activity"
-        description={`Delete "${activity.title}"?`}
+        description={`Delete "${activity.name}"?`}
       />
     </>
   )
@@ -91,7 +91,7 @@ interface ActivityFormProps {
 
 export function ActivityForm({ open, onClose, onSave, initial, tripId, defaultDate }: ActivityFormProps) {
   const [form, setForm] = useState({
-    title: initial?.title ?? '',
+    name: initial?.name ?? '',
     date: initial?.date ?? defaultDate ?? '',
     link: initial?.link ?? '',
     notes: initial?.notes ?? '',
@@ -114,7 +114,7 @@ export function ActivityForm({ open, onClose, onSave, initial, tripId, defaultDa
 
   const validate = () => {
     const e: Record<string, string> = {}
-    if (!form.title.trim()) e.title = 'Required'
+    if (!form.name.trim()) e.name = 'Required'
     if (!form.date) e.date = 'Required'
     return e
   }
@@ -125,13 +125,13 @@ export function ActivityForm({ open, onClose, onSave, initial, tripId, defaultDa
     setSaving(true)
     await onSave({
       tripId,
-      title: form.title,
+      name: form.name,
       date: form.date,
       link: form.link || undefined,
       notes: form.notes || undefined,
       duration: form.duration ? Number(form.duration) : undefined,
       cost: form.cost ? Number(form.cost) : undefined,
-      currency: form.currency,
+      currency: form.currency as Currency,
       isConfirmed: form.isConfirmed,
       order: form.order,
     })
@@ -153,7 +153,7 @@ export function ActivityForm({ open, onClose, onSave, initial, tripId, defaultDa
       }
     >
       <div className="space-y-4">
-        <Input id="act-title" label="Activity Title" placeholder="e.g. Visit Senso-ji Temple" value={form.title} onChange={e => set('title', e.target.value)} error={errors.title} />
+        <Input id="act-name" label="Activity Name" placeholder="e.g. Visit Senso-ji Temple" value={form.name} onChange={e => set('name', e.target.value)} error={errors.name} />
         <Input id="act-date" label="Date" type="date" value={form.date} onChange={e => set('date', e.target.value)} error={errors.date} />
         <div className="grid grid-cols-2 gap-3">
           <Input id="act-dur" label="Duration (minutes)" type="number" placeholder="e.g. 90" value={form.duration} onChange={e => set('duration', e.target.value)} />

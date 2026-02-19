@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal, ConfirmDialog } from '@/components/ui/Modal'
 import { Input, Textarea, Select } from '@/components/ui/Input'
 import { formatDate, formatCurrency } from '@/lib/utils'
-import type { Accommodation } from '@/db/types'
+import type { Accommodation, Currency } from '@/db/types'
 
 const TYPE_OPTIONS = [
   { value: 'hotel', label: 'Hotel' },
@@ -31,7 +31,7 @@ export function AccommodationCard({ acc, onEdit, onDelete, onConfirm }: Accommod
   return (
     <>
       <motion.div layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-        <Card className={acc.isConfirmed ? 'border-sage-300 dark:border-sage-700' : ''}>
+        <Card className={acc.isConfirmed ? 'border-sage-500 dark:border-sage-500' : ''}>
           <CardContent className="pt-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2 min-w-0">
@@ -152,7 +152,7 @@ export function AccommodationForm({ open, onClose, onSave, initial, tripId }: Ac
       checkIn: form.checkIn,
       checkOut: form.checkOut,
       price: Number(form.price),
-      currency: form.currency,
+      currency: form.currency as Currency,
       bookingLink: form.bookingLink || undefined,
       notes: form.notes || undefined,
       isConfirmed: form.isConfirmed,

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal, ConfirmDialog } from '@/components/ui/Modal'
 import { Input, Textarea, Select } from '@/components/ui/Input'
 import { formatDateTime, formatCurrency } from '@/lib/utils'
-import type { Flight } from '@/db/types'
+import type { Flight, Currency } from '@/db/types'
 
 interface FlightCardProps {
   flight: Flight
@@ -22,7 +22,7 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
   return (
     <>
       <motion.div layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-        <Card className={flight.isConfirmed ? 'border-sage-300 dark:border-sage-700' : ''}>
+        <Card className={flight.isConfirmed ? 'border-sage-500 dark:border-sage-500' : ''}>
           <CardContent className="pt-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2 min-w-0">
@@ -163,7 +163,7 @@ export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFor
       departureTime: form.departureTime,
       arrivalTime: form.arrivalTime,
       price: Number(form.price),
-      currency: form.currency,
+      currency: form.currency as Currency,
       bookingLink: form.bookingLink || undefined,
       notes: form.notes || undefined,
       isConfirmed: form.isConfirmed,
