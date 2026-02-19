@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Modal, ConfirmDialog } from '@/components/ui/Modal'
-import { Input, Textarea } from '@/components/ui/Input'
+import { Input, Select, Textarea } from '@/components/ui/Input'
 import { formatCurrency, formatDuration } from '@/lib/utils'
 import type { Activity } from '@/db/types'
 
@@ -104,6 +104,12 @@ export function ActivityForm({ open, onClose, onSave, initial, tripId, defaultDa
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
 
+  const CURRENCIES = [
+    { value: 'USD', label: 'USD' },
+    { value: 'EUR', label: 'EUR' },
+    { value: 'ZAR', label: 'ZAR' }
+  ]
+
   const set = (k: string, v: string | boolean | number) => setForm(f => ({ ...f, [k]: v }))
 
   const validate = () => {
@@ -153,12 +159,12 @@ export function ActivityForm({ open, onClose, onSave, initial, tripId, defaultDa
           <Input id="act-dur" label="Duration (minutes)" type="number" placeholder="e.g. 90" value={form.duration} onChange={e => set('duration', e.target.value)} />
           <Input id="act-cost" label="Estimated Cost" type="number" placeholder="0.00" value={form.cost} onChange={e => set('cost', e.target.value)} />
         </div>
-        <Input id="act-currency" label="Currency" placeholder="USD" value={form.currency} onChange={e => set('currency', e.target.value)} />
+        <Select id="act-currency" label="Currency" value={form.currency} options={CURRENCIES} onChange={e => set('currency', e.target.value)} />
         <Input id="act-link" label="Link (optional)" placeholder="https://..." value={form.link} onChange={e => set('link', e.target.value)} />
         <Textarea id="act-notes" label="Notes (optional)" value={form.notes} onChange={e => set('notes', e.target.value)} rows={2} />
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={form.isConfirmed} onChange={e => set('isConfirmed', e.target.checked)} className="rounded" />
-          <span className="text-sm text-[var(--color-text-primary)]">Mark as confirmed</span>
+          <span className="text-sm text-text-primary">Mark as confirmed</span>
         </label>
       </div>
     </Modal>

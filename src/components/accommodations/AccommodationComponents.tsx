@@ -35,20 +35,20 @@ export function AccommodationCard({ acc, onEdit, onDelete, onConfirm }: Accommod
           <CardContent className="pt-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-peach-100 dark:bg-peach-900/30 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-peach-100 dark:bg-peach-900/30 flex items-center justify-center shrink-0">
                   <Hotel size={16} className="text-peach-500" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-semibold text-sm text-[var(--color-text-primary)] truncate">{acc.name}</p>
-                  <p className="text-xs text-[var(--color-text-muted)] capitalize">{acc.type}</p>
+                  <p className="font-semibold text-sm text-text-primary truncate">{acc.name}</p>
+                  <p className="text-xs text-text-muted capitalize">{acc.type}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
+              <div className="flex items-center gap-1 shrink-0">
                 {acc.isConfirmed ? <Badge variant="confirmed"><CheckCircle size={10} />Confirmed</Badge> : <Badge variant="option">Option</Badge>}
               </div>
             </div>
 
-            <div className="mt-3 space-y-1.5 text-sm text-[var(--color-text-secondary)]">
+            <div className="mt-3 space-y-1.5 text-sm text-text-secondary">
               <div className="flex items-center gap-1.5">
                 <MapPin size={13} />
                 <span>{acc.location}</span>
@@ -56,7 +56,7 @@ export function AccommodationCard({ acc, onEdit, onDelete, onConfirm }: Accommod
               <div className="flex items-center gap-1.5">
                 <Calendar size={13} />
                 <span>{formatDate(acc.checkIn)} → {formatDate(acc.checkOut)}</span>
-                <span className="text-[var(--color-text-muted)]">({nights} night{nights > 1 ? 's' : ''})</span>
+                <span className="text-text-muted">({nights} night{nights > 1 ? 's' : ''})</span>
               </div>
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1">
@@ -71,7 +71,7 @@ export function AccommodationCard({ acc, onEdit, onDelete, onConfirm }: Accommod
               </div>
             </div>
             {acc.notes && (
-              <p className="mt-2 text-xs text-[var(--color-text-muted)] bg-[var(--color-surface-3)] rounded-lg px-3 py-2">{acc.notes}</p>
+              <p className="mt-2 text-xs text-text-muted bg-surface-3 rounded-lg px-3 py-2">{acc.notes}</p>
             )}
           </CardContent>
           <CardFooter className="justify-end">
@@ -121,6 +121,12 @@ export function AccommodationForm({ open, onClose, onSave, initial, tripId }: Ac
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
+
+  const CURRENCIES = [
+    { value: 'USD', label: 'USD' },
+    { value: 'EUR', label: 'EUR' },
+    { value: 'ZAR', label: 'ZAR' },
+  ]
 
   const set = (k: string, v: string | boolean) => setForm(f => ({ ...f, [k]: v }))
 
@@ -180,13 +186,13 @@ export function AccommodationForm({ open, onClose, onSave, initial, tripId }: Ac
           <div className="col-span-2">
             <Input id="acc-price" label="Total Price" type="number" placeholder="0.00" value={form.price} onChange={e => set('price', e.target.value)} error={errors.price} />
           </div>
-          <Input id="acc-currency" label="Currency" placeholder="USD" value={form.currency} onChange={e => set('currency', e.target.value)} />
+          <Select id="fl-currency" label="Currency" value={form.currency} options={CURRENCIES} onChange={e => set('currency', e.target.value)} />
         </div>
         <Input id="acc-link" label="Booking Link (optional)" placeholder="https://..." value={form.bookingLink} onChange={e => set('bookingLink', e.target.value)} />
         <Textarea id="acc-notes" label="Notes (optional)" value={form.notes} onChange={e => set('notes', e.target.value)} rows={2} />
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={form.isConfirmed} onChange={e => set('isConfirmed', e.target.checked)} className="rounded" />
-          <span className="text-sm text-[var(--color-text-primary)]">Mark as confirmed</span>
+          <span className="text-sm text-text-primary">Mark as confirmed</span>
         </label>
       </div>
     </Modal>
@@ -205,14 +211,14 @@ export function AccommodationComparison({ open, onClose, accommodations }: Accom
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[var(--color-border)]">
-              <th className="text-left py-2 pr-4 text-[var(--color-text-muted)] font-medium">Field</th>
+            <tr className="border-b border-border">
+              <th className="text-left py-2 pr-4 text-text-muted font-medium">Field</th>
               {accommodations.map(a => (
-                <th key={a.id} className="text-left py-2 px-4 text-[var(--color-text-primary)] font-semibold">{a.name}</th>
+                <th key={a.id} className="text-left py-2 px-4 text-text-primary font-semibold">{a.name}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[var(--color-border)]">
+          <tbody className="divide-y divide-border">
             {[
               { label: 'Type', render: (a: Accommodation) => a.type },
               { label: 'Location', render: (a: Accommodation) => a.location },
@@ -223,9 +229,9 @@ export function AccommodationComparison({ open, onClose, accommodations }: Accom
               { label: 'Notes', render: (a: Accommodation) => a.notes ?? '—' },
             ].map(row => (
               <tr key={row.label}>
-                <td className="py-2.5 pr-4 text-[var(--color-text-muted)] font-medium">{row.label}</td>
+                <td className="py-2.5 pr-4 text-text-muted font-medium">{row.label}</td>
                 {accommodations.map(a => (
-                  <td key={a.id} className="py-2.5 px-4 text-[var(--color-text-primary)]">{row.render(a)}</td>
+                  <td key={a.id} className="py-2.5 px-4 text-text-primary">{row.render(a)}</td>
                 ))}
               </tr>
             ))}

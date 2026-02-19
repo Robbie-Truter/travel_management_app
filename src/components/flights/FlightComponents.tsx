@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Modal, ConfirmDialog } from '@/components/ui/Modal'
-import { Input, Textarea } from '@/components/ui/Input'
+import { Input, Textarea, Select } from '@/components/ui/Input'
 import { formatDateTime, formatCurrency } from '@/lib/utils'
 import type { Flight } from '@/db/types'
 
@@ -26,15 +26,15 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
           <CardContent className="pt-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-sky-pastel-100 dark:bg-sky-pastel-900/30 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-sky-pastel-100 dark:bg-sky-pastel-900/30 flex items-center justify-center shrink-0">
                   <Plane size={16} className="text-sky-pastel-500" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-semibold text-sm text-[var(--color-text-primary)]">{flight.airline}</p>
-                  <p className="text-xs text-[var(--color-text-muted)]">{flight.flightNumber}</p>
+                  <p className="font-semibold text-sm text-text-primary">{flight.airline}</p>
+                  <p className="text-xs text-text-muted">{flight.flightNumber}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
+              <div className="flex items-center gap-1 shrink-0">
                 {flight.isConfirmed && <Badge variant="confirmed"><CheckCircle size={10} />Confirmed</Badge>}
                 {!flight.isConfirmed && <Badge variant="option">Option</Badge>}
               </div>
@@ -43,21 +43,21 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
             {/* Route */}
             <div className="mt-3 flex items-center gap-2 text-sm">
               <div className="text-center">
-                <p className="font-bold text-[var(--color-text-primary)]">{flight.departureAirport}</p>
-                <p className="text-xs text-[var(--color-text-muted)]">{formatDateTime(flight.departureTime)}</p>
+                <p className="font-bold text-text-primary">{flight.departureAirport}</p>
+                <p className="text-xs text-text-muted">{formatDateTime(flight.departureTime)}</p>
               </div>
-              <div className="flex-1 flex items-center gap-1 text-[var(--color-text-muted)]">
-                <div className="flex-1 h-px bg-[var(--color-border)]" />
+              <div className="flex-1 flex items-center gap-1 text-text-muted">
+                <div className="flex-1 h-px bg-border" />
                 <ArrowRight size={14} />
-                <div className="flex-1 h-px bg-[var(--color-border)]" />
+                <div className="flex-1 h-px bg-border" />
               </div>
               <div className="text-center">
-                <p className="font-bold text-[var(--color-text-primary)]">{flight.arrivalAirport}</p>
-                <p className="text-xs text-[var(--color-text-muted)]">{formatDateTime(flight.arrivalTime)}</p>
+                <p className="font-bold text-text-primary">{flight.arrivalAirport}</p>
+                <p className="text-xs text-text-muted">{formatDateTime(flight.arrivalTime)}</p>
               </div>
             </div>
 
-            <div className="mt-3 flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">
+            <div className="mt-3 flex items-center gap-4 text-sm text-text-secondary">
               <span className="flex items-center gap-1">
                 <DollarSign size={13} />
                 {formatCurrency(flight.price, flight.currency)}
@@ -76,7 +76,7 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
               )}
             </div>
             {flight.notes && (
-              <p className="mt-2 text-xs text-[var(--color-text-muted)] bg-[var(--color-surface-3)] rounded-lg px-3 py-2">{flight.notes}</p>
+              <p className="mt-2 text-xs text-text-muted bg-surface-3 rounded-lg px-3 py-2">{flight.notes}</p>
             )}
           </CardContent>
           <CardFooter className="justify-end">
@@ -131,6 +131,12 @@ export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFor
   const [saving, setSaving] = useState(false)
 
   const set = (k: string, v: string | boolean) => setForm(f => ({ ...f, [k]: v }))
+
+  const CURRENCIES = [
+    { value: 'USD', label: 'USD' },
+    { value: 'EUR', label: 'EUR' },
+    { value: 'ZAR', label: 'ZAR' },
+  ]
 
   const validate = () => {
     const e: Record<string, string> = {}
@@ -198,13 +204,13 @@ export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFor
           <div className="col-span-2">
             <Input id="fl-price" label="Price" type="number" placeholder="0.00" value={form.price} onChange={e => set('price', e.target.value)} error={errors.price} />
           </div>
-          <Input id="fl-currency" label="Currency" placeholder="USD" value={form.currency} onChange={e => set('currency', e.target.value)} />
+          <Select id="fl-currency" label="Currency" value={form.currency} options={CURRENCIES} onChange={e => set('currency', e.target.value)} />
         </div>
         <Input id="fl-link" label="Booking Link (optional)" placeholder="https://..." value={form.bookingLink} onChange={e => set('bookingLink', e.target.value)} />
         <Textarea id="fl-notes" label="Notes (optional)" placeholder="Seat preference, baggage info..." value={form.notes} onChange={e => set('notes', e.target.value)} rows={2} />
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={form.isConfirmed} onChange={e => set('isConfirmed', e.target.checked)} className="rounded" />
-          <span className="text-sm text-[var(--color-text-primary)]">Mark as confirmed</span>
+          <span className="text-sm text-text-primary">Mark as confirmed</span>
         </label>
       </div>
     </Modal>
@@ -223,16 +229,16 @@ export function FlightComparison({ open, onClose, flights }: FlightComparisonPro
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[var(--color-border)]">
-              <th className="text-left py-2 pr-4 text-[var(--color-text-muted)] font-medium">Field</th>
+            <tr className="border-b border-border">
+              <th className="text-left py-2 pr-4 text-text-muted font-medium">Field</th>
               {flights.map(f => (
-                <th key={f.id} className="text-left py-2 px-4 text-[var(--color-text-primary)] font-semibold">
+                <th key={f.id} className="text-left py-2 px-4 text-text-primary font-semibold">
                   {f.airline} {f.flightNumber}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[var(--color-border)]">
+          <tbody className="divide-y divide-border">
             {[
               { label: 'Route', render: (f: Flight) => `${f.departureAirport} → ${f.arrivalAirport}` },
               { label: 'Departure', render: (f: Flight) => formatDateTime(f.departureTime) },
@@ -242,9 +248,9 @@ export function FlightComparison({ open, onClose, flights }: FlightComparisonPro
               { label: 'Notes', render: (f: Flight) => f.notes ?? '—' },
             ].map(row => (
               <tr key={row.label}>
-                <td className="py-2.5 pr-4 text-[var(--color-text-muted)] font-medium">{row.label}</td>
+                <td className="py-2.5 pr-4 text-text-muted font-medium">{row.label}</td>
                 {flights.map(f => (
-                  <td key={f.id} className="py-2.5 px-4 text-[var(--color-text-primary)]">{row.render(f)}</td>
+                  <td key={f.id} className="py-2.5 px-4 text-text-primary">{row.render(f)}</td>
                 ))}
               </tr>
             ))}

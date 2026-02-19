@@ -100,9 +100,9 @@ export function PlannerTimeline({
           const dayActivities = getActivitiesForDate(date)
 
           return (
-            <div key={date} className="flex-shrink-0 w-72">
+            <div key={date} className="shrink-0 w-72">
               <div className="mb-3 px-1">
-                <p className="font-semibold text-sm text-[var(--color-text-primary)]">
+                <p className="font-semibold text-sm text-text-primary">
                   {formatDate(date, 'EEE, MMM d')}
                 </p>
               </div>
@@ -131,20 +131,20 @@ export function PlannerTimeline({
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               className={cn(
-                                'mb-2 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] p-3 flex items-center gap-2 shadow-sm',
+                                'mb-2 rounded-lg bg-surface border border-border p-3 flex items-center gap-2 shadow-sm',
                                 snapshot.isDragging && 'shadow-lg rotate-1 opacity-90'
                               )}
                             >
-                              <div {...provided.dragHandleProps} className="text-[var(--color-text-muted)] cursor-grab">
+                              <div {...provided.dragHandleProps} className="text-text-muted cursor-grab">
                                 <GripVertical size={14} />
                               </div>
-                              <div className="w-6 h-6 rounded-md bg-lavender-100 dark:bg-lavender-900/30 flex items-center justify-center flex-shrink-0">
+                              <div className="w-6 h-6 rounded-md bg-lavender-100 dark:bg-lavender-900/30 flex items-center justify-center shrink-0">
                                 <Compass size={12} className="text-lavender-500" />
                               </div>
                               <div className="min-w-0 flex-1">
-                                <p className="text-xs font-medium text-[var(--color-text-primary)] truncate">{activity.title}</p>
+                                <p className="text-xs font-medium text-text-primary truncate">{activity.title}</p>
                                 {activity.cost !== undefined && activity.cost > 0 && (
-                                  <p className="text-xs text-[var(--color-text-muted)]">{formatCurrency(activity.cost, activity.currency)}</p>
+                                  <p className="text-xs text-text-muted">{formatCurrency(activity.cost, activity.currency)}</p>
                                 )}
                               </div>
                             </div>
@@ -153,7 +153,7 @@ export function PlannerTimeline({
                       ))}
                       {provided.placeholder}
                       {dayActivities.length === 0 && (
-                        <p className="text-xs text-[var(--color-text-muted)] text-center py-4">Drop activities here</p>
+                        <p className="text-xs text-text-muted text-center py-4">Drop activities here</p>
                       )}
                     </div>
                   )}
@@ -191,12 +191,12 @@ function StaticPlannerCard({ item }: { item: PlannerItem }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] p-3 flex items-center gap-2 shadow-sm"
+      className="rounded-lg bg-surface border border-border p-3 flex items-center gap-2 shadow-sm"
     >
-      <div className={cn('w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0', bg)}>
+      <div className={cn('w-6 h-6 rounded-md flex items-center justify-center shrink-0', bg)}>
         <Icon size={12} className={color} />
       </div>
-      <p className="text-xs font-medium text-[var(--color-text-primary)] truncate">{getLabel()}</p>
+      <p className="text-xs font-medium text-text-primary truncate">{getLabel()}</p>
     </motion.div>
   )
 }

@@ -60,11 +60,11 @@ export function NoteEditor({ tripId }: NoteEditorProps) {
       {/* Notes editor */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-[var(--color-text-primary)]">Trip Notes</h3>
+          <h3 className="font-semibold text-text-primary">Trip Notes</h3>
           <div className="flex items-center gap-2">
             {saved && <span className="text-xs text-sage-500">Auto-saved</span>}
             {note?.updatedAt && (
-              <span className="text-xs text-[var(--color-text-muted)]">
+              <span className="text-xs text-text-muted">
                 Last saved: {formatDateTime(note.updatedAt)}
               </span>
             )}
@@ -78,7 +78,7 @@ export function NoteEditor({ tripId }: NoteEditorProps) {
           value={content}
           onChange={e => handleChange(e.target.value)}
           placeholder="Write your trip notes, packing list, reminders, or anything else here..."
-          className="w-full min-h-[300px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-transparent transition-colors"
+          className="w-full min-h-[300px] rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder:text-text-muted resize-none focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-transparent transition-colors"
         />
       </div>
 
@@ -86,7 +86,7 @@ export function NoteEditor({ tripId }: NoteEditorProps) {
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Lightbulb size={16} className="text-amber-pastel-400" />
-          <h3 className="font-semibold text-[var(--color-text-primary)]">Travel Tips</h3>
+          <h3 className="font-semibold text-text-primary">Travel Tips</h3>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {tips.map((tip, i) => (
