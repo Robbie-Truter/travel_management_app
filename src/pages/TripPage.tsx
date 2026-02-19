@@ -103,26 +103,34 @@ export function TripPage() {
 
       {/* Tabs */}
       <div className="bg-surface border-b border-border shrink-0">
-        <div className="flex overflow-x-auto px-4">
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{delay:0.1, duration:0.3}} className="flex overflow-x-auto px-4">
           {TABS.map(tab => {
             const Icon = tab.icon
+            const isActive = activeTab === tab.id
             return (
-              <button
+              <motion.button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-3.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
-                  activeTab === tab.id
-                    ? 'border-lavender-500 text-lavender-600 dark:text-lavender-400'
-                    : 'border-transparent text-text-secondary hover:text-text-primary'
+                  'relative flex items-center gap-2 px-4 py-3.5 text-sm font-medium transition-colors whitespace-nowrap cursor-pointer',
+                  isActive
+                    ? 'text-lavender-600 dark:text-lavender-400'
+                    : 'text-text-secondary hover:text-text-primary'
                 )}
               >
                 <Icon size={15} />
                 {tab.label}
-              </button>
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTabIndicator"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-lavender-500 dark:bg-lavender-400"
+                    transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+              </motion.button>
             )
           })}
-        </div>
+        </motion.div>
       </div>
 
       {/* Tab content */}
