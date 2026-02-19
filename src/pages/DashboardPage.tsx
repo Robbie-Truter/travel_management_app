@@ -9,10 +9,12 @@ import { importTripFromJSON } from '@/lib/export'
 import type { Trip } from '@/db/types'
 
 export function DashboardPage() {
-  const { trips, addTrip, updateTrip, deleteTrip } = useTrips()
   const [formOpen, setFormOpen] = useState(false)
   const [editingTrip, setEditingTrip] = useState<Trip | undefined>()
   const [search, setSearch] = useState('')
+
+  const { trips, addTrip, updateTrip, deleteTrip } = useTrips()
+
   const importRef = useRef<HTMLInputElement>(null)
 
   const filtered = trips.filter(t =>
@@ -27,15 +29,12 @@ export function DashboardPage() {
       await addTrip(data)
     }
     setEditingTrip(undefined)
+    setFormOpen(false)
   }
 
   const handleEdit = (trip: Trip) => {
     setEditingTrip(trip)
     setFormOpen(true)
-  }
-
-  const handleUpdateCover = async (id: number, image: string) => {
-    await updateTrip(id, { coverImage: image })
   }
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,7 +114,6 @@ export function DashboardPage() {
                 trip={trip}
                 onEdit={handleEdit}
                 onDelete={id => deleteTrip(id)}
-                onUpdateCover={handleUpdateCover}
               />
             ))}
           </div>
@@ -123,6 +121,7 @@ export function DashboardPage() {
       )}
 
       <TripForm
+        key={editingTrip?.id ?? 'new'}
         open={formOpen}
         onClose={() => { setFormOpen(false); setEditingTrip(undefined) }}
         onSave={handleSave}

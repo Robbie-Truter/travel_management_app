@@ -189,6 +189,7 @@ export function TripPage() {
                   </div>
                 )}
                 <FlightForm
+                key={editingFlight?.id ?? 'new'}
                   open={flightFormOpen}
                   onClose={() => { setFlightFormOpen(false); setEditingFlight(undefined) }}
                   onSave={editingFlight?.id
@@ -238,6 +239,7 @@ export function TripPage() {
                   </div>
                 )}
                 <AccommodationForm
+                  key={editingAcc?.id ?? 'new'}
                   open={accFormOpen}
                   onClose={() => { setAccFormOpen(false); setEditingAcc(undefined) }}
                   onSave={editingAcc?.id
@@ -280,6 +282,7 @@ export function TripPage() {
                   </div>
                 )}
                 <ActivityForm
+                  key={editingAct?.id ?? 'new'}
                   open={actFormOpen}
                   onClose={() => { setActFormOpen(false); setEditingAct(undefined) }}
                   onSave={editingAct?.id
