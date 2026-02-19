@@ -7,11 +7,11 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: 'bg-rose-pastel-300 text-white hover:bg-rose-pastel-600 active:bg-rose-pastel-700 shadow-sm',
-        secondary: 'bg-surface-3 text-text-primary hover:bg-border border border-border',
-        ghost: 'text-text-secondary hover:bg-surface-3 hover:text-text-primary',
-        danger: 'bg-rose-pastel-500 text-white hover:bg-rose-pastel-600',
-        outline: 'border border-border bg-transparent hover:bg-surface-3 text-text-primary',
+        primary: 'bg-rose-pastel-300 text-white hover:bg-rose-pastel-600 active:bg-rose-pastel-700 shadow-sm hover:scale-106',
+        secondary: 'bg-surface-3 text-text-primary hover:bg-border border border-border hover:scale-106',
+        ghost: 'text-text-secondary hover:bg-surface-3 hover:text-text-primary hover:scale-106',
+        danger: 'bg-rose-pastel-500 text-white hover:bg-rose-pastel-600 hover:scale-106',
+        outline: 'border border-border bg-transparent hover:bg-surface-3 text-text-primary hover:scale-106',
       },
       size: {
         sm: 'h-8 px-3 text-sm',

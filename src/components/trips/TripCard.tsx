@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/Card'
 import { Badge, statusLabels } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/Modal'
-import { formatDate, tripDuration, fileToBase64 } from '@/lib/utils'
+import { formatDate, tripDuration } from '@/lib/utils'
 import { exportTripAsJSON } from '@/lib/export'
 import type { Trip, TripStatus } from '@/db/types'
 
@@ -14,14 +14,12 @@ interface TripCardProps {
   trip: Trip
   onEdit: (trip: Trip) => void
   onDelete: (id: number) => void
-  onUpdateCover: (id: number, image: string) => void
 }
 
-export function TripCard({ trip, onEdit, onDelete, onUpdateCover }: TripCardProps) {
+export function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
   const navigate = useNavigate()
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleDelete = async () => {
     setDeleting(true)
@@ -37,13 +35,6 @@ export function TripCard({ trip, onEdit, onDelete, onUpdateCover }: TripCardProp
     } catch (err) {
       console.error('Export failed', err)
     }
-  }
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const base64 = await fileToBase64(file)
-    onUpdateCover(trip.id!, base64)
   }
 
   const duration = tripDuration(trip.startDate, trip.endDate)
@@ -78,16 +69,7 @@ export function TripCard({ trip, onEdit, onDelete, onUpdateCover }: TripCardProp
               <Button
                 variant="secondary"
                 size="icon-sm"
-                className="bg-white/90 hover:bg-white border-0 shadow-sm"
-                onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click() }}
-                title="Change cover image"
-              >
-                <Image size={12} />
-              </Button>
-              <Button
-                variant="secondary"
-                size="icon-sm"
-                className="bg-white/90 hover:bg-white border-0 shadow-sm"
+                className="bg-white/90 text-black border-0 shadow-sm"
                 onClick={(e) => { e.stopPropagation(); onEdit(trip) }}
                 title="Edit trip"
               >
@@ -96,7 +78,7 @@ export function TripCard({ trip, onEdit, onDelete, onUpdateCover }: TripCardProp
               <Button
                 variant="secondary"
                 size="icon-sm"
-                className="bg-white/90 hover:bg-white border-0 shadow-sm"
+                className="bg-white/90 text-black border-0 shadow-sm"
                 onClick={handleExport}
                 title="Export trip"
               >
@@ -105,7 +87,7 @@ export function TripCard({ trip, onEdit, onDelete, onUpdateCover }: TripCardProp
               <Button
                 variant="secondary"
                 size="icon-sm"
-                className="bg-white/90 hover:bg-white border-0 shadow-sm text-rose-pastel-500 hover:text-rose-pastel-600"
+                className="bg-white/90 border-0 shadow-sm text-rose-pastel-500 hover:text-rose-pastel-600"
                 onClick={(e) => { e.stopPropagation(); setDeleteOpen(true) }}
                 title="Delete trip"
               >
@@ -120,14 +102,6 @@ export function TripCard({ trip, onEdit, onDelete, onUpdateCover }: TripCardProp
                 {statusLabels[trip.status]}
               </Badge>
             </div>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageUpload}
-            />
           </div>
 
           <CardContent className="pt-4">
