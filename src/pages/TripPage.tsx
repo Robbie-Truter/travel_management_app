@@ -68,13 +68,13 @@ export function TripPage() {
     <div className="flex flex-col h-full">
       {/* Hero header */}
       <div
-        className="relative h-48 sm:h-56 flex-shrink-0 overflow-hidden"
+        className="relative h-48 sm:h-56 shrink-0 overflow-hidden"
         style={trip.coverImage ? { backgroundImage: `url(${trip.coverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
       >
         {!trip.coverImage && (
-          <div className="absolute inset-0 bg-gradient-to-br from-sage-200 to-sky-pastel-200 dark:from-sage-900/50 dark:to-sky-pastel-900/50" />
+          <div className="absolute inset-0 bg-linear-to-br from-sage-200 to-sky-pastel-200 dark:from-sage-900/50 dark:to-sky-pastel-900/50" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
 
         <div className="absolute inset-0 flex flex-col justify-between p-5">
           <Button
@@ -198,8 +198,8 @@ export function TripPage() {
             {activeTab === 'accommodations' && (
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-semibold text-[var(--color-text-primary)]">
-                    Accommodations <span className="text-[var(--color-text-muted)] font-normal text-sm">({accommodations.length})</span>
+                  <h2 className="font-semibold text-text-primary">
+                    Accommodations <span className="text-text-muted font-normal text-sm">({accommodations.length})</span>
                   </h2>
                   <div className="flex gap-2">
                     {accommodations.length >= 2 && (
@@ -288,8 +288,8 @@ export function TripPage() {
             {activeTab === 'planner' && (
               <div>
                 <div className="mb-4">
-                  <h2 className="font-semibold text-[var(--color-text-primary)]">Trip Planner</h2>
-                  <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">Drag activities between days to reorganize your itinerary.</p>
+                  <h2 className="font-semibold text-text-primary">Trip Planner</h2>
+                  <p className="text-sm text-text-secondary mt-0.5">Drag activities between days to reorganize your itinerary.</p>
                 </div>
                 <PlannerTimeline
                   flights={flights}

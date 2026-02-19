@@ -5,22 +5,13 @@ import { Button } from '@/components/ui/Button'
 import { Plane, Hotel, Compass, Calendar, StickyNote, Plus, PiggyBank } from 'lucide-react'
 import { formatDate, formatCurrency, cn } from '@/lib/utils'
 import { useMemo } from 'react'
+import { useExchangeRates} from '@/hooks/useExchangeRates'
 
 interface TripOverviewProps {
   trip: Trip
   flights: Flight[]
   accommodations: Accommodation[]
   activities: Activity[]
-}
-
-const EXCHANGE_RATES: Record<string, number> = {
-  USD: 1,
-  EUR: 1.08,
-  GBP: 1.26,
-  ZAR: 0.053,
-  JPY: 0.0067,
-  AUD: 0.65,
-  CAD: 0.74,
 }
 
 function EmptyState({
@@ -55,6 +46,8 @@ export function TripOverview({
   activities,
 }: TripOverviewProps) {
   const { note } = useNotes(trip.id!)
+  const { data: currencyRates } = useExchangeRates()
+
 
   const upcomingFlights = flights.filter(f => new Date(f.departureTime) > new Date())
   const confirmedStays = accommodations.filter(a => a.isConfirmed)
@@ -63,9 +56,9 @@ export function TripOverview({
   // Calculate totals by currency and total in base currency (USD)
   const { budgetBreakdown, totalInBase } = useMemo(() => {
     const breakdown: Record<string, { total: number; flights: number; stays: number; activities: number }> = {}
-    let grandTotalUSD = 0
+    let totalCost = 0
 
-    const ensureCurrency = (currency: string = 'USD') => {
+    const ensureCurrency = (currency: string) => {
       const c = currency.toUpperCase()
       if (!breakdown[c]) {
         breakdown[c] = { total: 0, flights: 0, stays: 0, activities: 0 }
@@ -73,23 +66,25 @@ export function TripOverview({
       return c
     }
 
-    const convertToBase = (amount: number, fromCurrency: string) => {
-      const rate = EXCHANGE_RATES[fromCurrency.toUpperCase()] || 1
-      return amount * rate
-    }
+    const convertCurrency = (amount: number, from: 'USD' | 'EUR' | 'ZAR', to: 'USD' | 'EUR' | 'ZAR')=> {
+      if (!currencyRates) return 0;
+
+      const rates = currencyRates;
+      return amount * (rates[from]/rates[to]);
+    };
 
     flights.forEach(f => {
       const c = ensureCurrency(f.currency)
       breakdown[c].flights += f.price
       breakdown[c].total += f.price
-      grandTotalUSD += convertToBase(f.price, f.currency)
+      totalCost += convertCurrency(f.price, f.currency as 'USD' | 'EUR' | 'ZAR', 'ZAR')
     })
 
     accommodations.forEach(a => {
       const c = ensureCurrency(a.currency)
       breakdown[c].stays += a.price
       breakdown[c].total += a.price
-      grandTotalUSD += convertToBase(a.price, a.currency)
+      totalCost += convertCurrency(a.price, a.currency as 'USD' | 'EUR' | 'ZAR', 'ZAR')
     })
 
     activities.forEach(a => {
@@ -97,11 +92,11 @@ export function TripOverview({
       const cost = a.cost || 0
       breakdown[c].activities += cost
       breakdown[c].total += cost
-      grandTotalUSD += convertToBase(cost, a.currency)
+      totalCost += convertCurrency(cost, a.currency as 'USD' | 'EUR' | 'ZAR', 'ZAR')
     })
 
-    return { budgetBreakdown: breakdown, totalInBase: grandTotalUSD }
-  }, [flights, accommodations, activities])
+    return { budgetBreakdown: breakdown, totalInBase: totalCost }
+  }, [flights, accommodations, activities, currencyRates])
 
   const currencies = Object.keys(budgetBreakdown)
 
@@ -223,31 +218,31 @@ export function TripOverview({
                 <div key={curr} className="space-y-1">
                   <div className="flex justify-between items-end border-b pb-1">
                     <span className="text-xs font-semibold uppercase text-gray-500">{curr}</span>
-                    <span className="font-bold text-lg">{formatCurrency(data.total, curr)}</span>
+                    <span className="font-bold text-lg">{formatCurrency(data.total, curr as 'USD' | 'EUR' | 'ZAR')}</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2 text-[10px] text-gray-500">
                     <div>
                       <p className="border-l-2 border-blue-200 pl-1">Flights</p>
-                      <p className="font-medium text-gray-700">{formatCurrency(data.flights, curr)}</p>
+                      <p className="font-medium text-gray-700">{formatCurrency(data.flights, curr as 'USD' | 'EUR' | 'ZAR')}</p>
                     </div>
                     <div>
                       <p className="border-l-2 border-teal-200 pl-1">Stays</p>
-                      <p className="font-medium text-gray-700">{formatCurrency(data.stays, curr)}</p>
+                      <p className="font-medium text-gray-700">{formatCurrency(data.stays, curr as 'USD' | 'EUR' | 'ZAR')}</p>
                     </div>
                     <div>
                       <p className="border-l-2 border-purple-200 pl-1">Activities</p>
-                      <p className="font-medium text-gray-700">{formatCurrency(data.activities, curr)}</p>
+                      <p className="font-medium text-gray-700">{formatCurrency(data.activities, curr as 'USD' | 'EUR' | 'ZAR')}</p>
                     </div>
                   </div>
                 </div>
               )
             })}
 
-            {currencies.length > 1 && (
+            {currencies.length > 0 && (
               <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-100 italic">
                 <div className="flex justify-between items-center text-sm font-medium text-gray-700">
-                  <span>Estimated Total (USD)</span>
-                  <span className="text-base text-lavender-600">{formatCurrency(totalInBase, 'USD')}</span>
+                  <span>Estimated Total (ZAR)</span>
+                  <span className="text-base text-lavender-600">{formatCurrency(totalInBase, 'ZAR')}</span>
                 </div>
                 <p className="text-[10px] text-gray-400 mt-1">* Estimates based on static exchange rates.</p>
               </div>

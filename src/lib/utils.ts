@@ -31,7 +31,14 @@ export function tripDuration(startDate: string, endDate: string) {
   }
 }
 
-export function formatCurrency(amount: number, currency = 'USD') {
+export function formatCurrency(amount: number, currency: 'USD' | 'ZAR' | 'EUR') {
+  if (currency === 'ZAR') {
+    return new Intl.NumberFormat('en-ZA', { style: 'currency', currency }).format(amount)
+  }
+
+  if(currency === "EUR")
+  return new Intl.NumberFormat('en-EU', { style: 'currency', currency }).format(amount)
+
   return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount)
 }
 

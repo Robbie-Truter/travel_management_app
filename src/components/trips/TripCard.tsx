@@ -59,7 +59,7 @@ export function TripCard({ trip, onEdit, onDelete, onUpdateCover }: TripCardProp
       >
         <Card hover className="overflow-hidden group" onClick={() => navigate(`/trips/${trip.id}`)}>
           {/* Cover Image */}
-          <div className="relative h-40 bg-gradient-to-br from-sage-100 to-sky-pastel-100 dark:from-sage-900/30 dark:to-sky-pastel-900/30 overflow-hidden">
+          <div className="relative h-40 bg-linear-to-br from-sage-100 to-sky-pastel-100 dark:from-sage-900/30 dark:to-sky-pastel-900/30 overflow-hidden">
             {trip.coverImage ? (
               <img
                 src={trip.coverImage}
@@ -131,18 +131,18 @@ export function TripCard({ trip, onEdit, onDelete, onUpdateCover }: TripCardProp
           </div>
 
           <CardContent className="pt-4">
-            <h3 className="font-semibold text-[var(--color-text-primary)] truncate">{trip.name}</h3>
-            <div className="flex items-center gap-1 mt-1 text-sm text-[var(--color-text-secondary)]">
+            <h3 className="font-semibold text-text-primary truncate">{trip.name}</h3>
+            <div className="flex items-center gap-1 mt-1 text-sm text-text-secondary">
               <MapPin size={13} />
               <span className="truncate">{trip.destination}</span>
             </div>
-            <div className="flex items-center gap-1 mt-1 text-xs text-[var(--color-text-muted)]">
+            <div className="flex items-center gap-1 mt-1 text-xs text-text-muted">
               <Calendar size={12} />
               <span>{formatDate(trip.startDate)} – {formatDate(trip.endDate)}</span>
               {duration && <span className="ml-1 text-sage-500">· {duration}</span>}
             </div>
             {trip.description && (
-              <p className="mt-2 text-xs text-[var(--color-text-muted)] line-clamp-2">{trip.description}</p>
+              <p className="mt-2 text-xs text-text-muted line-clamp-2">{trip.description}</p>
             )}
           </CardContent>
         </Card>

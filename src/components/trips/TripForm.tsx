@@ -77,11 +77,11 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
       <div className="space-y-4">
         {/* Cover image */}
         <div>
-          <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-1.5">
+          <label className="text-sm font-medium text-text-primary block mb-1.5">
             Cover Image
           </label>
           <div
-            className="relative h-32 rounded-xl border-2 border-dashed border-[var(--color-border)] overflow-hidden cursor-pointer hover:border-sage-400 transition-colors group"
+            className="relative h-32 rounded-xl border-2 border-dashed border-border overflow-hidden cursor-pointer hover:border-sage-400 transition-colors group"
             onClick={() => fileInputRef.current?.click()}
           >
             {coverImage ? (
@@ -98,7 +98,7 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
                 </button>
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full gap-2 text-[var(--color-text-muted)]">
+              <div className="flex flex-col items-center justify-center h-full gap-2 text-text-muted">
                 <Image size={24} />
                 <span className="text-sm">Click to upload a cover image</span>
               </div>
