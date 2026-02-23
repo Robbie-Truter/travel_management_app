@@ -1,75 +1,81 @@
-import { useState, useRef } from 'react'
-import { Image, X } from 'lucide-react'
-import { Modal } from '@/components/ui/Modal'
-import { Button } from '@/components/ui/Button'
-import { Input, Textarea, Select } from '@/components/ui/Input'
-import { fileToBase64 } from '@/lib/utils'
-import type { Trip, TripStatus } from '@/db/types'
+import { useState, useRef } from "react";
+import { Image, X } from "lucide-react";
+import { Modal } from "@/components/ui/Modal";
+import { Button } from "@/components/ui/Button";
+import { Input, Textarea, Select } from "@/components/ui/Input";
+import { fileToBase64 } from "@/lib/utils";
+import type { Trip, TripStatus } from "@/db/types";
 
 const STATUS_OPTIONS = [
-  { value: 'planning', label: 'Planning' },
-  { value: 'booked', label: 'Booked' },
-  { value: 'ongoing', label: 'Ongoing' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'cancelled', label: 'Cancelled' },
-]
+  { value: "planning", label: "Planning" },
+  { value: "booked", label: "Booked" },
+  { value: "ongoing", label: "Ongoing" },
+  { value: "completed", label: "Completed" },
+  { value: "cancelled", label: "Cancelled" },
+];
 
 interface TripFormProps {
-  open: boolean
-  onClose: () => void
-  onSave: (data: Omit<Trip, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>
-  initial?: Trip
+  open: boolean;
+  onClose: () => void;
+  onSave: (data: Omit<Trip, "id" | "createdAt" | "updatedAt">) => Promise<void>;
+  initial?: Trip;
 }
 
 export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
-  const [name, setName] = useState(initial?.name ?? '')
-  const [destination, setDestination] = useState(initial?.destination ?? '')
-  const [startDate, setStartDate] = useState(initial?.startDate ?? '')
-  const [endDate, setEndDate] = useState(initial?.endDate ?? '')
-  const [status, setStatus] = useState<TripStatus>(initial?.status ?? 'planning')
-  const [description, setDescription] = useState(initial?.description ?? '')
-  const [coverImage, setCoverImage] = useState<string | undefined>(initial?.coverImage)
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [saving, setSaving] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [name, setName] = useState(initial?.name ?? "");
+  const [destination, setDestination] = useState(initial?.destination ?? "");
+  const [startDate, setStartDate] = useState(initial?.startDate ?? "");
+  const [endDate, setEndDate] = useState(initial?.endDate ?? "");
+  const [status, setStatus] = useState<TripStatus>(initial?.status ?? "planning");
+  const [description, setDescription] = useState(initial?.description ?? "");
+  const [coverImage, setCoverImage] = useState<string | undefined>(initial?.coverImage);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validate = () => {
-    const e: Record<string, string> = {}
-    if (!name.trim()) e.name = 'Trip name is required'
-    if (!destination.trim()) e.destination = 'Destination is required'
-    if (!startDate) e.startDate = 'Start date is required'
-    if (!endDate) e.endDate = 'End date is required'
-    if (startDate && endDate && endDate < startDate) e.endDate = 'End date must be after start date'
-    return e
-  }
+    const e: Record<string, string> = {};
+    if (!name.trim()) e.name = "Trip name is required";
+    if (!destination.trim()) e.destination = "Destination is required";
+    if (!startDate) e.startDate = "Start date is required";
+    if (!endDate) e.endDate = "End date is required";
+    if (startDate && endDate && endDate < startDate)
+      e.endDate = "End date must be after start date";
+    return e;
+  };
 
   const handleSave = async () => {
-    const e = validate()
-    if (Object.keys(e).length > 0) { setErrors(e); return }
-    setSaving(true)
-    await onSave({ name, destination, startDate, endDate, status, description, coverImage })
-    setSaving(false)
-    onClose()
-  }
+    const e = validate();
+    if (Object.keys(e).length > 0) {
+      setErrors(e);
+      return;
+    }
+    setSaving(true);
+    await onSave({ name, destination, startDate, endDate, status, description, coverImage });
+    setSaving(false);
+    onClose();
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const base64 = await fileToBase64(file)
-    setCoverImage(base64)
-  }
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const base64 = await fileToBase64(file);
+    setCoverImage(base64);
+  };
 
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title={initial ? 'Edit Trip' : 'New Trip'}
+      title={initial ? "Edit Trip" : "New Trip"}
       size="md"
       footer={
         <>
-          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button variant="secondary" onClick={onClose} disabled={saving}>
+            Cancel
+          </Button>
           <Button variant="primary" onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving...' : initial ? 'Save Changes' : 'Create Trip'}
+            {saving ? "Saving..." : initial ? "Save Changes" : "Create Trip"}
           </Button>
         </>
       }
@@ -77,9 +83,7 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
       <div className="space-y-4">
         {/* Cover image */}
         <div>
-          <label className="text-sm font-medium text-text-primary block mb-1.5">
-            Cover Image
-          </label>
+          <label className="text-sm font-medium text-text-primary block mb-1.5">Cover Image</label>
           <div
             className="relative h-32 rounded-xl border-2 border-dashed border-border overflow-hidden cursor-pointer hover:border-sage-400 transition-colors group"
             onClick={() => fileInputRef.current?.click()}
@@ -88,11 +92,16 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
               <>
                 <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                  <span className="opacity-0 group-hover:opacity-100 text-white text-sm font-medium">Change Image</span>
+                  <span className="opacity-0 group-hover:opacity-100 text-white text-sm font-medium">
+                    Change Image
+                  </span>
                 </div>
                 <button
                   className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
-                  onClick={(e) => { e.stopPropagation(); setCoverImage(undefined) }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCoverImage(undefined);
+                  }}
                 >
                   <X size={12} />
                 </button>
@@ -104,7 +113,13 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
               </div>
             )}
           </div>
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageUpload}
+          />
         </div>
 
         <Input
@@ -112,7 +127,7 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
           label="Trip Name"
           placeholder="e.g. Summer in Japan"
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
           error={errors.name}
         />
         <Input
@@ -120,7 +135,7 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
           label="Destination"
           placeholder="e.g. Tokyo, Japan"
           value={destination}
-          onChange={e => setDestination(e.target.value)}
+          onChange={(e) => setDestination(e.target.value)}
           error={errors.destination}
         />
         <div className="grid grid-cols-2 gap-3">
@@ -129,7 +144,7 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
             label="Start Date"
             type="date"
             value={startDate}
-            onChange={e => setStartDate(e.target.value)}
+            onChange={(e) => setStartDate(e.target.value)}
             error={errors.startDate}
           />
           <Input
@@ -137,7 +152,7 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
             label="End Date"
             type="date"
             value={endDate}
-            onChange={e => setEndDate(e.target.value)}
+            onChange={(e) => setEndDate(e.target.value)}
             error={errors.endDate}
           />
         </div>
@@ -145,7 +160,7 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
           id="trip-status"
           label="Status"
           value={status}
-          onChange={e => setStatus(e.target.value as TripStatus)}
+          onChange={(e) => setStatus(e.target.value as TripStatus)}
           options={STATUS_OPTIONS}
         />
         <Textarea
@@ -153,10 +168,10 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
           label="Description (optional)"
           placeholder="What's this trip about?"
           value={description}
-          onChange={e => setDescription(e.target.value)}
+          onChange={(e) => setDescription(e.target.value)}
           rows={3}
         />
       </div>
     </Modal>
-  )
+  );
 }

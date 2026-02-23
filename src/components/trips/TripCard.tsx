@@ -1,43 +1,43 @@
-import { useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { MapPin, Calendar, Trash2, Edit, Download, Image, CheckCircle } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/Card'
-import { Badge, statusLabels } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
-import { ConfirmDialog } from '@/components/ui/Modal'
-import { formatDate, tripDuration } from '@/lib/utils'
-import { exportTripAsJSON } from '@/lib/export'
-import type { Trip, TripStatus } from '@/db/types'
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { MapPin, Calendar, Trash2, Edit, Download, CheckCircle } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Badge, statusLabels } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/Modal";
+import { formatDate, tripDuration } from "@/lib/utils";
+import { exportTripAsJSON } from "@/lib/export";
+import type { Trip, TripStatus } from "@/db/types";
 
 interface TripCardProps {
-  trip: Trip
-  onEdit: (trip: Trip) => void
-  onDelete: (id: number) => void
+  trip: Trip;
+  onEdit: (trip: Trip) => void;
+  onDelete: (id: number) => void;
 }
 
 export function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
-  const navigate = useNavigate()
-  const [deleteOpen, setDeleteOpen] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+  const navigate = useNavigate();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
-    setDeleting(true)
-    await onDelete(trip.id!)
-    setDeleting(false)
-    setDeleteOpen(false)
-  }
+    setDeleting(true);
+    await onDelete(trip.id!);
+    setDeleting(false);
+    setDeleteOpen(false);
+  };
 
   const handleExport = async (e: React.MouseEvent) => {
-    e.stopPropagation()
+    e.stopPropagation();
     try {
-      await exportTripAsJSON(trip.id!)
+      await exportTripAsJSON(trip.id!);
     } catch (err) {
-      console.error('Export failed', err)
+      console.error("Export failed", err);
     }
-  }
+  };
 
-  const duration = tripDuration(trip.startDate, trip.endDate)
+  const duration = tripDuration(trip.startDate, trip.endDate);
 
   return (
     <>
@@ -70,7 +70,10 @@ export function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
                 variant="secondary"
                 size="icon-sm"
                 className="bg-white/90 text-black border-0 shadow-sm"
-                onClick={(e) => { e.stopPropagation(); onEdit(trip) }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(trip);
+                }}
                 title="Edit trip"
               >
                 <Edit size={12} />
@@ -88,7 +91,10 @@ export function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
                 variant="secondary"
                 size="icon-sm"
                 className="bg-white/90 border-0 shadow-sm text-rose-pastel-500 hover:text-rose-pastel-600"
-                onClick={(e) => { e.stopPropagation(); setDeleteOpen(true) }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeleteOpen(true);
+                }}
                 title="Delete trip"
               >
                 <Trash2 size={12} />
@@ -98,7 +104,7 @@ export function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
             {/* Status badge */}
             <div className="absolute bottom-2 left-2">
               <Badge variant={trip.status as TripStatus}>
-                {trip.status === 'booked' && <CheckCircle size={10} />}
+                {trip.status === "booked" && <CheckCircle size={10} />}
                 {statusLabels[trip.status]}
               </Badge>
             </div>
@@ -112,7 +118,9 @@ export function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
             </div>
             <div className="flex items-center gap-1 mt-1 text-xs text-text-muted">
               <Calendar size={12} />
-              <span>{formatDate(trip.startDate)} – {formatDate(trip.endDate)}</span>
+              <span>
+                {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
+              </span>
               {duration && <span className="ml-1 text-sage-500">· {duration}</span>}
             </div>
             {trip.description && (
@@ -131,5 +139,5 @@ export function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
         loading={deleting}
       />
     </>
-  )
+  );
 }

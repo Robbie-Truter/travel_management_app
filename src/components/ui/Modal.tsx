@@ -1,33 +1,33 @@
-import { useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { X } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Button } from './Button'
+import { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "./Button";
 
 interface ModalProps {
-  open: boolean
-  onClose: () => void
-  title: string
-  children: React.ReactNode
-  size?: 'sm' | 'md' | 'lg' | 'xl'
-  footer?: React.ReactNode
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+  size?: "sm" | "md" | "lg" | "xl";
+  footer?: React.ReactNode;
 }
 
-export function Modal({ open, onClose, title, children, size = 'md', footer }: ModalProps) {
+export function Modal({ open, onClose, title, children, size = "md", footer }: ModalProps) {
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    if (open) document.addEventListener('keydown', handleKey)
-    return () => document.removeEventListener('keydown', handleKey)
-  }, [open, onClose])
+      if (e.key === "Escape") onClose();
+    };
+    if (open) document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [open, onClose]);
 
   const sizeClasses = {
-    sm: 'max-w-sm',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-  }
+    sm: "max-w-sm",
+    md: "max-w-lg",
+    lg: "max-w-2xl",
+    xl: "max-w-4xl",
+  };
 
   return (
     <AnimatePresence>
@@ -44,28 +44,26 @@ export function Modal({ open, onClose, title, children, size = 'md', footer }: M
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ type: 'spring', duration: 0.3 }}
+            transition={{ type: "spring", duration: 0.3 }}
             className={cn(
-              'relative w-full rounded-2xl bg-[var(--color-surface)] shadow-[var(--shadow-modal)] border border-[var(--color-border)] flex flex-col max-h-[90vh]',
-              sizeClasses[size]
+              "relative w-full rounded-2xl bg-surface shadow-(--shadow-modal) border border-border flex flex-col max-h-[90vh]",
+              sizeClasses[size],
             )}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border)] flex-shrink-0">
-              <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">{title}</h2>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+              <h2 className="text-lg font-semibold text-text-primary">{title}</h2>
               <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close">
                 <X size={16} />
               </Button>
             </div>
 
             {/* Body */}
-            <div className="flex-1 overflow-y-auto px-6 py-5">
-              {children}
-            </div>
+            <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
 
             {/* Footer */}
             {footer && (
-              <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-[var(--color-border)] flex-shrink-0">
+              <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border shrink-0">
                 {footer}
               </div>
             )}
@@ -73,17 +71,17 @@ export function Modal({ open, onClose, title, children, size = 'md', footer }: M
         </div>
       )}
     </AnimatePresence>
-  )
+  );
 }
 
 interface ConfirmDialogProps {
-  open: boolean
-  onClose: () => void
-  onConfirm: () => void
-  title: string
-  description: string
-  confirmLabel?: string
-  loading?: boolean
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  description: string;
+  confirmLabel?: string;
+  loading?: boolean;
 }
 
 export function ConfirmDialog({
@@ -92,7 +90,7 @@ export function ConfirmDialog({
   onConfirm,
   title,
   description,
-  confirmLabel = 'Delete',
+  confirmLabel = "Delete",
   loading,
 }: ConfirmDialogProps) {
   return (
@@ -107,12 +105,12 @@ export function ConfirmDialog({
             Cancel
           </Button>
           <Button variant="danger" onClick={onConfirm} disabled={loading}>
-            {loading ? 'Deleting...' : confirmLabel}
+            {loading ? "Deleting..." : confirmLabel}
           </Button>
         </>
       }
     >
-      <p className="text-sm text-[var(--color-text-secondary)]">{description}</p>
+      <p className="text-sm text-text-secondary">{description}</p>
     </Modal>
-  )
+  );
 }

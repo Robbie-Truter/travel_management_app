@@ -1,10 +1,10 @@
-import { forwardRef } from 'react'
-import { cn } from '@/lib/utils'
+import { forwardRef } from "react";
+import { cn } from "@/lib/utils";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string
-  error?: string
-  hint?: string
+  label?: string;
+  error?: string;
+  hint?: string;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -20,24 +20,24 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={id}
           className={cn(
-            'h-9 w-full rounded-lg border border-border bg-surface px-3 text-sm text-text-primary placeholder:text-text-muted transition-colors',
-            'focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-transparent',
-            error && 'border-rose-pastel-400 focus:ring-rose-pastel-400',
-            className
+            "h-9 w-full rounded-lg border border-border bg-surface px-3 text-sm text-text-primary placeholder:text-text-muted transition-colors",
+            "focus:outline-none focus:ring-2 focus:ring-lavender-400 focus:border-transparent",
+            error && "border-rose-pastel-400 focus:ring-rose-pastel-400",
+            className,
           )}
           {...props}
         />
         {error && <p className="text-xs text-rose-pastel-500">{error}</p>}
         {hint && !error && <p className="text-xs text-text-muted">{hint}</p>}
       </div>
-    )
-  }
-)
-Input.displayName = 'Input'
+    );
+  },
+);
+Input.displayName = "Input";
 
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  label?: string
-  error?: string
+  label?: string;
+  error?: string;
 }
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
@@ -53,24 +53,24 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={id}
           className={cn(
-            'w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted transition-colors resize-none',
-            'focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-transparent',
-            error && 'border-rose-pastel-400',
-            className
+            "w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted transition-colors resize-none",
+            "focus:outline-none focus:ring-2 focus:ring-lavender-400 focus:border-transparent",
+            error && "border-rose-pastel-400",
+            className,
           )}
           {...props}
         />
         {error && <p className="text-xs text-rose-pastel-500">{error}</p>}
       </div>
-    )
-  }
-)
-Textarea.displayName = 'Textarea'
+    );
+  },
+);
+Textarea.displayName = "Textarea";
 
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
-  label?: string
-  error?: string
-  options: { value: string; label: string }[]
+  label?: string;
+  error?: string;
+  options: { value: string; label: string }[];
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
@@ -86,14 +86,14 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           id={id}
           className={cn(
-            'h-9 w-full rounded-lg border border-border bg-surface px-3 text-sm text-text-primary transition-colors appearance-none cursor-pointer',
-            'focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-transparent',
-            error && 'border-rose-pastel-400',
-            className
+            "h-9 w-full rounded-lg border border-border bg-surface px-3 text-sm text-text-primary transition-colors appearance-none cursor-pointer",
+            "focus:outline-none focus:ring-2 focus:ring-lavender-400 focus:border-transparent",
+            error && "border-rose-pastel-400",
+            className,
           )}
           {...props}
         >
-          {options.map(opt => (
+          {options.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
             </option>
@@ -101,7 +101,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         </select>
         {error && <p className="text-xs text-rose-pastel-500">{error}</p>}
       </div>
-    )
-  }
-)
-Select.displayName = 'Select'
+    );
+  },
+);
+Select.displayName = "Select";
