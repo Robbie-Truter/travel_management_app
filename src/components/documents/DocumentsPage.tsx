@@ -115,7 +115,7 @@ export function DocumentUpload({ tripId }: { tripId: number }) {
       <input
         ref={importRef}
         type="file"
-        accept=".json, jpeg, jpg, png, application/pdf"
+        accept=".json, image/*, application/pdf"
         className="hidden"
         onChange={handleImport}
       />
