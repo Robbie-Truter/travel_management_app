@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { TripPage } from "@/pages/TripPage";
+import { MapsPage } from "@/pages/MapsPage";
 import { TripForm } from "@/components/trips/TripForm";
 import { useTrips } from "@/hooks/useTrips";
 import { importTripFromJSON } from "@/lib/export";
@@ -33,6 +34,7 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/trips/:tripId" element={<TripPage />} />
+        <Route path="/maps" element={<MapsPage />} />
       </Routes>
 
       <TripForm open={newTripOpen} onClose={() => setNewTripOpen(false)} onSave={handleNewTrip} />
