@@ -59,8 +59,8 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const base64 = await fileToBase64(file);
-    setCoverImage(base64);
+    const uploadedFile = await fileToBase64(file);
+    setCoverImage(uploadedFile.base64);
   };
 
   return (

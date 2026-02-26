@@ -108,7 +108,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
           <div className="bg-sky-pastel-50 dark:bg-sky-pastel-900/10 p-5 border-b border-sky-pastel-100 dark:border-sky-pastel-900/20">
             <h3 className="font-bold text-lg flex items-center gap-2 text-sky-pastel-700 dark:text-sky-pastel-400">
               <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
-                <Plane size={18} />
+                <Plane size={18} className="text-sky-pastel-500" />
               </div>
               Flights
             </h3>
@@ -156,7 +156,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
           <div className="bg-sage-50 dark:bg-sage-900/10 p-5 border-b border-sage-100 dark:border-sage-900/20">
             <h3 className="font-bold text-lg flex items-center gap-2 text-sage-700 dark:text-sage-400">
               <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
-                <Hotel size={18} />
+                <Hotel size={18} className="text-sage-500" />
               </div>
               Stays
             </h3>
@@ -187,7 +187,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
           <div className="bg-lavender-50 dark:bg-lavender-900/10 p-5 border-b border-lavender-100 dark:border-lavender-900/20">
             <h3 className="font-bold text-lg flex items-center gap-2 text-lavender-700 dark:text-lavender-400">
               <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
-                <Compass size={18} />
+                <Compass size={18} className="text-lavender-500" />
               </div>
               Activities
             </h3>
@@ -234,7 +234,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
           <div className="bg-peach-50 dark:bg-peach-900/10 p-5 border-b border-peach-100 dark:border-peach-900/20 text-left">
             <h3 className="font-bold text-lg flex items-center gap-2 text-peach-700 dark:text-peach-400">
               <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
-                <Calendar size={18} />
+                <Calendar size={18} className="text-peach-500" />
               </div>
               Planner
             </h3>
@@ -243,7 +243,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
             <p className="text-3xl font-bold text-text-primary">
               {flights.length + accommodations.length + activities.length}
             </p>
-            <p className="text-xs font-medium text-text-secondary uppercase tracking-wider uppercase">
+            <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">
               Planned Items
             </p>
           </div>
@@ -253,7 +253,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
           <div className="bg-amber-pastel-50 dark:bg-amber-pastel-900/10 p-5 border-b border-amber-pastel-100 dark:border-amber-pastel-900/20">
             <h3 className="font-bold text-lg flex items-center gap-2 text-amber-pastel-700 dark:text-amber-pastel-400">
               <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
-                <StickyNote size={18} />
+                <StickyNote size={18} className="text-amber-pastel-500" />
               </div>
               Notes
             </h3>
@@ -265,7 +265,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
                   "{note.content}"
                 </p>
                 <div className="mt-4 flex items-center justify-end">
-                  <div className="h-px bg-border flex-grow mr-2" />
+                  <div className="h-px bg-border grow mr-2" />
                   <span className="text-[10px] text-text-muted font-medium uppercase tracking-tighter">
                     Your Notes
                   </span>

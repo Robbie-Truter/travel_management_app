@@ -1,17 +1,18 @@
 import { Button } from "@/components/ui/Button";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus, Search, Upload } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { DocumentsCard } from "./DocumentsCard";
 import { useDocuments } from "@/hooks/useDocuments";
-import { fileToBase64 } from "@/lib/utils";
+import { DocumentModal } from "./DocumentModal";
+import type { Document } from "@/db/types";
 
 export function DocumentUpload({ tripId }: { tripId: number }) {
   const [search, setSearch] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingDocument, setEditingDocument] = useState<Document | undefined>();
 
-  const { documents, addDocument, deleteDocument } = useDocuments(tripId);
-
-  const importRef = useRef<HTMLInputElement>(null);
+  const { documents, addDocument, deleteDocument, updateDocument } = useDocuments(tripId);
 
   const filtered = documents?.filter(
     (d) =>
@@ -19,24 +20,25 @@ export function DocumentUpload({ tripId }: { tripId: number }) {
       d.description?.toLowerCase().includes(search.toLowerCase()),
   );
 
-  console.log(filtered);
-
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const uploadedFile = await fileToBase64(file);
+  const handleSave = async (data: Omit<Document, "id" | "createdAt" | "tripId">) => {
+    if (editingDocument?.id) {
+      await updateDocument(editingDocument.id, data);
+    } else {
       await addDocument({
+        ...data,
         tripId,
-        name: file.name,
-        description: "",
-        file: uploadedFile.base64,
-        type: uploadedFile.type,
       });
-    } catch (err) {
-      console.error("Import failed", err);
     }
-    e.target.value = "";
+  };
+
+  const handleEdit = (doc: Document) => {
+    setEditingDocument(doc);
+    setModalOpen(true);
+  };
+
+  const handleAdd = () => {
+    setEditingDocument(undefined);
+    setModalOpen(true);
   };
 
   return (
@@ -62,18 +64,13 @@ export function DocumentUpload({ tripId }: { tripId: number }) {
               className="h-9 pl-9 pr-4 rounded-lg border border-border bg-surface text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-transparent w-48"
             />
           </div>
-          <Button variant="secondary" size="md" onClick={() => importRef.current?.click()}>
+          <Button variant="secondary" size="md" onClick={handleAdd}>
             <Upload size={15} />
             Upload Document
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {/* TODO: Add document upload drop area here */}
-      </div>
-
-      {/* Document grid */}
       {filtered?.length === 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -92,7 +89,7 @@ export function DocumentUpload({ tripId }: { tripId: number }) {
               : "Upload your first document to keep everything organized."}
           </p>
           {!search && (
-            <Button variant="primary" onClick={() => importRef.current?.click()}>
+            <Button variant="primary" onClick={handleAdd}>
               <Plus size={15} />
               Upload Document
             </Button>
@@ -106,18 +103,18 @@ export function DocumentUpload({ tripId }: { tripId: number }) {
                 key={document.id}
                 document={document}
                 onDelete={(id) => deleteDocument(id)}
+                onEdit={handleEdit}
               />
             ))}
           </div>
         </AnimatePresence>
       )}
 
-      <input
-        ref={importRef}
-        type="file"
-        accept=".json, image/*, application/pdf"
-        className="hidden"
-        onChange={handleImport}
+      <DocumentModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSave={handleSave}
+        initial={editingDocument}
       />
     </div>
   );

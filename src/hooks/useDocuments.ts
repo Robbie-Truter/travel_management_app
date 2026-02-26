@@ -14,6 +14,8 @@ export function useDocuments(tripId: number) {
   };
 
   const deleteDocument = async (id: number) => db.documents.delete(id);
+  const updateDocument = async (id: number, updates: Partial<Document>) =>
+    db.documents.update(id, updates);
 
-  return { documents: documents ?? [], addDocument, deleteDocument };
+  return { documents: documents ?? [], addDocument, deleteDocument, updateDocument };
 }

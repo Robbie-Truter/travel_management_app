@@ -1,9 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap");
 @import "tailwindcss";
 
-
 @theme {
-  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
 
   /* Pastel color palette */
   --color-sage-50: #f4f7f4;
@@ -24,6 +23,9 @@
   --color-sky-pastel-400: #36aaf6;
   --color-sky-pastel-500: #0c90e7;
   --color-sky-pastel-600: #0072c5;
+  --color-sky-pastel-700: #005a9e;
+  --color-sky-pastel-800: #004b85;
+  --color-sky-pastel-900: #003e6e;
 
   --color-peach-50: #fff7f0;
   --color-peach-100: #ffede0;
@@ -32,6 +34,9 @@
   --color-peach-400: #ff9257;
   --color-peach-500: #ff6f2e;
   --color-peach-600: #e85520;
+  --color-peach-700: #c2411a;
+  --color-peach-800: #9e3518;
+  --color-peach-900: #812e17;
 
   --color-lavender-50: #f5f3ff;
   --color-lavender-100: #ede9fe;
@@ -40,6 +45,9 @@
   --color-lavender-400: #a78bfa;
   --color-lavender-500: #8b5cf6;
   --color-lavender-600: #7c3aed;
+  --color-lavender-700: #6d28d9;
+  --color-lavender-800: #5b21b6;
+  --color-lavender-900: #4c1d95;
 
   --color-rose-pastel-50: #fff1f2;
   --color-rose-pastel-100: #ffe4e6;
@@ -47,6 +55,10 @@
   --color-rose-pastel-300: #fda4af;
   --color-rose-pastel-400: #fb7185;
   --color-rose-pastel-500: #f43f5e;
+  --color-rose-pastel-600: #e11d48;
+  --color-rose-pastel-700: #be123c;
+  --color-rose-pastel-800: #9f1239;
+  --color-rose-pastel-900: #881337;
 
   --color-amber-pastel-50: #fffbeb;
   --color-amber-pastel-100: #fef3c7;
@@ -54,6 +66,10 @@
   --color-amber-pastel-300: #fcd34d;
   --color-amber-pastel-400: #fbbf24;
   --color-amber-pastel-500: #f59e0b;
+  --color-amber-pastel-600: #d97706;
+  --color-amber-pastel-700: #b45309;
+  --color-amber-pastel-800: #92400e;
+  --color-amber-pastel-900: #78350f;
 
   /* Semantic tokens */
   --color-primary: var(--color-sage-500);
@@ -102,7 +118,12 @@ html {
   letter-spacing: -0.01em;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   letter-spacing: -0.02em;
 }
 

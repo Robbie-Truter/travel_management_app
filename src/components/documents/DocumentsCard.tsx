@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Trash2, FileText } from "lucide-react";
+import { Calendar, Trash2, FileText, Pencil } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -17,9 +17,10 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 interface DocumentsCardProps {
   document: Documents;
   onDelete: (id: number) => void;
+  onEdit?: (document: Documents) => void;
 }
 
-export function DocumentsCard({ document, onDelete }: DocumentsCardProps) {
+export function DocumentsCard({ document, onDelete, onEdit }: DocumentsCardProps) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -93,7 +94,19 @@ export function DocumentsCard({ document, onDelete }: DocumentsCardProps) {
 
             {/* Overlay actions */}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 pointer-events-none" />
-            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+            <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+              <Button
+                variant="secondary"
+                size="icon-sm"
+                className="bg-white/90 border-0 shadow-sm text-text-secondary hover:text-text-primary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit?.(document);
+                }}
+                title="Edit document"
+              >
+                <Pencil size={12} />
+              </Button>
               <Button
                 variant="secondary"
                 size="icon-sm"
