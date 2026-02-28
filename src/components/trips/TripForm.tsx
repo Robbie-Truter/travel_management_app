@@ -136,7 +136,7 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
           id="trip-destination"
           label="Destination"
           placeholder="Select a country..."
-          options={COUNTRIES}
+          options={COUNTRIES.map((c) => c.name)}
           value={destination}
           onChange={(val) => setDestination(val)}
           error={errors.destination}

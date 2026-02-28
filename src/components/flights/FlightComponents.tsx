@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Plane,
@@ -14,8 +14,23 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Modal, ConfirmDialog } from "@/components/ui/Modal";
 import { Input, Textarea, Select } from "@/components/ui/Input";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { formatDateTime, formatCurrency } from "@/lib/utils";
+import { useTrip } from "@/hooks/useTrips";
+import { COUNTRIES } from "@/lib/countries";
+import airportsData from "@/lib/airports.json";
 import type { Flight, Currency } from "@/db/types";
+
+const airports = airportsData as { name: string; iata: string; city: string; country: string }[];
+
+const getFlagEmoji = (countryCode: string) => {
+  if (!countryCode) return "✈️";
+  const codePoints = countryCode
+    .toUpperCase()
+    .split("")
+    .map((char) => 127397 + char.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+};
 
 interface FlightCardProps {
   flight: Flight;
@@ -147,6 +162,7 @@ interface FlightFormProps {
 }
 
 export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFormProps) {
+  const trip = useTrip(tripId);
   const [form, setForm] = useState({
     airline: initial?.airline ?? "",
     flightNumber: initial?.flightNumber ?? "",
@@ -162,8 +178,36 @@ export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFor
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [showAllAirports, setShowAllAirports] = useState(false);
 
   const set = (k: string, v: string | boolean) => setForm((f) => ({ ...f, [k]: v }));
+
+  const tripCountryCode = React.useMemo(() => {
+    if (!trip?.destination) return undefined;
+    return COUNTRIES.find((c) => c.name === trip.destination)?.code;
+  }, [trip]);
+
+  const airportOptions = React.useMemo(() => {
+    return airports.map((ap) => ({
+      value: ap.iata,
+      label: `${ap.iata} - ${ap.name}`,
+      sublabel: `${ap.city}, ${ap.country}`,
+      icon: getFlagEmoji(ap.country),
+      country: ap.country,
+    }));
+  }, []);
+
+  const filteredArrivalOptions = React.useMemo(() => {
+    if (!tripCountryCode || showAllAirports) return airportOptions;
+    return airportOptions.filter((ap) => ap.country === tripCountryCode);
+  }, [airportOptions, tripCountryCode, showAllAirports]);
+
+  const filteredDepartureOptions = React.useMemo(() => {
+    if (showAllAirports) return airportOptions;
+    // For departure, if we're flying TO a destination, we're likely coming from elsewhere.
+    // But we'll show destination airports too in case of domestic flights.
+    return airportOptions;
+  }, [airportOptions, showAllAirports]);
 
   const CURRENCIES = [
     { value: "USD", label: "USD" },
@@ -245,22 +289,36 @@ export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFor
           />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Input
+          <SearchableSelect
             id="fl-dep-ap"
             label="Departure Airport"
-            placeholder="e.g. JFK"
+            placeholder="Search airport..."
+            options={filteredDepartureOptions}
             value={form.departureAirport}
-            onChange={(e) => set("departureAirport", e.target.value)}
+            onChange={(val: string) => set("departureAirport", val)}
             error={errors.departureAirport}
           />
-          <Input
+          <SearchableSelect
             id="fl-arr-ap"
             label="Arrival Airport"
-            placeholder="e.g. DXB"
+            placeholder="Search airport..."
+            options={filteredArrivalOptions}
             value={form.arrivalAirport}
-            onChange={(e) => set("arrivalAirport", e.target.value)}
+            onChange={(val: string) => set("arrivalAirport", val)}
             error={errors.arrivalAirport}
           />
+        </div>
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setShowAllAirports(!showAllAirports)}
+            className="text-xs text-lavender-500 hover:underline flex items-center gap-1"
+          >
+            <Plane size={10} />
+            {showAllAirports
+              ? "Showing all airports"
+              : `Show all airports (current: ${trip?.destination})`}
+          </button>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Input
