@@ -85,7 +85,7 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
                   href={flight.bookingLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-sage-500 hover:underline"
+                  className="flex items-center gap-1 text-lavender-500 hover:underline"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <ExternalLink size={12} />
@@ -105,7 +105,7 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
                 variant="ghost"
                 size="sm"
                 onClick={() => onConfirm(flight.id!)}
-                className="text-sage-600"
+                className="text-lavender-600"
               >
                 <CheckCircle size={14} /> Confirm
               </Button>

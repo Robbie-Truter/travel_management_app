@@ -109,7 +109,9 @@ export function DocumentModal({ open, onClose, onSave, initial }: DocumentModalP
           </label>
           <div
             className={`relative min-h-32 rounded-xl border-2 border-dashed overflow-hidden cursor-pointer transition-colors group ${
-              errors.file ? "border-rose-300 bg-rose-50/30" : "border-border hover:border-sage-400"
+              errors.file
+                ? "border-rose-300 bg-rose-50/30"
+                : "border-border hover:border-lavender-400"
             }`}
             onClick={() => fileInputRef.current?.click()}
           >
@@ -120,8 +122,8 @@ export function DocumentModal({ open, onClose, onSave, initial }: DocumentModalP
                     <img src={file} alt="Preview" className="w-full h-full object-cover" />
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-4 gap-2 text-sage-600">
-                    <FileText size={48} className="text-sage-400" />
+                  <div className="flex flex-col items-center justify-center py-4 gap-2 text-lavender-600">
+                    <FileText size={48} className="text-lavender-400" />
                     <span className="text-sm font-medium uppercase">
                       {fileType?.split("/")[1] || "FILE"}
                     </span>

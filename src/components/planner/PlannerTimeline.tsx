@@ -130,7 +130,7 @@ export function PlannerTimeline({
                       className={cn(
                         "min-h-20 rounded-xl p-2 transition-colors",
                         snapshot.isDraggingOver
-                          ? "bg-sage-50 dark:bg-sage-900/20 border-2 border-dashed border-sage-300"
+                          ? "bg-lavender-50 dark:bg-lavender-900/20 border-2 border-dashed border-lavender-300"
                           : "border-2 border-dashed border-transparent",
                       )}
                     >
@@ -199,8 +199,8 @@ function StaticPlannerCard({ item }: { item: PlannerItem }) {
     },
     accommodation: {
       icon: Hotel,
-      color: "text-peach-500",
-      bg: "bg-peach-100 dark:bg-peach-900/30",
+      color: "text-lavender-500",
+      bg: "bg-lavender-100 dark:bg-lavender-900/30",
     },
     activity: {
       icon: Compass,

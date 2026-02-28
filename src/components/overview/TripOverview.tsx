@@ -153,10 +153,10 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
         </Card>
 
         <Card className="p-0 overflow-hidden group hover:shadow-card-hover transition-shadow">
-          <div className="bg-sage-50 dark:bg-sage-900/10 p-5 border-b border-sage-100 dark:border-sage-900/20">
-            <h3 className="font-bold text-lg flex items-center gap-2 text-sage-700 dark:text-sage-400">
+          <div className="bg-lavender-50 dark:bg-lavender-900/10 p-5 border-b border-lavender-100 dark:border-lavender-900/20">
+            <h3 className="font-bold text-lg flex items-center gap-2 text-lavender-700 dark:text-lavender-400">
               <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
-                <Hotel size={18} className="text-sage-500" />
+                <Hotel size={18} className="text-lavender-500" />
               </div>
               Stays
             </h3>
@@ -184,10 +184,10 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
         </Card>
 
         <Card className="p-0 overflow-hidden group hover:shadow-card-hover transition-shadow">
-          <div className="bg-lavender-50 dark:bg-lavender-900/10 p-5 border-b border-lavender-100 dark:border-lavender-900/20">
-            <h3 className="font-bold text-lg flex items-center gap-2 text-lavender-700 dark:text-lavender-400">
+          <div className="bg-teal-pastel-50 dark:bg-teal-pastel-900/10 p-5 border-b border-teal-pastel-100 dark:border-teal-pastel-900/20">
+            <h3 className="font-bold text-lg flex items-center gap-2 text-teal-pastel-700 dark:text-teal-pastel-400">
               <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
-                <Compass size={18} className="text-lavender-500" />
+                <Compass size={18} className="text-teal-pastel-500" />
               </div>
               Activities
             </h3>
@@ -231,10 +231,10 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
         </Card>
 
         <Card className="p-0 overflow-hidden group hover:shadow-card-hover transition-shadow text-center sm:text-left">
-          <div className="bg-peach-50 dark:bg-peach-900/10 p-5 border-b border-peach-100 dark:border-peach-900/20 text-left">
-            <h3 className="font-bold text-lg flex items-center gap-2 text-peach-700 dark:text-peach-400">
+          <div className="bg-indigo-pastel-50 dark:bg-indigo-pastel-900/10 p-5 border-b border-indigo-pastel-100 dark:border-indigo-pastel-900/20 text-left">
+            <h3 className="font-bold text-lg flex items-center gap-2 text-indigo-pastel-700 dark:text-indigo-pastel-400">
               <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
-                <Calendar size={18} className="text-peach-500" />
+                <Calendar size={18} className="text-indigo-pastel-500" />
               </div>
               Planner
             </h3>
@@ -250,10 +250,10 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
         </Card>
 
         <Card className="p-0 overflow-hidden group hover:shadow-card-hover transition-shadow h-full">
-          <div className="bg-amber-pastel-50 dark:bg-amber-pastel-900/10 p-5 border-b border-amber-pastel-100 dark:border-amber-pastel-900/20">
-            <h3 className="font-bold text-lg flex items-center gap-2 text-amber-pastel-700 dark:text-amber-pastel-400">
+          <div className="bg-fuchsia-pastel-50 dark:bg-fuchsia-pastel-900/10 p-5">
+            <h3 className="font-bold text-lg flex items-center gap-2 text-fuchsia-pastel-700 dark:text-fuchsia-pastel-400">
               <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
-                <StickyNote size={18} className="text-amber-pastel-500" />
+                <StickyNote size={18} className="text-fuchsia-pastel-500" />
               </div>
               Notes
             </h3>
@@ -316,8 +316,8 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
                           {formatCurrency(data.flights, curr as "USD" | "EUR" | "ZAR")}
                         </p>
                       </div>
-                      <div className="p-3 rounded-lg bg-sage-50/50 dark:bg-sage-900/5 border border-sage-100/50 dark:border-sage-900/10">
-                        <p className="text-[10px] font-bold text-sage-600 uppercase mb-1">Stays</p>
+                      <div className="p-3 rounded-lg bg-slate-50/50 dark:bg-slate-900/5 border border-slate-100/50 dark:border-slate-900/10">
+                        <p className="text-[10px] font-bold text-slate-600 uppercase mb-1">Stays</p>
                         <p className="text-sm font-bold text-text-primary">
                           {formatCurrency(data.stays, curr as "USD" | "EUR" | "ZAR")}
                         </p>

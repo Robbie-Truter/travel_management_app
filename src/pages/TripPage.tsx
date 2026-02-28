@@ -112,7 +112,7 @@ export function TripPage() {
         }
       >
         {!trip.coverImage && (
-          <div className="absolute inset-0 bg-linear-to-br from-sage-200 to-sky-pastel-200 dark:from-sage-900/50 dark:to-sky-pastel-900/50" />
+          <div className="absolute inset-0 bg-linear-to-br from-lavender-200 to-sky-pastel-200 dark:from-lavender-900/50 dark:to-sky-pastel-900/50" />
         )}
         <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
 

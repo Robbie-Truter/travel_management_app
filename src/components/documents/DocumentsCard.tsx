@@ -61,7 +61,7 @@ export function DocumentsCard({ document, onDelete, onEdit }: DocumentsCardProps
           }}
         >
           {/* File/Image Preview */}
-          <div className="relative h-64 sm:h-72 bg-linear-to-br from-sage-100 to-sky-pastel-100 dark:from-sage-900/30 dark:to-sky-pastel-900/30 overflow-hidden flex items-center justify-center">
+          <div className="relative h-64 sm:h-72 bg-linear-to-br from-slate-100 to-sky-pastel-100 dark:from-slate-900/30 dark:to-sky-pastel-900/30 overflow-hidden flex items-center justify-center">
             {document.type?.startsWith("image/") ? (
               <img
                 src={document.file}
@@ -84,8 +84,8 @@ export function DocumentsCard({ document, onDelete, onEdit }: DocumentsCardProps
                 </Document>
               </div>
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-sage-400 gap-2 transition-transform duration-500 group-hover:scale-110">
-                <FileText size={48} className="text-sage-300" />
+              <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-2 transition-transform duration-500 group-hover:scale-110">
+                <FileText size={48} className="text-slate-300" />
                 <span className="text-xs font-medium uppercase tracking-wider">
                   {document.type?.split("/")[1] || "FILE"}
                 </span>

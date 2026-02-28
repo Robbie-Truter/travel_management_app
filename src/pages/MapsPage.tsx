@@ -34,8 +34,8 @@ export function MapsPage() {
           </div>
         ) : trips.length === 0 ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-            <div className="w-20 h-20 rounded-2xl bg-sage-50 dark:bg-sage-900/30 flex items-center justify-center mb-4">
-              <Plane size={36} className="text-sage-400" />
+            <div className="w-20 h-20 rounded-2xl bg-slate-100 dark:bg-slate-900/30 flex items-center justify-center mb-4">
+              <Plane size={36} className="text-slate-400" />
             </div>
             <h2 className="text-xl font-bold text-text-primary mb-2">No trips to map yet</h2>
             <p className="text-sm text-text-secondary max-w-xs">

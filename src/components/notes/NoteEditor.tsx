@@ -64,7 +64,7 @@ export function NoteEditor({ tripId }: NoteEditorProps) {
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-text-primary">Trip Notes</h3>
           <div className="flex items-center gap-2">
-            {saved && <span className="text-xs text-sage-500">Auto-saved</span>}
+            {saved && <span className="text-xs text-lavender-500">Auto-saved</span>}
             {note?.updatedAt && (
               <span className="text-xs text-text-muted">
                 Last saved: {formatDateTime(note.updatedAt)}
@@ -80,7 +80,7 @@ export function NoteEditor({ tripId }: NoteEditorProps) {
           value={content}
           onChange={(e) => handleChange(e.target.value)}
           placeholder="Write your trip notes, packing list, reminders, or anything else here..."
-          className="w-full min-h-75 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder:text-text-muted resize-none focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-transparent transition-colors"
+          className="w-full min-h-75 rounded-xl bg-surface px-4 py-3 text-sm text-text-primary placeholder:text-text-muted resize-none focus:outline-none focus:ring-2 focus:ring-lavender-400 focus:border-transparent transition-colors"
         />
       </div>
 

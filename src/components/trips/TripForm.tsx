@@ -3,7 +3,9 @@ import { Image, X } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea, Select } from "@/components/ui/Input";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { fileToBase64 } from "@/lib/utils";
+import { COUNTRIES } from "@/lib/countries";
 import type { Trip, TripStatus } from "@/db/types";
 
 const STATUS_OPTIONS = [
@@ -85,7 +87,7 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
         <div>
           <label className="text-sm font-medium text-text-primary block mb-1.5">Cover Image</label>
           <div
-            className="relative h-32 rounded-xl border-2 border-dashed border-border overflow-hidden cursor-pointer hover:border-sage-400 transition-colors group"
+            className="relative h-32 rounded-xl border-2 border-dashed border-border overflow-hidden cursor-pointer hover:border-lavender-400 transition-colors group"
             onClick={() => fileInputRef.current?.click()}
           >
             {coverImage ? (
@@ -130,12 +132,13 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
           onChange={(e) => setName(e.target.value)}
           error={errors.name}
         />
-        <Input
+        <SearchableSelect
           id="trip-destination"
           label="Destination"
-          placeholder="e.g. Tokyo, Japan"
+          placeholder="Select a country..."
+          options={COUNTRIES}
           value={destination}
-          onChange={(e) => setDestination(e.target.value)}
+          onChange={(val) => setDestination(val)}
           error={errors.destination}
         />
         <div className="grid grid-cols-2 gap-3">

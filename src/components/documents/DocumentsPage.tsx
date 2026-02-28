@@ -61,7 +61,7 @@ export function DocumentUpload({ tripId }: { tripId: number }) {
               placeholder="Search documents..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-9 pl-9 pr-4 rounded-lg border border-border bg-surface text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-transparent w-48"
+              className="h-9 pl-9 pr-4 rounded-lg border border-border bg-surface text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-lavender-400 focus:border-transparent w-48"
             />
           </div>
           <Button variant="secondary" size="md" onClick={handleAdd}>
@@ -77,8 +77,8 @@ export function DocumentUpload({ tripId }: { tripId: number }) {
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col items-center justify-center py-24 text-center"
         >
-          <div className="w-20 h-20 rounded-2xl bg-sage-100 dark:bg-sage-900/30 flex items-center justify-center mb-4">
-            <Upload size={36} className="text-sage-400" />
+          <div className="w-20 h-20 rounded-2xl bg-slate-100 dark:bg-slate-900/30 flex items-center justify-center mb-4">
+            <Upload size={36} className="text-slate-400" />
           </div>
           <h2 className="text-lg font-semibold text-text-primary mb-2">
             {search ? "No documents found" : "No documents yet"}

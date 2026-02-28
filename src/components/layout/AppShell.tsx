@@ -130,24 +130,8 @@ function SidebarContent({
           </Button>
         )}
       </div>
-
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-1">
-        <NavLink
-          to="/maps"
-          onClick={onClose}
-          className={({ isActive }) =>
-            cn(
-              "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-              isActive
-                ? "bg-rose-pastel-300 text-white"
-                : "hover:bg-surface-3 hover:text-text-primary",
-            )
-          }
-        >
-          <Map size={18} />
-          My Maps
-        </NavLink>
         <NavLink
           to="/"
           onClick={onClose}
@@ -163,6 +147,21 @@ function SidebarContent({
         >
           <Plane size={18} />
           My Trips
+        </NavLink>
+        <NavLink
+          to="/maps"
+          onClick={onClose}
+          className={({ isActive }) =>
+            cn(
+              "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+              isActive
+                ? "bg-rose-pastel-300 text-white"
+                : "hover:bg-surface-3 hover:text-text-primary",
+            )
+          }
+        >
+          <Map size={18} />
+          My Maps
         </NavLink>
       </nav>
 

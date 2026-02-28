@@ -50,7 +50,7 @@ export function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
       >
         <Card hover className="overflow-hidden group" onClick={() => navigate(`/trips/${trip.id}`)}>
           {/* Cover Image */}
-          <div className="relative h-40 bg-linear-to-br from-sage-100 to-sky-pastel-100 dark:from-sage-900/30 dark:to-sky-pastel-900/30 overflow-hidden">
+          <div className="relative h-40 bg-linear-to-br from-lavender-100 to-sky-pastel-100 dark:from-lavender-900/30 dark:to-sky-pastel-900/30 overflow-hidden">
             {trip.coverImage ? (
               <img
                 src={trip.coverImage}
@@ -59,7 +59,7 @@ export function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <MapPin size={40} className="text-sage-300" />
+                <MapPin size={40} className="text-lavender-300" />
               </div>
             )}
 
@@ -121,7 +121,7 @@ export function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
               <span>
                 {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
               </span>
-              {duration && <span className="ml-1 text-sage-500">· {duration}</span>}
+              {duration && <span className="ml-1 text-lavender-500">· {duration}</span>}
             </div>
             {trip.description && (
               <p className="mt-2 text-xs text-text-muted line-clamp-2">{trip.description}</p>
