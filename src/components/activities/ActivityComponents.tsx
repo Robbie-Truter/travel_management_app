@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/Button";
 import { Modal, ConfirmDialog } from "@/components/ui/Modal";
 import { Input, Textarea } from "@/components/ui/Input";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { formatCurrency, formatDuration } from "@/lib/utils";
+import { format } from "date-fns";
 import type { Activity, Currency } from "@/db/types";
 
 interface ActivityCardProps {
@@ -217,12 +219,13 @@ export function ActivityForm({
           onChange={(e) => set("name", e.target.value)}
           error={errors.name}
         />
-        <Input
+        <DatePicker
           id="act-date"
           label="Date"
-          type="date"
           value={form.date}
-          onChange={(e) => set("date", e.target.value)}
+          onChange={(date) => {
+            if (date) set("date", format(date, "yyyy-MM-dd"));
+          }}
           error={errors.date}
         />
         <div className="grid grid-cols-2 gap-3">

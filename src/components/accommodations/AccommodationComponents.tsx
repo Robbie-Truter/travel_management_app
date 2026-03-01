@@ -14,10 +14,12 @@ import { Card, CardContent, CardFooter } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Modal, ConfirmDialog } from "@/components/ui/Modal";
-import { Input, Textarea, Select } from "@/components/ui/Input";
+import { Input, Textarea } from "@/components/ui/Input";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import type { Accommodation, Currency } from "@/db/types";
 import { SearchableSelect } from "../ui/SearchableSelect";
+import { DateRangePicker } from "@/components/ui/DateRangePicker";
+import { format, parseISO } from "date-fns";
 
 const TYPE_OPTIONS = [
   { value: "hotel", label: "Hotel" },
@@ -250,12 +252,13 @@ export function AccommodationForm({
           onChange={(e) => set("name", e.target.value)}
           error={errors.name}
         />
-        <Select
+        <SearchableSelect
           id="acc-type"
           label="Type"
+          placeholder="Select type..."
           value={form.type}
-          onChange={(e) => set("type", e.target.value)}
           options={TYPE_OPTIONS}
+          onChange={(val: string) => set("type", val)}
         />
         <Input
           id="acc-loc"
@@ -265,24 +268,21 @@ export function AccommodationForm({
           onChange={(e) => set("location", e.target.value)}
           error={errors.location}
         />
-        <div className="grid grid-cols-2 gap-3">
-          <Input
-            id="acc-in"
-            label="Check-in"
-            type="date"
-            value={form.checkIn}
-            onChange={(e) => set("checkIn", e.target.value)}
-            error={errors.checkIn}
-          />
-          <Input
-            id="acc-out"
-            label="Check-out"
-            type="date"
-            value={form.checkOut}
-            onChange={(e) => set("checkOut", e.target.value)}
-            error={errors.checkOut}
-          />
-        </div>
+        <DateRangePicker
+          label="Stay Duration"
+          value={{
+            from: form.checkIn ? parseISO(form.checkIn) : undefined,
+            to: form.checkOut ? parseISO(form.checkOut) : undefined,
+          }}
+          onChange={(range) => {
+            setForm((f) => ({
+              ...f,
+              checkIn: range.from ? format(range.from, "yyyy-MM-dd") : "",
+              checkOut: range.to ? format(range.to, "yyyy-MM-dd") : "",
+            }));
+          }}
+          error={errors.checkIn || errors.checkOut}
+        />
         <div className="grid grid-cols-3 gap-3">
           <div className="col-span-2">
             <Input

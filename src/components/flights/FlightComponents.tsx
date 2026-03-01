@@ -15,7 +15,9 @@ import { Button } from "@/components/ui/Button";
 import { Modal, ConfirmDialog } from "@/components/ui/Modal";
 import { Input, Textarea } from "@/components/ui/Input";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { formatDateTime, formatCurrency } from "@/lib/utils";
+import { format } from "date-fns";
 import { useTrip } from "@/hooks/useTrips";
 import { COUNTRIES } from "@/lib/countries";
 import airportsData from "@/lib/airports.json";
@@ -162,7 +164,6 @@ interface FlightFormProps {
 }
 
 export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFormProps) {
-  const trip = useTrip(tripId);
   const [form, setForm] = useState({
     airline: initial?.airline ?? "",
     flightNumber: initial?.flightNumber ?? "",
@@ -179,6 +180,8 @@ export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFor
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [showAllAirports, setShowAllAirports] = useState(false);
+
+  const trip = useTrip(tripId);
 
   const set = (k: string, v: string | boolean) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -223,6 +226,13 @@ export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFor
     if (!form.arrivalAirport.trim()) e.arrivalAirport = "Required";
     if (!form.departureTime) e.departureTime = "Required";
     if (!form.arrivalTime) e.arrivalTime = "Required";
+
+    if (form.departureTime && form.arrivalTime) {
+      if (new Date(form.arrivalTime) < new Date(form.departureTime)) {
+        e.arrivalTime = "Must be after departure";
+      }
+    }
+
     if (!form.price || isNaN(Number(form.price))) e.price = "Valid price required";
     return e;
   };
@@ -321,20 +331,29 @@ export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFor
           </button>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Input
+          <DatePicker
             id="fl-dep-t"
             label="Departure Time"
-            type="datetime-local"
+            showTime
             value={form.departureTime}
-            onChange={(e) => set("departureTime", e.target.value)}
+            onChange={(date) => {
+              if (date) set("departureTime", format(date, "yyyy-MM-dd'T'HH:mm"));
+            }}
             error={errors.departureTime}
           />
-          <Input
+          <DatePicker
             id="fl-arr-t"
             label="Arrival Time"
-            type="datetime-local"
+            showTime
             value={form.arrivalTime}
-            onChange={(e) => set("arrivalTime", e.target.value)}
+            onChange={(date) => {
+              if (date) set("arrivalTime", format(date, "yyyy-MM-dd'T'HH:mm"));
+            }}
+            disabled={
+              form.departureTime
+                ? { before: new Date(new Date(form.departureTime).setHours(0, 0, 0, 0)) }
+                : undefined
+            }
             error={errors.arrivalTime}
           />
         </div>

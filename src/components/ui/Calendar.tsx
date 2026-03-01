@@ -15,12 +15,12 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
         month: "space-y-4",
         month_caption: "flex justify-center pt-1 relative items-center h-9",
         caption_label: "text-sm font-medium",
-        nav: "flex items-center justify-between absolute inset-x-0 w-full px-2",
+        nav: "flex items-center justify-between absolute inset-x-0 w-full px-2 z-10 pointer-events-none",
         button_previous: cn(
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity rounded-md flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800",
+          "h-9 w-9 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity rounded-md flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 pointer-events-auto cursor-pointer",
         ),
         button_next: cn(
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity rounded-md flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800",
+          "h-9 w-9 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity rounded-md flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 pointer-events-auto cursor-pointer",
         ),
         month_grid: "w-full border-collapse space-y-1",
         weekdays: "flex w-full",
