@@ -1,10 +1,12 @@
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Image, X } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea, Select } from "@/components/ui/Input";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import { fileToBase64 } from "@/lib/utils";
+import { parseISO, format } from "date-fns";
 import { COUNTRIES } from "@/lib/countries";
 import type { Trip, TripStatus } from "@/db/types";
 
@@ -28,6 +30,14 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
   const [destination, setDestination] = useState(initial?.destination ?? "");
   const [startDate, setStartDate] = useState(initial?.startDate ?? "");
   const [endDate, setEndDate] = useState(initial?.endDate ?? "");
+
+  const dateRange = React.useMemo(
+    () => ({
+      from: startDate ? parseISO(startDate) : undefined,
+      to: endDate ? parseISO(endDate) : undefined,
+    }),
+    [startDate, endDate],
+  );
   const [status, setStatus] = useState<TripStatus>(initial?.status ?? "planning");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [coverImage, setCoverImage] = useState<string | undefined>(initial?.coverImage);
@@ -141,24 +151,15 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
           onChange={(val) => setDestination(val)}
           error={errors.destination}
         />
-        <div className="grid grid-cols-2 gap-3">
-          <Input
-            id="trip-start"
-            label="Start Date"
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            error={errors.startDate}
-          />
-          <Input
-            id="trip-end"
-            label="End Date"
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            error={errors.endDate}
-          />
-        </div>
+        <DateRangePicker
+          label="Trip Duration"
+          value={dateRange}
+          onChange={(range) => {
+            setStartDate(range.from ? format(range.from, "yyyy-MM-dd") : "");
+            setEndDate(range.to ? format(range.to, "yyyy-MM-dd") : "");
+          }}
+          error={errors.startDate || errors.endDate}
+        />
         <Select
           id="trip-status"
           label="Status"
