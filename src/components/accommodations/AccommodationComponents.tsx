@@ -17,6 +17,7 @@ import { Modal, ConfirmDialog } from "@/components/ui/Modal";
 import { Input, Textarea, Select } from "@/components/ui/Input";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import type { Accommodation, Currency } from "@/db/types";
+import { SearchableSelect } from "../ui/SearchableSelect";
 
 const TYPE_OPTIONS = [
   { value: "hotel", label: "Hotel" },
@@ -294,12 +295,14 @@ export function AccommodationForm({
               error={errors.price}
             />
           </div>
-          <Select
-            id="fl-currency"
+          <SearchableSelect
+            id="acc-currency"
             label="Currency"
+            placeholder="Search currency..."
             value={form.currency}
             options={CURRENCIES}
-            onChange={(e) => set("currency", e.target.value)}
+            onChange={(val: string) => set("currency", val)}
+            includeSearch={false}
           />
         </div>
         <Input

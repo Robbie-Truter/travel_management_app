@@ -5,7 +5,8 @@ import { Card, CardContent, CardFooter } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Modal, ConfirmDialog } from "@/components/ui/Modal";
-import { Input, Select, Textarea } from "@/components/ui/Input";
+import { Input, Textarea } from "@/components/ui/Input";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { formatCurrency, formatDuration } from "@/lib/utils";
 import type { Activity, Currency } from "@/db/types";
 
@@ -242,12 +243,14 @@ export function ActivityForm({
             onChange={(e) => set("cost", e.target.value)}
           />
         </div>
-        <Select
+        <SearchableSelect
           id="act-currency"
           label="Currency"
+          placeholder="Search currency..."
           value={form.currency}
           options={CURRENCIES}
-          onChange={(e) => set("currency", e.target.value)}
+          onChange={(val: string) => set("currency", val)}
+          includeSearch={false}
         />
         <Input
           id="act-link"

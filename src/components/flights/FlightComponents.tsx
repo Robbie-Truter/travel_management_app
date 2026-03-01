@@ -13,7 +13,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Modal, ConfirmDialog } from "@/components/ui/Modal";
-import { Input, Textarea, Select } from "@/components/ui/Input";
+import { Input, Textarea } from "@/components/ui/Input";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { formatDateTime, formatCurrency } from "@/lib/utils";
 import { useTrip } from "@/hooks/useTrips";
@@ -350,12 +350,14 @@ export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFor
               error={errors.price}
             />
           </div>
-          <Select
+          <SearchableSelect
             id="fl-currency"
             label="Currency"
+            placeholder="Search currency..."
             value={form.currency}
             options={CURRENCIES}
-            onChange={(e) => set("currency", e.target.value)}
+            onChange={(val: string) => set("currency", val)}
+            includeSearch={false}
           />
         </div>
         <Input

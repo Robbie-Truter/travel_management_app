@@ -19,8 +19,8 @@ interface SearchableSelectProps {
   error?: string;
   id?: string;
   className?: string;
-  loading?: boolean;
   displayLimit?: number;
+  includeSearch?: boolean;
 }
 
 export function SearchableSelect({
@@ -32,23 +32,11 @@ export function SearchableSelect({
   error,
   id,
   className,
-  loading: externalLoading = false,
   displayLimit = 100,
+  includeSearch = true,
 }: SearchableSelectProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [isReady, setIsReady] = React.useState(false);
-
-  // Defer rendering of the heavy list until the popover is actually open
-  // This prevents the click event from feeling "stuck"
-  React.useEffect(() => {
-    if (open) {
-      const timer = setTimeout(() => setIsReady(true), 50);
-      return () => clearTimeout(timer);
-    } else {
-      setIsReady(false);
-    }
-  }, [open]);
 
   const normalizedOptions = React.useMemo(() => {
     return options.map((opt) => {
@@ -105,23 +93,20 @@ export function SearchableSelect({
           className="z-50 w-(--radix-popover-trigger-width) min-w-[200px] overflow-hidden rounded-xl border border-border bg-surface p-1 shadow-lg animate-in fade-in zoom-in duration-200"
           align="start"
         >
-          <div className="flex items-center border-b border-border px-3 pb-2 pt-1">
-            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            <input
-              className="flex h-8 w-full rounded-md bg-transparent px-3 py-2 text-sm outline-none placeholder:text-text-muted focus:ring-2 focus:ring-lavender-400 focus:border-transparent transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              autoFocus
-            />
-          </div>
+          {includeSearch && (
+            <div className="flex items-center border-b border-border px-3 pb-2 pt-1">
+              <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+              <input
+                className="flex h-8 w-full rounded-md bg-transparent px-3 py-2 text-sm outline-none placeholder:text-text-muted focus:ring-2 focus:ring-lavender-400 focus:border-transparent transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+              />
+            </div>
+          )}
           <div className="space-y-1 max-h-60 overflow-y-auto pt-1">
-            {externalLoading || !isReady ? (
-              <div className="flex flex-col items-center justify-center py-10 gap-2">
-                <div className="w-5 h-5 border-2 border-lavender-400 border-t-transparent rounded-full animate-spin" />
-                <p className="text-xs text-text-muted italic">Searching airports...</p>
-              </div>
-            ) : filteredOptions.length === 0 ? (
+            {filteredOptions.length === 0 ? (
               <div className="text-center py-4 text-sm text-text-muted">No options found.</div>
             ) : (
               <>
