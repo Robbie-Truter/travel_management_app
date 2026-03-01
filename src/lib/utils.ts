@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { format, parseISO, differenceInDays } from "date-fns";
+import { format, parseISO, differenceInDays, differenceInMinutes } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -19,6 +19,14 @@ export function formatDateTime(dateStr: string) {
     return format(parseISO(dateStr), "MMM d, yyyy HH:mm");
   } catch {
     return dateStr;
+  }
+}
+
+export function calculateDuration(start: string, end: string) {
+  try {
+    return differenceInMinutes(parseISO(end), parseISO(start));
+  } catch {
+    return 0;
   }
 }
 

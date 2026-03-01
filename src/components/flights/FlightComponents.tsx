@@ -1,17 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  Plane,
-  DollarSign,
-  ExternalLink,
-  Edit,
-  Trash2,
-  CheckCircle,
-  ArrowRight,
-  Clock,
-  Plus,
-  Minus,
-} from "lucide-react";
+import { Plane, ExternalLink, Edit, Trash2, CheckCircle, Clock, Plus, Minus } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -20,11 +9,13 @@ import { Input, Textarea } from "@/components/ui/Input";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
 import {
+  formatDate,
   formatDateTime,
   formatCurrency,
   formatDuration,
   minutesToTime,
   timeToMinutes,
+  calculateDuration,
 } from "@/lib/utils";
 import { format } from "date-fns";
 import { useTrip } from "@/hooks/useTrips";
@@ -52,6 +43,8 @@ interface FlightCardProps {
 
 export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardProps) {
   const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const totalDuration = calculateDuration(flight.departureTime, flight.arrivalTime);
 
   return (
     <>
@@ -84,74 +77,88 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
               </div>
             </div>
 
+            {/* Dates Row */}
+            <div className="mt-4 flex justify-between text-[11px] text-text-muted font-medium px-1">
+              <span>{formatDate(flight.departureTime, "MMM d, EEEE")}</span>
+              <span className="flex items-center gap-1">
+                <Clock size={10} />
+                {formatDuration(totalDuration)}
+              </span>
+              <span>{formatDate(flight.arrivalTime, "MMM d, EEEE")}</span>
+            </div>
+
             {/* Route */}
-            <div className="mt-3 flex items-center gap-2 text-sm overflow-x-auto pb-1 no-scrollbar">
+            <div className="mt-1 flex items-center gap-2 text-sm overflow-x-auto pb-1 no-scrollbar">
               <div className="text-center shrink-0">
-                <p className="font-bold text-text-primary">{flight.departureAirport}</p>
-                <p className="text-[10px] text-text-muted">
-                  {formatDateTime(flight.departureTime).split(" ").slice(-1)[0]}
+                <p className="font-bold text-lg text-text-primary leading-tight">
+                  {flight.departureAirport}
+                </p>
+                <p className="text-xs font-semibold text-text-secondary">
+                  {formatDate(flight.departureTime, "HH:mm")}
                 </p>
               </div>
 
               {flight.stops?.map((stop, i) => (
                 <React.Fragment key={i}>
-                  <div className="flex-1 min-w-[20px] flex items-center gap-1 text-text-muted">
-                    <div className="flex-1 h-px bg-border" />
-                    <ArrowRight size={10} />
+                  <div className="flex-1 min-w-[30px] flex items-center gap-1 text-text-muted">
+                    <div className="flex-1 h-px bg-border border-dashed border-t-2" />
                   </div>
                   <div className="text-center shrink-0">
-                    <p className="font-semibold text-text-secondary text-xs">{stop.airport}</p>
-                    <p className="text-[10px] text-amber-500 font-medium">
+                    <p className="font-bold text-text-secondary text-xs">{stop.airport}</p>
+                    <p className="text-[10px] text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-900/20 px-1.5 rounded-full">
                       {formatDuration(stop.duration)}
                     </p>
                   </div>
                 </React.Fragment>
               ))}
 
-              <div className="flex-1 min-w-[20px] flex items-center gap-1 text-text-muted">
-                <div className="flex-1 h-px bg-border" />
-                <ArrowRight size={10} />
+              <div className="flex-1 min-w-[30px] flex items-center gap-1 text-text-muted">
+                <div className="flex-1 h-px bg-border border-dashed border-t-2" />
               </div>
 
               <div className="text-center shrink-0">
-                <p className="font-bold text-text-primary">{flight.arrivalAirport}</p>
-                <p className="text-[10px] text-text-muted">
-                  {formatDateTime(flight.arrivalTime).split(" ").slice(-1)[0]}
+                <p className="font-bold text-lg text-text-primary leading-tight">
+                  {flight.arrivalAirport}
+                </p>
+                <p className="text-xs font-semibold text-text-secondary">
+                  {formatDate(flight.arrivalTime, "HH:mm")}
                 </p>
               </div>
             </div>
 
-            <div className="mt-3 flex items-center gap-4 text-sm text-text-secondary">
-              <span className="flex items-center gap-1">
-                <DollarSign size={13} />
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-text-secondary">
+              <span className="flex items-center gap-1 font-semibold text-text-primary bg-green-100 px-2 py-1 rounded-md">
                 {formatCurrency(flight.price, flight.currency)}
               </span>
+
               {flight.stops && flight.stops.length > 0 && (
-                <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
                   <Clock size={12} />
-                  {flight.stops.length} stop{flight.stops.length > 1 ? "s" : ""}
+                  {flight.stops.length} {flight.stops.length > 1 ? "stops" : "stop"}
                 </span>
               )}
+
               {flight.bookingLink && (
                 <a
                   href={flight.bookingLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-lavender-500 hover:underline"
+                  className="flex items-center gap-1 text-lavender-500 hover:underline font-medium"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <ExternalLink size={12} />
-                  Book
+                  View Booking
                 </a>
               )}
             </div>
+
             {flight.notes && (
-              <p className="mt-2 text-xs text-text-muted bg-surface-3 rounded-lg px-3 py-2">
+              <p className="mt-3 text-xs text-text-muted bg-surface-3/50 rounded-lg px-3 py-2 border border-border/30">
                 {flight.notes}
               </p>
             )}
           </CardContent>
-          <CardFooter className="justify-end">
+          <CardFooter className="justify-end border-t border-border/50 mt-2 pt-2">
             {!flight.isConfirmed && (
               <Button
                 variant="ghost"
