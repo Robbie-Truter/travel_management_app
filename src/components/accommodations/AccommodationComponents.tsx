@@ -23,10 +23,21 @@ import { format, parseISO } from "date-fns";
 
 const TYPE_OPTIONS = [
   { value: "hotel", label: "Hotel" },
-  { value: "airbnb", label: "Airbnb" },
+  { value: "apartment", label: "Apartment" },
   { value: "hostel", label: "Hostel" },
+  { value: "guesthouse", label: "Guesthouse" },
   { value: "resort", label: "Resort" },
   { value: "other", label: "Other" },
+];
+
+const PLATFORM_OPTIONS = [
+  { value: "booking", label: "Booking.com", icon: "🏨" },
+  { value: "airbnb", label: "Airbnb", icon: "🏠" },
+  { value: "expedia", label: "Expedia", icon: "✈️" },
+  { value: "agoda", label: "Agoda", icon: "🏢" },
+  { value: "hotels", label: "Hotels.com", icon: "🏨" },
+  { value: "direct", label: "Direct", icon: "📞" },
+  { value: "other", label: "Other", icon: "❓" },
 ];
 
 interface AccommodationCardProps {
@@ -42,6 +53,8 @@ export function AccommodationCard({ acc, onEdit, onDelete, onConfirm }: Accommod
     1,
     Math.round((new Date(acc.checkOut).getTime() - new Date(acc.checkIn).getTime()) / 86400000),
   );
+
+  const platform = PLATFORM_OPTIONS.find((p) => p.value === acc.platform);
 
   return (
     <>
@@ -60,7 +73,17 @@ export function AccommodationCard({ acc, onEdit, onDelete, onConfirm }: Accommod
                 </div>
                 <div className="min-w-0">
                   <p className="font-semibold text-sm text-text-primary truncate">{acc.name}</p>
-                  <p className="text-xs text-text-muted capitalize">{acc.type}</p>
+                  <div className="flex items-center gap-1.5 text-xs text-text-muted">
+                    <span className="capitalize">{acc.type}</span>
+                    {platform && (
+                      <>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          {platform.icon} {platform.label}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
@@ -172,6 +195,7 @@ export function AccommodationForm({
   const [form, setForm] = useState({
     name: initial?.name ?? "",
     type: initial?.type ?? "hotel",
+    platform: initial?.platform ?? "booking",
     location: initial?.location ?? "",
     checkIn: initial?.checkIn ?? "",
     checkOut: initial?.checkOut ?? "",
@@ -213,6 +237,7 @@ export function AccommodationForm({
       tripId,
       name: form.name,
       type: form.type as Accommodation["type"],
+      platform: form.platform,
       location: form.location,
       checkIn: form.checkIn,
       checkOut: form.checkOut,
@@ -252,14 +277,24 @@ export function AccommodationForm({
           onChange={(e) => set("name", e.target.value)}
           error={errors.name}
         />
-        <SearchableSelect
-          id="acc-type"
-          label="Type"
-          placeholder="Select type..."
-          value={form.type}
-          options={TYPE_OPTIONS}
-          onChange={(val: string) => set("type", val)}
-        />
+        <div className="grid grid-cols-2 gap-3">
+          <SearchableSelect
+            id="acc-type"
+            label="Type"
+            placeholder="Select type..."
+            value={form.type}
+            options={TYPE_OPTIONS}
+            onChange={(val: string) => set("type", val)}
+          />
+          <SearchableSelect
+            id="acc-platform"
+            label="Platform"
+            placeholder="Select platform..."
+            value={form.platform}
+            options={PLATFORM_OPTIONS}
+            onChange={(val: string) => set("platform", val)}
+          />
+        </div>
         <Input
           id="acc-loc"
           label="Location"
@@ -361,6 +396,13 @@ export function AccommodationComparison({
           <tbody className="divide-y divide-border">
             {[
               { label: "Type", render: (a: Accommodation) => a.type },
+              {
+                label: "Platform",
+                render: (a: Accommodation) => {
+                  const p = PLATFORM_OPTIONS.find((opt) => opt.value === a.platform);
+                  return p ? `${p.icon} ${p.label}` : (a.platform ?? "—");
+                },
+              },
               { label: "Location", render: (a: Accommodation) => a.location },
               { label: "Check-in", render: (a: Accommodation) => formatDate(a.checkIn) },
               { label: "Check-out", render: (a: Accommodation) => formatDate(a.checkOut) },

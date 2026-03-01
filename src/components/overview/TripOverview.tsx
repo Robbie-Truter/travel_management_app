@@ -214,12 +214,9 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
                 )}
 
                 <div className="mt-auto">
-                  {unconfirmedFlights.length > 0 && (
-                    <p className="text-[11px] text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg font-medium border border-amber-100/50">
-                      {unconfirmedFlights.length} flight{unconfirmedFlights.length > 1 ? "s" : ""}{" "}
-                      in planning phase
-                    </p>
-                  )}
+                  <p className="text-[11px] text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg font-medium border border-amber-100/50">
+                    {`${unconfirmedFlights?.length > 0 ? unconfirmedFlights?.length : "No"} flight${unconfirmedFlights.length > 1 ? "s" : ""} in planning phase`}
+                  </p>
                 </div>
               </div>
             ) : (
@@ -292,12 +289,9 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
                 )}
 
                 <div className="mt-auto">
-                  {unconfirmedStays.length > 0 && (
-                    <p className="text-[11px] text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg font-medium border border-amber-100/50">
-                      {unconfirmedStays.length} stay{unconfirmedStays.length > 1 ? "s" : ""} in
-                      planning phase
-                    </p>
-                  )}
+                  <p className="text-[11px] text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg font-medium border border-amber-100/50">
+                    {`${unconfirmedStays?.length > 0 ? unconfirmedStays?.length : "No"} stay${unconfirmedStays.length > 1 ? "s" : ""} in planning phase`}
+                  </p>
                 </div>
               </div>
             ) : (
@@ -374,12 +368,9 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
                 )}
 
                 <div className="mt-auto">
-                  {unconfirmedActivities.length > 0 && (
-                    <p className="text-[11px] text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg font-medium border border-amber-100/50">
-                      {unconfirmedActivities.length} activity
-                      {unconfirmedActivities.length > 1 ? "ies" : ""} in planning phase
-                    </p>
-                  )}
+                  <p className="text-[11px] text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg font-medium border border-amber-100/50">
+                    {`${unconfirmedActivities?.length > 0 ? unconfirmedActivities?.length : "No"} activit${unconfirmedActivities.length > 1 ? "ies" : "y"} in planning phase`}
+                  </p>
                 </div>
               </div>
             ) : (

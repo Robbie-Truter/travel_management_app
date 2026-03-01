@@ -43,6 +43,7 @@ export interface Accommodation {
   tripId: number;
   name: string;
   type: "hotel" | "airbnb" | "hostel" | "resort" | "other";
+  platform?: string;
   location: string;
   checkIn: string;
   checkOut: string;
