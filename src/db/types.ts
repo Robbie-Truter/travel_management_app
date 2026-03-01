@@ -15,6 +15,11 @@ export interface Trip {
   updatedAt: string;
 }
 
+export interface FlightStop {
+  airport: string;
+  duration: number; // minutes
+}
+
 export interface Flight {
   id?: number;
   tripId: number;
@@ -26,6 +31,7 @@ export interface Flight {
   arrivalTime: string;
   price: number;
   currency: Currency;
+  stops?: FlightStop[];
   bookingLink?: string;
   notes?: string;
   isConfirmed: boolean;

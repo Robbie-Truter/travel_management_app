@@ -8,6 +8,9 @@ import {
   Trash2,
   CheckCircle,
   ArrowRight,
+  Clock,
+  Plus,
+  Minus,
 } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -16,7 +19,13 @@ import { Modal, ConfirmDialog } from "@/components/ui/Modal";
 import { Input, Textarea } from "@/components/ui/Input";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
-import { formatDateTime, formatCurrency } from "@/lib/utils";
+import {
+  formatDateTime,
+  formatCurrency,
+  formatDuration,
+  minutesToTime,
+  timeToMinutes,
+} from "@/lib/utils";
 import { format } from "date-fns";
 import { useTrip } from "@/hooks/useTrips";
 import { COUNTRIES } from "@/lib/countries";
@@ -76,19 +85,39 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
             </div>
 
             {/* Route */}
-            <div className="mt-3 flex items-center gap-2 text-sm">
-              <div className="text-center">
+            <div className="mt-3 flex items-center gap-2 text-sm overflow-x-auto pb-1 no-scrollbar">
+              <div className="text-center shrink-0">
                 <p className="font-bold text-text-primary">{flight.departureAirport}</p>
-                <p className="text-xs text-text-muted">{formatDateTime(flight.departureTime)}</p>
+                <p className="text-[10px] text-text-muted">
+                  {formatDateTime(flight.departureTime).split(" ").slice(-1)[0]}
+                </p>
               </div>
-              <div className="flex-1 flex items-center gap-1 text-text-muted">
+
+              {flight.stops?.map((stop, i) => (
+                <React.Fragment key={i}>
+                  <div className="flex-1 min-w-[20px] flex items-center gap-1 text-text-muted">
+                    <div className="flex-1 h-px bg-border" />
+                    <ArrowRight size={10} />
+                  </div>
+                  <div className="text-center shrink-0">
+                    <p className="font-semibold text-text-secondary text-xs">{stop.airport}</p>
+                    <p className="text-[10px] text-amber-500 font-medium">
+                      {formatDuration(stop.duration)}
+                    </p>
+                  </div>
+                </React.Fragment>
+              ))}
+
+              <div className="flex-1 min-w-[20px] flex items-center gap-1 text-text-muted">
                 <div className="flex-1 h-px bg-border" />
-                <ArrowRight size={14} />
-                <div className="flex-1 h-px bg-border" />
+                <ArrowRight size={10} />
               </div>
-              <div className="text-center">
+
+              <div className="text-center shrink-0">
                 <p className="font-bold text-text-primary">{flight.arrivalAirport}</p>
-                <p className="text-xs text-text-muted">{formatDateTime(flight.arrivalTime)}</p>
+                <p className="text-[10px] text-text-muted">
+                  {formatDateTime(flight.arrivalTime).split(" ").slice(-1)[0]}
+                </p>
               </div>
             </div>
 
@@ -97,6 +126,12 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
                 <DollarSign size={13} />
                 {formatCurrency(flight.price, flight.currency)}
               </span>
+              {flight.stops && flight.stops.length > 0 && (
+                <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                  <Clock size={12} />
+                  {flight.stops.length} stop{flight.stops.length > 1 ? "s" : ""}
+                </span>
+              )}
               {flight.bookingLink && (
                 <a
                   href={flight.bookingLink}
@@ -173,17 +208,41 @@ export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFor
     arrivalTime: initial?.arrivalTime ?? "",
     price: initial?.price?.toString() ?? "",
     currency: initial?.currency ?? "USD",
+    stops:
+      initial?.stops?.map((s) => ({ airport: s.airport, duration: minutesToTime(s.duration) })) ??
+      [],
     bookingLink: initial?.bookingLink ?? "",
     notes: initial?.notes ?? "",
     isConfirmed: initial?.isConfirmed ?? false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-  const [showAllAirports, setShowAllAirports] = useState(false);
+  const [showAllAirports] = useState(false);
 
   const trip = useTrip(tripId);
 
   const set = (k: string, v: string | boolean) => setForm((f) => ({ ...f, [k]: v }));
+
+  const addStop = () => {
+    setForm((f) => ({
+      ...f,
+      stops: [...f.stops, { airport: "", duration: "00:00" }],
+    }));
+  };
+
+  const removeStop = (index: number) => {
+    setForm((f) => ({
+      ...f,
+      stops: f.stops.filter((_, i) => i !== index),
+    }));
+  };
+
+  const updateStop = (index: number, k: string, v: string) => {
+    setForm((f) => ({
+      ...f,
+      stops: f.stops.map((s, i) => (i === index ? { ...s, [k]: v } : s)),
+    }));
+  };
 
   const tripCountryCode = React.useMemo(() => {
     if (!trip?.destination) return undefined;
@@ -234,6 +293,12 @@ export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFor
     }
 
     if (!form.price || isNaN(Number(form.price))) e.price = "Valid price required";
+
+    form.stops.forEach((stop, i) => {
+      if (!stop.airport) e[`stop-ap-${i}`] = "Required";
+      if (!stop.duration) e[`stop-dur-${i}`] = "Required";
+    });
+
     return e;
   };
 
@@ -254,6 +319,7 @@ export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFor
       arrivalTime: form.arrivalTime,
       price: Number(form.price),
       currency: form.currency as Currency,
+      stops: form.stops.map((s) => ({ airport: s.airport, duration: timeToMinutes(s.duration) })),
       bookingLink: form.bookingLink || undefined,
       notes: form.notes || undefined,
       isConfirmed: form.isConfirmed,
@@ -298,7 +364,7 @@ export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFor
             error={errors.flightNumber}
           />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-3">
           <SearchableSelect
             id="fl-dep-ap"
             label="Departure Airport"
@@ -308,6 +374,61 @@ export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFor
             onChange={(val: string) => set("departureAirport", val)}
             error={errors.departureAirport}
           />
+
+          {/* Stops Section */}
+          <div className="space-y-3 relative pl-4 border-l-2 border-dashed border-lavender-200 ml-4 py-2">
+            {form.stops.map((stop, index) => (
+              <div
+                key={index}
+                className="grid grid-cols-12 gap-3 items-end bg-surface-2 p-3 rounded-lg border border-border/50 relative"
+              >
+                <div className="absolute -left-[25px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-lavender-400 border-2 border-white shadow-sm" />
+                <div className="col-span-6">
+                  <SearchableSelect
+                    id={`stop-ap-${index}`}
+                    label={`Stop ${index + 1}`}
+                    placeholder="Airport..."
+                    options={airportOptions}
+                    value={stop.airport}
+                    onChange={(val: string) => updateStop(index, "airport", val)}
+                    error={errors[`stop-ap-${index}`]}
+                  />
+                </div>
+                <div className="col-span-4">
+                  <Input
+                    id={`stop-dur-${index}`}
+                    label="Layover (HH:mm)"
+                    type="time"
+                    value={stop.duration}
+                    onChange={(e) => updateStop(index, "duration", e.target.value)}
+                    error={errors[`stop-dur-${index}`]}
+                  />
+                </div>
+                <div className="col-span-2 pb-1 text-right">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-rose-pastel-400 hover:text-rose-pastel-500"
+                    onClick={() => removeStop(index)}
+                  >
+                    <Minus size={16} />
+                  </Button>
+                </div>
+              </div>
+            ))}
+
+            <div className="flex justify-center -ml-4">
+              <button
+                type="button"
+                onClick={addStop}
+                className="group flex items-center justify-center w-8 h-8 rounded-full bg-lavender-50 border border-lavender-200 text-lavender-600 hover:bg-lavender-500 hover:text-white transition-all shadow-sm"
+                title="Add Layover"
+              >
+                <Plus size={16} />
+              </button>
+            </div>
+          </div>
+
           <SearchableSelect
             id="fl-arr-ap"
             label="Arrival Airport"
@@ -318,18 +439,7 @@ export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFor
             error={errors.arrivalAirport}
           />
         </div>
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={() => setShowAllAirports(!showAllAirports)}
-            className="text-xs text-lavender-500 hover:underline flex items-center gap-1"
-          >
-            <Plane size={10} />
-            {showAllAirports
-              ? "Showing all airports"
-              : `Show all airports (current: ${trip?.destination})`}
-          </button>
-        </div>
+
         <div className="grid grid-cols-2 gap-3">
           <DatePicker
             id="fl-dep-t"
@@ -438,6 +548,13 @@ export function FlightComparison({ open, onClose, flights }: FlightComparisonPro
               { label: "Departure", render: (f: Flight) => formatDateTime(f.departureTime) },
               { label: "Arrival", render: (f: Flight) => formatDateTime(f.arrivalTime) },
               { label: "Price", render: (f: Flight) => formatCurrency(f.price, f.currency) },
+              {
+                label: "Layovers",
+                render: (f: Flight) =>
+                  f.stops && f.stops.length > 0
+                    ? `${f.stops.length} stops (${f.stops.map((s) => s.airport).join(", ")})`
+                    : "Direct",
+              },
               {
                 label: "Status",
                 render: (f: Flight) => (f.isConfirmed ? "✅ Confirmed" : "Option"),

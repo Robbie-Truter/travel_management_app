@@ -49,6 +49,18 @@ export function formatDuration(minutes: number) {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
+export function minutesToTime(minutes: number) {
+  const h = Math.floor(minutes / 60).toString().padStart(2, "0");
+  const m = (minutes % 60).toString().padStart(2, "0");
+  return `${h}:${m}`;
+}
+
+export function timeToMinutes(time: string) {
+  if (!time || !time.includes(":")) return 0;
+  const [h, m] = time.split(":").map(Number);
+  return (h || 0) * 60 + (m || 0);
+}
+
 export function generateId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
