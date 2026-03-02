@@ -20,6 +20,24 @@ export class TravelDB extends Dexie {
       notes: "++id, tripId, updatedAt",
       documents: "++id, tripId, name, type, createdAt",
     });
+
+    this.version(2)
+      .stores({
+        trips: "++id, status, startDate, endDate, createdAt",
+      })
+      .upgrade((trans) => {
+        return trans
+          .table("trips")
+          .toCollection()
+          .modify((trip: Trip & { destination?: string }) => {
+            if (trip.destination && !trip.destinations) {
+              trip.destinations = [trip.destination];
+              delete trip.destination;
+            } else if (!trip.destinations) {
+              trip.destinations = [];
+            }
+          });
+      });
   }
 }
 

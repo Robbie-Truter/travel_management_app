@@ -4,7 +4,7 @@ export type Currency = "USD" | "EUR" | "ZAR";
 export interface Trip {
   id?: number;
   name: string;
-  destination: string;
+  destinations: string[];
   startDate: string;
   endDate: string;
   status: TripStatus;
@@ -18,6 +18,7 @@ export interface Trip {
 export interface FlightStop {
   airport: string;
   duration: number; // minutes
+  coordinates?: [number, number]; // [longitude, latitude]
 }
 
 export interface Flight {

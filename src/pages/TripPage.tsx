@@ -31,6 +31,7 @@ import { ActivityCard, ActivityForm } from "@/components/activities/ActivityComp
 import { PlannerTimeline } from "@/components/planner/PlannerTimeline";
 import { NoteEditor } from "@/components/notes/NoteEditor";
 import { TripOverview } from "@/components/overview/TripOverview";
+import { TripDestinations } from "@/components/trips/TripDestinations";
 import { formatDate, tripDuration } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { Flight, Accommodation, Activity, Trip, TripStatus } from "@/db/types";
@@ -38,6 +39,7 @@ import { DocumentUpload } from "@/components/documents/DocumentsPage";
 
 type Tab =
   | "overview"
+  | "destinations"
   | "flights"
   | "accommodations"
   | "activities"
@@ -47,6 +49,7 @@ type Tab =
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Overview", icon: LayoutGrid },
+  { id: "destinations", label: "Destinations", icon: MapPin },
   { id: "flights", label: "Flights", icon: Plane },
   { id: "accommodations", label: "Stays", icon: Hotel },
   { id: "activities", label: "Activities", icon: Compass },
@@ -135,7 +138,7 @@ export function TripPage() {
             <div className="flex items-center gap-3 mt-1 text-white/80 text-sm">
               <span className="flex items-center gap-1">
                 <MapPin size={13} />
-                {trip.destination}
+                {trip.destinations?.length > 0 ? trip.destinations.join(", ") : "No destinations"}
               </span>
               <span>
                 {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
@@ -201,6 +204,22 @@ export function TripPage() {
                 accommodations={accommodations}
                 activities={activities}
               />
+            )}
+
+            {/* DESTINATIONS (managed in Overview/Separate) */}
+            {activeTab === "destinations" && (
+              <div className="p-4 bg-surface border border-border rounded-xl">
+                <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
+                  <MapPin size={20} className="text-lavender-500" />
+                  Trip Destinations
+                </h2>
+                <p className="text-sm text-text-secondary mb-6">
+                  Manage the countries you'll be visiting during this trip.
+                </p>
+                {/* We will pass a specific prop to TripOverview or handle it here */}
+                {/* For now, let's keep it in Overview as requested, but maybe a dedicated component is better */}
+                <TripDestinations trip={trip} />
+              </div>
             )}
 
             {/* FLIGHTS */}

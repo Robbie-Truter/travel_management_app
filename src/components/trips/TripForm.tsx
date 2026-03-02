@@ -3,11 +3,9 @@ import { Image, X } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea, Select } from "@/components/ui/Input";
-import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import { fileToBase64 } from "@/lib/utils";
 import { parseISO, format } from "date-fns";
-import { COUNTRIES } from "@/lib/countries";
 import type { Trip, TripStatus } from "@/db/types";
 
 const STATUS_OPTIONS = [
@@ -27,7 +25,6 @@ interface TripFormProps {
 
 export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
   const [name, setName] = useState(initial?.name ?? "");
-  const [destination, setDestination] = useState(initial?.destination ?? "");
   const [startDate, setStartDate] = useState(initial?.startDate ?? "");
   const [endDate, setEndDate] = useState(initial?.endDate ?? "");
 
@@ -48,7 +45,6 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
   const validate = () => {
     const e: Record<string, string> = {};
     if (!name.trim()) e.name = "Trip name is required";
-    if (!destination.trim()) e.destination = "Destination is required";
     if (!startDate) e.startDate = "Start date is required";
     if (!endDate) e.endDate = "End date is required";
     if (startDate && endDate && endDate < startDate)
@@ -63,7 +59,15 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
       return;
     }
     setSaving(true);
-    await onSave({ name, destination, startDate, endDate, status, description, coverImage });
+    await onSave({
+      name,
+      destinations: initial?.destinations ?? [],
+      startDate,
+      endDate,
+      status,
+      description,
+      coverImage,
+    });
     setSaving(false);
     onClose();
   };
@@ -141,15 +145,6 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           error={errors.name}
-        />
-        <SearchableSelect
-          id="trip-destination"
-          label="Destination"
-          placeholder="Select a country..."
-          options={COUNTRIES.map((c) => c.name)}
-          value={destination}
-          onChange={(val) => setDestination(val)}
-          error={errors.destination}
         />
         <DateRangePicker
           label="Trip Duration"

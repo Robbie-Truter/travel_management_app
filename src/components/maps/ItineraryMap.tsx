@@ -25,9 +25,11 @@ export function ItineraryMap({ trips }: ItineraryMapProps) {
     const homePoint = getPointForDestination("South Africa")!;
 
     // Extract destinations from trips and get coordinates
-    const tripPoints: GeoPoint[] = trips
-      .map((trip) => getPointForDestination(trip.destination))
-      .filter((p): p is GeoPoint => !!p);
+    const tripPoints: GeoPoint[] = trips.flatMap((trip) =>
+      (trip.destinations ?? [])
+        .map((dest) => getPointForDestination(dest))
+        .filter((p): p is GeoPoint => !!p),
+    );
 
     // Create unique list of visited country codes
     const visitedCountryCodes = new Set([

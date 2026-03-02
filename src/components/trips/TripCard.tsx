@@ -52,11 +52,7 @@ export function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
           {/* Cover Image */}
           <div className="relative h-40 bg-linear-to-br from-lavender-100 to-sky-pastel-100 dark:from-lavender-900/30 dark:to-sky-pastel-900/30 overflow-hidden">
             {trip.coverImage ? (
-              <img
-                src={trip.coverImage}
-                alt={trip.destination}
-                className="w-full h-full object-cover"
-              />
+              <img src={trip.coverImage} alt={trip.name} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <MapPin size={40} className="text-lavender-300" />
@@ -114,7 +110,11 @@ export function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
             <h3 className="font-semibold text-text-primary truncate">{trip.name}</h3>
             <div className="flex items-center gap-1 mt-1 text-sm text-text-secondary">
               <MapPin size={13} />
-              <span className="truncate">{trip.destination}</span>
+              <span className="truncate">
+                {trip.destinations?.length > 0
+                  ? `${trip.destinations.join(", ")}`
+                  : "No destinations added"}
+              </span>
             </div>
             <div className="flex items-center gap-1 mt-1 text-xs text-text-muted">
               <Calendar size={12} />

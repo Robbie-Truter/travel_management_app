@@ -2,7 +2,7 @@ import type { Flight, Accommodation, Activity, Trip } from "@/db/types";
 import { useNotes } from "@/hooks/useNotes";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Plane, Hotel, Compass, Calendar, StickyNote, Plus, PiggyBank } from "lucide-react";
+import { Plane, Hotel, Compass, Calendar, StickyNote, Plus, PiggyBank, MapPin } from "lucide-react";
 import { formatDate, formatCurrency, formatDuration, cn } from "@/lib/utils";
 import { useMemo } from "react";
 import { useExchangeRates } from "@/hooks/useExchangeRates";
@@ -158,6 +158,51 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="flex flex-col p-0 h-110 overflow-y-scroll group hover:shadow-card-hover transition-shadow text-center sm:text-left">
+          <div className="bg-lavender-50 dark:bg-lavender-900/10 p-5 border-b border-lavender-100 dark:border-lavender-900/20 text-left">
+            <h3 className="font-bold text-lg flex items-center gap-2 text-lavender-700 dark:text-lavender-400">
+              <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
+                <MapPin size={18} className="text-lavender-500" />
+              </div>
+              Destinations
+            </h3>
+          </div>
+          <div className="p-5 flex flex-col h-full">
+            <div className="grow">
+              <p className="text-3xl font-bold text-text-primary">
+                {trip.destinations?.length ?? 0}
+              </p>
+              <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">
+                Countries Visited
+              </p>
+
+              {trip.destinations?.length > 0 && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {trip.destinations.map((country) => (
+                    <span
+                      key={country}
+                      className="px-2 py-1 bg-surface-3 rounded-md text-[11px] font-medium text-text-primary border border-border flex items-center gap-1.5"
+                    >
+                      <MapPin size={10} className="text-lavender-500" />
+                      {country}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {trip.destinations?.length === 0 && (
+              <p className="text-xs text-text-muted italic mt-2">No destinations added yet.</p>
+            )}
+
+            <div className="mt-auto pt-4">
+              <p className="text-[10px] text-text-muted uppercase font-bold tracking-tighter">
+                Manage in Destinations Tab
+              </p>
+            </div>
+          </div>
+        </Card>
+
         <Card className="flex flex-col p-0 h-110 overflow-y-scroll group hover:shadow-card-hover transition-shadow">
           <div className="bg-sky-pastel-50 dark:bg-sky-pastel-900/10 p-5 border-b border-sky-pastel-100 dark:border-sky-pastel-900/20">
             <h3 className="font-bold text-lg flex items-center gap-2 text-sky-pastel-700 dark:text-sky-pastel-400">
