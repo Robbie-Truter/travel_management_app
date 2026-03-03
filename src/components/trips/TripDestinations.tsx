@@ -26,8 +26,6 @@ export function TripDestinations({
   const [isAdding, setIsAdding] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState("");
 
-  console.log(flights);
-
   const handleAdd = async () => {
     if (!selectedCountry) return;
     if (trip.destinations?.includes(selectedCountry)) {

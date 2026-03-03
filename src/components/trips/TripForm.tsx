@@ -2,7 +2,8 @@ import React, { useState, useRef } from "react";
 import { Image, X } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
-import { Input, Textarea, Select } from "@/components/ui/Input";
+import { Input, Textarea } from "@/components/ui/Input";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import { fileToBase64 } from "@/lib/utils";
 import { parseISO, format } from "date-fns";
@@ -155,12 +156,13 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
           }}
           error={errors.startDate || errors.endDate}
         />
-        <Select
+        <SearchableSelect
           id="trip-status"
           label="Status"
           value={status}
-          onChange={(e) => setStatus(e.target.value as TripStatus)}
+          onChange={(val) => setStatus(val as TripStatus)}
           options={STATUS_OPTIONS}
+          includeSearch={false}
         />
         <Textarea
           id="trip-description"

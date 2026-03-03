@@ -172,7 +172,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="flex flex-col p-0 h-110 overflow-y-scroll group hover:shadow-card-hover transition-shadow text-center sm:text-left">
+        <Card className="flex flex-col p-0 h-110 overflow-y-auto group hover:shadow-card-hover transition-shadow text-center sm:text-left">
           <div className="bg-lavender-50 dark:bg-lavender-900/10 p-5 border-b border-lavender-100 dark:border-lavender-900/20 text-left">
             <h3 className="font-bold text-lg flex items-center gap-2 text-lavender-700 dark:text-lavender-400">
               <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
@@ -217,7 +217,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
           </div>
         </Card>
 
-        <Card className="flex flex-col p-0 h-110 overflow-y-scroll group hover:shadow-card-hover transition-shadow">
+        <Card className="flex flex-col p-0 h-110 overflow-y-auto group hover:shadow-card-hover transition-shadow">
           <div className="bg-sky-pastel-50 dark:bg-sky-pastel-900/10 p-5 border-b border-sky-pastel-100 dark:border-sky-pastel-900/20">
             <h3 className="font-bold text-lg flex items-center gap-2 text-sky-pastel-700 dark:text-sky-pastel-400">
               <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
@@ -290,7 +290,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
           </div>
         </Card>
 
-        <Card className="flex flex-col p-0 h-110 overflow-y-scroll group hover:shadow-card-hover transition-shadow">
+        <Card className="flex flex-col p-0 h-110  overflow-y-auto group hover:shadow-card-hover transition-shadow">
           <div className="bg-lavender-50 dark:bg-lavender-900/10 p-5 border-b border-lavender-100 dark:border-lavender-900/20">
             <h3 className="font-bold text-lg flex items-center gap-2 text-lavender-700 dark:text-lavender-400">
               <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
@@ -366,7 +366,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
           </div>
         </Card>
 
-        <Card className="flex flex-col p-0 h-110 overflow-y-scroll group hover:shadow-card-hover transition-shadow">
+        <Card className="flex flex-col p-0 h-110 overflow-y-auto group hover:shadow-card-hover transition-shadow">
           <div className="bg-teal-pastel-50 dark:bg-teal-pastel-900/10 p-5 border-b border-teal-pastel-100 dark:border-teal-pastel-900/20">
             <h3 className="font-bold text-lg flex items-center gap-2 text-teal-pastel-700 dark:text-teal-pastel-400">
               <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
