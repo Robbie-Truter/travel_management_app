@@ -63,6 +63,8 @@ export interface Activity {
   id?: number;
   tripId: number;
   date: string;
+  country?: string;
+  type?: string;
   link?: string;
   notes?: string;
   duration?: number; // minutes

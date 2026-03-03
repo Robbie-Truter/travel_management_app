@@ -12,6 +12,19 @@ import { formatCurrency, formatDuration } from "@/lib/utils";
 import { format } from "date-fns";
 import type { Activity, Currency } from "@/db/types";
 
+const ACTIVITY_TAGS = [
+  { value: "sightseeing", label: "Sightseeing", icon: "🏛️" },
+  { value: "dining", label: "Dining", icon: "🍽️" },
+  { value: "adventure", label: "Adventure", icon: "🌋" },
+  { value: "culture", label: "Culture", icon: "🎭" },
+  { value: "relaxation", label: "Relaxation", icon: "🧘" },
+  { value: "shopping", label: "Shopping", icon: "🛍️" },
+  { value: "entertainment", label: "Entertainment", icon: "🍿" },
+  { value: "sport", label: "Sport", icon: "⚽" },
+  { value: "nature", label: "Nature", icon: "🌳" },
+  { value: "other", label: "Other", icon: "📍" },
+];
+
 interface ActivityCardProps {
   activity: Activity;
   onEdit: (a: Activity) => void;
@@ -41,6 +54,22 @@ export function ActivityCard({ activity, onEdit, onDelete, onConfirm }: Activity
                   <p className="font-semibold text-sm text-text-primary truncate">
                     {activity.name}
                   </p>
+                  <div className="flex flex-wrap items-center gap-2 mt-1">
+                    {activity.country && (
+                      <Badge variant="default" className="text-[10px] h-5 py-0 px-2 opacity-70">
+                        {activity.country}
+                      </Badge>
+                    )}
+                    {activity.type && (
+                      <Badge
+                        variant="default"
+                        className="text-[10px] h-5 py-0 px-2 border-lavender-200 text-lavender-600 dark:border-lavender-900/30 dark:text-lavender-400"
+                      >
+                        {ACTIVITY_TAGS.find((t) => t.value === activity.type)?.icon}{" "}
+                        {ACTIVITY_TAGS.find((t) => t.value === activity.type)?.label}
+                      </Badge>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     {activity.duration && (
                       <span className="text-xs text-text-muted flex items-center gap-1">
@@ -131,6 +160,7 @@ interface ActivityFormProps {
   initial?: Activity;
   tripId: number;
   defaultDate?: string;
+  destinations?: string[];
 }
 
 export function ActivityForm({
@@ -140,10 +170,13 @@ export function ActivityForm({
   initial,
   tripId,
   defaultDate,
+  destinations = [],
 }: ActivityFormProps) {
   const [form, setForm] = useState({
     name: initial?.name ?? "",
     date: initial?.date ?? defaultDate ?? "",
+    country: initial?.country ?? destinations[0] ?? "",
+    type: initial?.type ?? "sightseeing",
     link: initial?.link ?? "",
     notes: initial?.notes ?? "",
     duration: initial?.duration?.toString() ?? "",
@@ -181,6 +214,8 @@ export function ActivityForm({
       tripId,
       name: form.name,
       date: form.date,
+      country: form.country,
+      type: form.type,
       link: form.link || undefined,
       notes: form.notes || undefined,
       duration: form.duration ? Number(form.duration) : undefined,
@@ -228,6 +263,25 @@ export function ActivityForm({
           }}
           error={errors.date}
         />
+        <div className="grid grid-cols-2 gap-3">
+          <SearchableSelect
+            id="act-country"
+            label="Country"
+            placeholder="Select country..."
+            value={form.country}
+            options={destinations.map((d) => ({ value: d, label: d }))}
+            onChange={(val: string) => set("country", val)}
+            includeSearch={false}
+          />
+          <SearchableSelect
+            id="act-type"
+            label="Activity Type"
+            placeholder="Select type..."
+            value={form.type}
+            options={ACTIVITY_TAGS}
+            onChange={(val: string) => set("type", val)}
+          />
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <Input
             id="act-dur"

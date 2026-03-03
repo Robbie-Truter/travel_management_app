@@ -449,6 +449,7 @@ export function TripPage() {
                   }
                   initial={editingAct}
                   tripId={id}
+                  destinations={trip.destinations}
                 />
               </div>
             )}
