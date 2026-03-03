@@ -84,8 +84,7 @@ export function TripPage() {
   const [accCompareOpen, setAccCompareOpen] = useState(false);
 
   // Activities
-  const { activities, addActivity, updateActivity, deleteActivity, reorderActivities } =
-    useActivities(id);
+  const { activities, addActivity, updateActivity, deleteActivity } = useActivities(id);
   const [actFormOpen, setActFormOpen] = useState(false);
   const [editingAct, setEditingAct] = useState<Activity | undefined>();
 
@@ -475,7 +474,6 @@ export function TripPage() {
                   activities={activities}
                   tripStartDate={trip.startDate}
                   tripEndDate={trip.endDate}
-                  onReorderActivities={reorderActivities}
                 />
               </div>
             )}
