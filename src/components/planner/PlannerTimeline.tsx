@@ -57,7 +57,7 @@ export function PlannerTimeline({
       const items: PlannerItem[] = [];
 
       flights.forEach((f) => {
-        const depDate = f.departureTime.split("T")[0];
+        const depDate = f.segments[0].departureTime.split("T")[0];
         if (depDate === date) {
           items.push({ id: `flight-${f.id}`, type: "flight", date, data: f });
         }
@@ -213,7 +213,9 @@ function StaticPlannerCard({ item }: { item: PlannerItem }) {
   const getLabel = () => {
     if (item.type === "flight") {
       const f = item.data as Flight;
-      return `${f.airline} ${f.flightNumber} · ${f.departureAirport}→${f.arrivalAirport}`;
+      const first = f.segments[0];
+      const last = f.segments[f.segments.length - 1];
+      return `${first.airline} ${first.flightNumber} · ${first.departureAirport}→${last.arrivalAirport}`;
     }
     if (item.type === "accommodation") {
       const a = item.data as Accommodation;

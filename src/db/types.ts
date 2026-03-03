@@ -15,24 +15,25 @@ export interface Trip {
   updatedAt: string;
 }
 
-export interface FlightStop {
-  airport: string;
-  duration: number; // minutes
-  coordinates?: [number, number]; // [longitude, latitude]
-}
-
-export interface Flight {
-  id?: number;
-  tripId: number;
+export interface FlightSegment {
   airline: string;
   flightNumber: string;
   departureAirport: string;
   arrivalAirport: string;
   departureTime: string;
   arrivalTime: string;
+  coordinates?: {
+    departure?: [number, number];
+    arrival?: [number, number];
+  };
+}
+
+export interface Flight {
+  id?: number;
+  tripId: number;
+  segments: FlightSegment[];
   price: number;
   currency: Currency;
-  stops?: FlightStop[];
   bookingLink?: string;
   notes?: string;
   isConfirmed: boolean;

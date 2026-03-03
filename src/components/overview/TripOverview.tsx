@@ -45,7 +45,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
 
   const confirmedFlights = flights.filter((f) => f.isConfirmed);
   const unconfirmedFlights = flights.filter((f) => !f.isConfirmed);
-  const upcomingFlights = flights.filter((f) => new Date(f.departureTime) > new Date());
+  const upcomingFlights = flights.filter((f) => new Date(f.segments[0].departureTime) > new Date());
 
   const confirmedStays = accommodations.filter((a) => a.isConfirmed);
   const unconfirmedStays = accommodations.filter((a) => !a.isConfirmed);
@@ -241,7 +241,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
                         <li key={f.id} className="group/item">
                           <div className="flex justify-between items-start mb-0.5">
                             <span className="text-sm font-semibold text-text-primary group-hover/item:text-sky-pastel-600 transition-colors">
-                              {f.airline} {f.flightNumber}
+                              {f.segments[0].airline} {f.segments[0].flightNumber}
                             </span>
                             {!f.isConfirmed && (
                               <span className="text-[9px] px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded-full font-bold uppercase tracking-tighter border border-amber-100">
@@ -250,7 +250,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
                             )}
                           </div>
                           <p className="text-[11px] text-text-secondary flex items-center gap-1">
-                            {formatDate(f.departureTime)}
+                            {formatDate(f.segments[0].departureTime)}
                           </p>
                         </li>
                       ))}
