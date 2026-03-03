@@ -64,6 +64,11 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
                   <Plane size={20} className="text-sky-pastel-500" />
                 </div>
                 <div className="min-w-0">
+                  {flight.description && (
+                    <p className="text-[10px] font-bold text-lavender-600 uppercase tracking-wider mb-0.5">
+                      {flight.description}
+                    </p>
+                  )}
                   <h3 className="font-bold text-base text-text-primary truncate">
                     {airlines.length > 1 ? "Multiple Airlines" : firstSeg.airline}
                   </h3>
@@ -243,6 +248,7 @@ export function FlightForm({
         arrivalTime: "",
       },
     ],
+    description: initial?.description ?? "",
     price: initial?.price?.toString() ?? "",
     currency: initial?.currency ?? (lastFlight?.currency || "USD"),
     bookingLink: initial?.bookingLink ?? "",
@@ -358,6 +364,7 @@ export function FlightForm({
     setSaving(true);
     await onSave({
       tripId,
+      description: form.description || undefined,
       segments: form.segments,
       price: Number(form.price),
       currency: form.currency as Currency,
@@ -387,6 +394,14 @@ export function FlightForm({
       }
     >
       <div className="space-y-6">
+        <Input
+          id="fl-description"
+          label="Flight Description"
+          placeholder="e.g. Outbound Journey, Internal Connection..."
+          value={form.description}
+          onChange={(e) => set("description", e.target.value)}
+        />
+
         {form.segments.map((seg, index) => (
           <div
             key={index}
@@ -606,6 +621,10 @@ export function FlightComparison({ open, onClose, flights }: FlightComparisonPro
           </thead>
           <tbody className="divide-y divide-border">
             {[
+              {
+                label: "Description",
+                render: (f: Flight) => f.description ?? "—",
+              },
               {
                 label: "Route",
                 render: (f: Flight) => {

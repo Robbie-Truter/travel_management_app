@@ -48,7 +48,11 @@ export function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.2 }}
       >
-        <Card hover className="overflow-hidden group" onClick={() => navigate(`/trips/${trip.id}`)}>
+        <Card
+          hover
+          className="min-h-80 overflow-hidden group"
+          onClick={() => navigate(`/trips/${trip.id}`)}
+        >
           {/* Cover Image */}
           <div className="relative h-40 bg-linear-to-br from-lavender-100 to-sky-pastel-100 dark:from-lavender-900/30 dark:to-sky-pastel-900/30 overflow-hidden">
             {trip.coverImage ? (

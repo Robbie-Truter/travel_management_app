@@ -31,6 +31,7 @@ export interface FlightSegment {
 export interface Flight {
   id?: number;
   tripId: number;
+  description?: string;
   segments: FlightSegment[];
   price: number;
   currency: Currency;
