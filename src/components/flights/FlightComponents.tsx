@@ -209,16 +209,24 @@ interface FlightFormProps {
   onSave: (data: Omit<Flight, "id" | "createdAt">) => Promise<void>;
   initial?: Flight;
   tripId: number;
+  lastFlight?: Flight;
 }
 
-export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFormProps) {
+export function FlightForm({
+  open,
+  onClose,
+  onSave,
+  initial,
+  tripId,
+  lastFlight,
+}: FlightFormProps) {
   const [form, setForm] = useState({
     segments: initial?.segments?.map((s) => ({
       ...s,
     })) ?? [
       {
-        airline: "",
-        flightNumber: "",
+        airline: lastFlight?.segments[0]?.airline ?? "",
+        flightNumber: lastFlight?.segments[0]?.flightNumber ?? "",
         departureAirport: "",
         arrivalAirport: "",
         departureTime: "",
@@ -226,7 +234,7 @@ export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFor
       },
     ],
     price: initial?.price?.toString() ?? "",
-    currency: initial?.currency ?? "USD",
+    currency: initial?.currency ?? (lastFlight?.currency || "USD"),
     bookingLink: initial?.bookingLink ?? "",
     notes: initial?.notes ?? "",
     isConfirmed: initial?.isConfirmed ?? false,
@@ -242,7 +250,7 @@ export function FlightForm({ open, onClose, onSave, initial, tripId }: FlightFor
         ...f.segments,
         {
           airline: lastSegment?.airline ?? "",
-          flightNumber: "",
+          flightNumber: lastSegment?.flightNumber ?? "",
           departureAirport: lastSegment?.arrivalAirport ?? "",
           arrivalAirport: "",
           departureTime: "",

@@ -295,6 +295,7 @@ export function TripPage() {
                   }
                   initial={editingFlight}
                   tripId={id}
+                  lastFlight={flights[flights.length - 1]}
                 />
                 <FlightComparison
                   open={flightCompareOpen}
