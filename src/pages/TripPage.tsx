@@ -376,6 +376,7 @@ export function TripPage() {
                   }
                   initial={editingAcc}
                   tripId={id}
+                  destinations={trip.destinations}
                 />
                 <AccommodationComparison
                   open={accCompareOpen}

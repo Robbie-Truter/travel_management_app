@@ -101,7 +101,10 @@ export function AccommodationCard({ acc, onEdit, onDelete, onConfirm }: Accommod
             <div className="mt-3 space-y-1.5 text-sm text-text-secondary">
               <div className="flex items-center gap-1.5">
                 <MapPin size={13} />
-                <span>{acc.location}</span>
+                <span>
+                  {acc.country && `${acc.country}, `}
+                  {acc.location}
+                </span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Calendar size={13} />
@@ -183,6 +186,7 @@ interface AccommodationFormProps {
   onSave: (data: Omit<Accommodation, "id" | "createdAt">) => Promise<void>;
   initial?: Accommodation;
   tripId: number;
+  destinations?: string[];
 }
 
 export function AccommodationForm({
@@ -191,9 +195,11 @@ export function AccommodationForm({
   onSave,
   initial,
   tripId,
+  destinations = [],
 }: AccommodationFormProps) {
   const [form, setForm] = useState({
     name: initial?.name ?? "",
+    country: initial?.country ?? destinations[0] ?? "",
     type: initial?.type ?? "hotel",
     platform: initial?.platform ?? "booking",
     location: initial?.location ?? "",
@@ -236,6 +242,7 @@ export function AccommodationForm({
     await onSave({
       tripId,
       name: form.name,
+      country: form.country,
       type: form.type as Accommodation["type"],
       platform: form.platform,
       location: form.location,
@@ -276,6 +283,15 @@ export function AccommodationForm({
           value={form.name}
           onChange={(e) => set("name", e.target.value)}
           error={errors.name}
+        />
+        <SearchableSelect
+          id="acc-country"
+          label="Country"
+          placeholder="Select country..."
+          value={form.country}
+          options={destinations.map((d) => ({ value: d, label: d }))}
+          onChange={(val: string) => set("country", val)}
+          includeSearch={false}
         />
         <div className="grid grid-cols-2 gap-3">
           <SearchableSelect
@@ -403,6 +419,7 @@ export function AccommodationComparison({
                   return p ? `${p.icon} ${p.label}` : (a.platform ?? "—");
                 },
               },
+              { label: "Country", render: (a: Accommodation) => a.country ?? "—" },
               { label: "Location", render: (a: Accommodation) => a.location },
               { label: "Check-in", render: (a: Accommodation) => formatDate(a.checkIn) },
               { label: "Check-out", render: (a: Accommodation) => formatDate(a.checkOut) },

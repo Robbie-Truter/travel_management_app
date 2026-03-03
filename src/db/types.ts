@@ -45,6 +45,7 @@ export interface Accommodation {
   id?: number;
   tripId: number;
   name: string;
+  country?: string;
   type: "hotel" | "airbnb" | "hostel" | "resort" | "other";
   platform?: string;
   location: string;
