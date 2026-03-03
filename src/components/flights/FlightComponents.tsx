@@ -1,6 +1,16 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Plane, ExternalLink, Trash2, CheckCircle, Clock, Plus, Edit3 } from "lucide-react";
+import {
+  Plane,
+  ExternalLink,
+  Trash2,
+  CheckCircle,
+  Clock,
+  Plus,
+  Edit3,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -268,6 +278,16 @@ export function FlightForm({
     }));
   };
 
+  const moveSegment = (index: number, direction: "up" | "down") => {
+    const newSegments = [...form.segments];
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newSegments.length) return;
+
+    [newSegments[index], newSegments[targetIndex]] = [newSegments[targetIndex], newSegments[index]];
+
+    setForm((f) => ({ ...f, segments: newSegments }));
+  };
+
   const updateSegment = (index: number, k: string, v: string) => {
     setForm((f) => ({
       ...f,
@@ -373,9 +393,31 @@ export function FlightForm({
             className="space-y-4 p-4 bg-surface-2 rounded-xl border border-border/50 relative"
           >
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-lavender-600">
-                Leg {index + 1}
-              </h4>
+              <div className="flex items-center gap-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-lavender-600">
+                  Leg {index + 1}
+                </h4>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="h-8 w-8 text-text-muted hover:text-lavender-600 disabled:opacity-30"
+                    onClick={() => moveSegment(index, "up")}
+                    disabled={index === 0}
+                  >
+                    <ChevronUp size={18} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="h-8 w-8 text-text-muted hover:text-lavender-600 disabled:opacity-30"
+                    onClick={() => moveSegment(index, "down")}
+                    disabled={index === form.segments.length - 1}
+                  >
+                    <ChevronDown size={18} />
+                  </Button>
+                </div>
+              </div>
               {form.segments.length > 1 && (
                 <Button
                   variant="ghost"
