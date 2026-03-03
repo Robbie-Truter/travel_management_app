@@ -32,6 +32,7 @@ export interface Flight {
   id?: number;
   tripId: number;
   description?: string;
+  country?: string;
   segments: FlightSegment[];
   price: number;
   currency: Currency;

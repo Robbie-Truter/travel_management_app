@@ -218,7 +218,12 @@ export function TripPage() {
                 </p>
                 {/* We will pass a specific prop to TripOverview or handle it here */}
                 {/* For now, let's keep it in Overview as requested, but maybe a dedicated component is better */}
-                <TripDestinations trip={trip} />
+                <TripDestinations
+                  trip={trip as Trip}
+                  flights={flights}
+                  accommodations={accommodations}
+                  activities={activities}
+                />
               </div>
             )}
 
@@ -295,6 +300,7 @@ export function TripPage() {
                   }
                   initial={editingFlight}
                   tripId={id}
+                  destinations={trip.destinations}
                   lastFlight={flights[flights.length - 1]}
                 />
                 <FlightComparison

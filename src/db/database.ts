@@ -44,20 +44,31 @@ export class TravelDB extends Dexie {
         flights: "++id, tripId, isConfirmed, departureTime",
       })
       .upgrade(async (trans) => {
+        // Define a type for the legacy flight record
+        interface LegacyFlight extends Flight {
+          airline?: string;
+          flightNumber?: string;
+          departureAirport?: string;
+          arrivalAirport?: string;
+          departureTime?: string;
+          arrivalTime?: string;
+          stops?: unknown[];
+        }
+
         return trans
           .table("flights")
           .toCollection()
-          .modify((flight: any) => {
+          .modify((flight: LegacyFlight) => {
             if (!flight.segments) {
               // Convert old structure to single segment
               flight.segments = [
                 {
-                  airline: flight.airline,
-                  flightNumber: flight.flightNumber,
-                  departureAirport: flight.departureAirport,
-                  arrivalAirport: flight.arrivalAirport,
-                  departureTime: flight.departureTime,
-                  arrivalTime: flight.arrivalTime,
+                  airline: flight.airline ?? "",
+                  flightNumber: flight.flightNumber ?? "",
+                  departureAirport: flight.departureAirport ?? "",
+                  arrivalAirport: flight.arrivalAirport ?? "",
+                  departureTime: flight.departureTime ?? "",
+                  arrivalTime: flight.arrivalTime ?? "",
                 },
               ];
 
@@ -78,6 +89,47 @@ export class TravelDB extends Dexie {
               delete flight.stops;
             }
           });
+      });
+    this.version(4)
+      .stores({
+        flights: "++id, tripId, country, isConfirmed, departureTime",
+        accommodations: "++id, tripId, country, isConfirmed, checkIn",
+        activities: "++id, tripId, country, name, date, isConfirmed, order",
+      })
+      .upgrade(async (trans) => {
+        const flights = await trans.table("flights").toArray();
+        const accs = await trans.table("accommodations").toArray();
+        const acts = await trans.table("activities").toArray();
+        const trips = await trans.table("trips").toArray();
+
+        const tripMap = new Map(trips.map((t) => [t.id, t]));
+
+        for (const f of flights) {
+          if (!f.country) {
+            const trip = tripMap.get(f.tripId);
+            if (trip?.destinations?.[0]) {
+              await trans.table("flights").update(f.id, { country: trip.destinations[0] });
+            }
+          }
+        }
+
+        for (const a of accs) {
+          if (!a.country) {
+            const trip = tripMap.get(a.tripId);
+            if (trip?.destinations?.[0]) {
+              await trans.table("accommodations").update(a.id, { country: trip.destinations[0] });
+            }
+          }
+        }
+
+        for (const a of acts) {
+          if (!a.country) {
+            const trip = tripMap.get(a.tripId);
+            if (trip?.destinations?.[0]) {
+              await trans.table("activities").update(a.id, { country: trip.destinations[0] });
+            }
+          }
+        }
       });
   }
 }

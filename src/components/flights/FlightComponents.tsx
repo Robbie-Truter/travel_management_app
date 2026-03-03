@@ -72,9 +72,18 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
                   <h3 className="font-bold text-base text-text-primary truncate">
                     {airlines.length > 1 ? "Multiple Airlines" : firstSeg.airline}
                   </h3>
-                  <p className="text-xs text-text-muted">
-                    {airlines.length > 1 ? `${flight.segments.length} legs` : firstSeg.flightNumber}
-                  </p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    {flight.country && (
+                      <Badge variant="default" className="text-[9px] h-4 py-0 px-1.5 opacity-70">
+                        {flight.country}
+                      </Badge>
+                    )}
+                    <span className="text-xs text-text-muted">
+                      {airlines.length > 1
+                        ? `${flight.segments.length} legs`
+                        : firstSeg.flightNumber}
+                    </span>
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
@@ -225,6 +234,7 @@ interface FlightFormProps {
   initial?: Flight;
   tripId: number;
   lastFlight?: Flight;
+  destinations?: string[];
 }
 
 export function FlightForm({
@@ -234,6 +244,7 @@ export function FlightForm({
   initial,
   tripId,
   lastFlight,
+  destinations = [],
 }: FlightFormProps) {
   const [form, setForm] = useState({
     segments: initial?.segments?.map((s) => ({
@@ -249,6 +260,7 @@ export function FlightForm({
       },
     ],
     description: initial?.description ?? "",
+    country: initial?.country ?? destinations[0] ?? "",
     price: initial?.price?.toString() ?? "",
     currency: initial?.currency ?? (lastFlight?.currency || "USD"),
     bookingLink: initial?.bookingLink ?? "",
@@ -365,6 +377,7 @@ export function FlightForm({
     await onSave({
       tripId,
       description: form.description || undefined,
+      country: form.country,
       segments: form.segments,
       price: Number(form.price),
       currency: form.currency as Currency,
@@ -400,6 +413,15 @@ export function FlightForm({
           placeholder="e.g. Outbound Journey, Internal Connection..."
           value={form.description}
           onChange={(e) => set("description", e.target.value)}
+        />
+        <SearchableSelect
+          id="fl-country"
+          label="Country"
+          placeholder="Select country..."
+          value={form.country}
+          options={destinations.map((d) => ({ value: d, label: d }))}
+          onChange={(val: string) => set("country", val)}
+          includeSearch={false}
         />
 
         {form.segments.map((seg, index) => (

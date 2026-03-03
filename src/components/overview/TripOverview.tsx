@@ -6,6 +6,20 @@ import { Plane, Hotel, Compass, Calendar, StickyNote, Plus, PiggyBank, MapPin } 
 import { formatDate, formatCurrency, formatDuration, cn } from "@/lib/utils";
 import { useMemo } from "react";
 import { useExchangeRates } from "@/hooks/useExchangeRates";
+import { Badge } from "@/components/ui/Badge";
+
+const ACTIVITY_TAGS = [
+  { value: "sightseeing", label: "Sightseeing", icon: "🏛️" },
+  { value: "dining", label: "Dining", icon: "🍽️" },
+  { value: "adventure", label: "Adventure", icon: "🌋" },
+  { value: "culture", label: "Culture", icon: "🎭" },
+  { value: "relaxation", label: "Relaxation", icon: "🧘" },
+  { value: "shopping", label: "Shopping", icon: "🛍️" },
+  { value: "entertainment", label: "Entertainment", icon: "🍿" },
+  { value: "sport", label: "Sport", icon: "⚽" },
+  { value: "nature", label: "Nature", icon: "🌳" },
+  { value: "other", label: "Other", icon: "📍" },
+];
 
 interface TripOverviewProps {
   trip: Trip;
@@ -241,7 +255,8 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
                         <li key={f.id} className="group/item">
                           <div className="flex justify-between items-start mb-0.5">
                             <span className="text-sm font-semibold text-text-primary group-hover/item:text-sky-pastel-600 transition-colors">
-                              {f.segments[0].airline} {f.segments[0].flightNumber}
+                              {f.description ||
+                                `${f.segments[0].airline} ${f.segments[0].flightNumber}`}
                             </span>
                             {!f.isConfirmed && (
                               <span className="text-[9px] px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded-full font-bold uppercase tracking-tighter border border-amber-100">
@@ -250,6 +265,11 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
                             )}
                           </div>
                           <p className="text-[11px] text-text-secondary flex items-center gap-1">
+                            {f.description && (
+                              <span className="text-text-muted">
+                                {f.segments[0].airline} {f.segments[0].flightNumber} •{" "}
+                              </span>
+                            )}
                             {formatDate(f.segments[0].departureTime)}
                           </p>
                         </li>
@@ -322,6 +342,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
                               )}
                             </div>
                             <p className="text-[11px] text-text-secondary flex items-center gap-1">
+                              {a.country && <span className="font-semibold">{a.country}, </span>}
                               {a.location}
                             </p>
                             <p className="text-[10px] text-text-muted mt-0.5">
@@ -391,6 +412,22 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
                                 <span className="text-[9px] px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded-full font-bold uppercase tracking-tighter border border-amber-100">
                                   Planning
                                 </span>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 my-1">
+                              {a.country && (
+                                <span className="text-[9px] text-text-muted px-1.5 py-0.5 bg-surface-3 rounded border border-border">
+                                  {a.country}
+                                </span>
+                              )}
+                              {a.type && (
+                                <Badge
+                                  variant="default"
+                                  className="text-[9px] h-4 py-0 px-1.5 opacity-80"
+                                >
+                                  {ACTIVITY_TAGS.find((t) => t.value === a.type)?.icon}{" "}
+                                  {ACTIVITY_TAGS.find((t) => t.value === a.type)?.label}
+                                </Badge>
                               )}
                             </div>
                             <div className="flex items-center gap-2 text-[11px] text-text-secondary">
