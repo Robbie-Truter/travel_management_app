@@ -1,7 +1,18 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Map, Moon, Sun, Menu, X, Plane, Plus, Upload } from "lucide-react";
+import {
+  Map,
+  Moon,
+  Sun,
+  Menu,
+  X,
+  Plane,
+  Plus,
+  Upload,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useTheme } from "@/hooks/useTrips";
 import { cn } from "@/lib/utils";
@@ -9,6 +20,8 @@ import { cn } from "@/lib/utils";
 interface SidebarProps {
   onNewTrip: () => void;
   onImport: () => void;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
 export function AppShell({
@@ -21,19 +34,27 @@ export function AppShell({
   onImport: () => void;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
   return (
     <div className="flex h-screen overflow-hidden bg-surface-2">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-64 flex-col bg-surface border-r border-border shrink-0">
+      <motion.aside
+        initial={false}
+        animate={{ width: isCollapsed ? 80 : 256 }}
+        transition={{ type: "tween", duration: 0.2 }}
+        className="hidden md:flex flex-col bg-surface border-r border-border shrink-0 overflow-hidden"
+      >
         <SidebarContent
           onNewTrip={onNewTrip}
           onImport={onImport}
           theme={theme}
           toggleTheme={toggleTheme}
+          isCollapsed={isCollapsed}
+          onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
         />
-      </aside>
+      </motion.aside>
 
       {/* Mobile overlay */}
       <AnimatePresence>
@@ -59,6 +80,8 @@ export function AppShell({
                 theme={theme}
                 toggleTheme={toggleTheme}
                 onClose={() => setMobileOpen(false)}
+                isCollapsed={false}
+                onToggleCollapse={() => {}}
               />
             </motion.aside>
           </>
@@ -95,7 +118,13 @@ function SidebarContent({
   theme,
   toggleTheme,
   onClose,
-}: SidebarProps & { theme: string; toggleTheme: () => void; onClose?: () => void }) {
+  isCollapsed,
+  onToggleCollapse,
+}: SidebarProps & {
+  theme: string;
+  toggleTheme: () => void;
+  onClose?: () => void;
+}) {
   const navigate = useNavigate();
 
   const handleNewTrip = () => {
@@ -111,18 +140,23 @@ function SidebarContent({
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="flex items-center justify-between px-5 py-5 border-b border-border">
+      <div
+        className={cn(
+          "flex items-center border-b border-border min-h-[73px]",
+          isCollapsed ? "justify-center px-0" : "justify-between px-5 py-5",
+        )}
+      >
         <button
           onClick={() => {
             navigate("/");
             onClose?.();
           }}
-          className="flex items-center gap-2.5 cursor-pointer"
+          className="flex items-center gap-2.5 cursor-pointer overflow-hidden whitespace-nowrap"
         >
-          <div className="w-8 h-8 rounded-lg bg-lavender-500 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-lavender-500 flex items-center justify-center shrink-0">
             <Plane size={16} className="text-white" />
           </div>
-          <span className="font-bold text-lg text-text-primary">Wanderplan</span>
+          {!isCollapsed && <span className="font-bold text-lg text-text-primary">Wanderplan</span>}
         </button>
         {onClose && (
           <Button variant="ghost" size="icon-sm" onClick={onClose}>
@@ -130,14 +164,16 @@ function SidebarContent({
           </Button>
         )}
       </div>
+
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className={cn("flex-1 py-4 space-y-1", isCollapsed ? "px-2" : "px-3")}>
         <NavLink
           to="/"
           onClick={onClose}
           className={({ isActive }) =>
             cn(
-              "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+              "flex items-center rounded-lg text-sm font-medium transition-colors overflow-hidden whitespace-nowrap",
+              isCollapsed ? "justify-center p-2.5" : "gap-3 px-3 py-2",
               isActive
                 ? "bg-rose-pastel-300 text-white"
                 : "hover:bg-surface-3 hover:text-text-primary",
@@ -145,40 +181,79 @@ function SidebarContent({
           }
           end
         >
-          <Plane size={18} />
-          My Trips
+          <Plane size={isCollapsed ? 20 : 18} className="shrink-0" />
+          {!isCollapsed && <span>My Trips</span>}
         </NavLink>
         <NavLink
           to="/maps"
           onClick={onClose}
           className={({ isActive }) =>
             cn(
-              "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+              "flex items-center rounded-lg text-sm font-medium transition-colors overflow-hidden whitespace-nowrap",
+              isCollapsed ? "justify-center p-2.5" : "gap-3 px-3 py-2",
               isActive
                 ? "bg-rose-pastel-300 text-white"
                 : "hover:bg-surface-3 hover:text-text-primary",
             )
           }
         >
-          <Map size={18} />
-          My Maps
+          <Map size={isCollapsed ? 20 : 18} className="shrink-0" />
+          {!isCollapsed && <span>My Maps</span>}
         </NavLink>
       </nav>
 
       {/* Actions */}
-      <div className="px-3 py-4 space-y-2 border-t border-border">
-        <Button variant="primary" className="w-full" onClick={handleNewTrip}>
-          <Plus size={16} />
-          New Trip
+      <div className={cn("py-4 space-y-2 border-t border-border", isCollapsed ? "px-2" : "px-3")}>
+        <Button
+          variant="primary"
+          className={cn("w-full transition-all overflow-hidden", isCollapsed ? "px-0" : "")}
+          onClick={handleNewTrip}
+          title={isCollapsed ? "New Trip" : undefined}
+        >
+          <Plus size={16} className="shrink-0" />
+          {!isCollapsed && <span className="ml-2 whitespace-nowrap">New Trip</span>}
         </Button>
-        <Button variant="secondary" className="w-full" onClick={handleImport}>
-          <Upload size={16} />
-          Import Trip
+        <Button
+          variant="secondary"
+          className={cn("w-full transition-all overflow-hidden", isCollapsed ? "px-0" : "")}
+          onClick={handleImport}
+          title={isCollapsed ? "Import Trip" : undefined}
+        >
+          <Upload size={16} className="shrink-0" />
+          {!isCollapsed && <span className="ml-2 whitespace-nowrap">Import Trip</span>}
         </Button>
-        <Button variant="ghost" className="w-full justify-start" onClick={toggleTheme}>
-          {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-          {theme === "dark" ? "Light Mode" : "Dark Mode"}
+        <Button
+          variant="ghost"
+          className={cn(
+            "w-full justify-start transition-all overflow-hidden",
+            isCollapsed ? "px-0 justify-center" : "",
+          )}
+          onClick={toggleTheme}
+          title={isCollapsed ? (theme === "dark" ? "Light Mode" : "Dark Mode") : undefined}
+        >
+          {theme === "dark" ? (
+            <Sun size={16} className="shrink-0" />
+          ) : (
+            <Moon size={16} className="shrink-0" />
+          )}
+          {!isCollapsed && (
+            <span className="ml-2 whitespace-nowrap">
+              {theme === "dark" ? "Light Mode" : "Dark Mode"}
+            </span>
+          )}
         </Button>
+
+        {/* Collapse Toggle Button (Desktop only) */}
+        {!onClose && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-full mt-4 flex items-center justify-center text-text-secondary hover:text-text-primary"
+            onClick={onToggleCollapse}
+          >
+            {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          </Button>
+        )}
       </div>
     </div>
   );
