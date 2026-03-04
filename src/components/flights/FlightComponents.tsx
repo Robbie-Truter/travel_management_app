@@ -18,7 +18,7 @@ import { Modal, ConfirmDialog } from "@/components/ui/Modal";
 import { Input, Textarea } from "@/components/ui/Input";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
-import { formatDateTime, formatCurrency, calculateDuration } from "@/lib/utils";
+import { formatDateTime, formatCurrency, calculateDuration, cn } from "@/lib/utils";
 import { format } from "date-fns";
 import airportsData from "@/lib/airports.json";
 import type { Flight, Currency } from "@/db/types";
@@ -100,11 +100,18 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
 
             {/* Vertical Segments Timeline */}
             <div className="relative pl-6 ml-2 space-y-6">
-              <div className="absolute left-[7px] top-2 bottom-2 w-0.5 border-l-2 border-dashed border-lavender-200 dark:border-lavender-900/30" />
+              {flight.segments.length > 1 && (
+                <div className="absolute left-[7px] top-2 bottom-2 w-0.5 border-l-2 border-dashed border-lavender-200 dark:border-lavender-900/30" />
+              )}
 
               {flight.segments.map((seg, i) => (
                 <div key={i} className="relative">
-                  <div className="absolute -left-[23px] top-1.5 w-4 h-4 rounded-full bg-surface border-2 border-lavender-400 z-10" />
+                  <div
+                    className={cn(
+                      "absolute -left-[23px] top-1.5 w-4 h-4 rounded-full bg-surface border-lavender-400 z-10",
+                      flight.segments.length === 1 ? "border-none" : "border-2",
+                    )}
+                  />
 
                   <div className="flex justify-between items-start gap-4">
                     <div className="flex-1 min-w-0">
