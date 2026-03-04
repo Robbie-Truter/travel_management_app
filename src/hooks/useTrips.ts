@@ -36,6 +36,22 @@ export function useTrip(id: number | undefined) {
   return trip;
 }
 
+export function useSettings() {
+  const [homeCountry, setHomeCountry] = useState<string | null>(() => {
+    return localStorage.getItem("homeCountry");
+  });
+
+  useEffect(() => {
+    if (homeCountry) {
+      localStorage.setItem("homeCountry", homeCountry);
+    } else {
+      localStorage.removeItem("homeCountry");
+    }
+  }, [homeCountry]);
+
+  return { homeCountry, setHomeCountry };
+}
+
 export function useTheme() {
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     return (localStorage.getItem("theme") as "light" | "dark") ?? "light";

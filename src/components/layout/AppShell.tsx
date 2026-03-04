@@ -14,7 +14,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { useTheme } from "@/hooks/useTrips";
+import { CountrySelector } from "@/components/ui/CountrySelector";
+import { useTheme, useSettings } from "@/hooks/useTrips";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
@@ -22,6 +23,8 @@ interface SidebarProps {
   onImport: () => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  homeCountry: string | null;
+  setHomeCountry: (value: string) => void;
 }
 
 export function AppShell({
@@ -36,6 +39,7 @@ export function AppShell({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { homeCountry, setHomeCountry } = useSettings();
 
   return (
     <div className="flex h-screen overflow-hidden bg-surface-2">
@@ -53,6 +57,8 @@ export function AppShell({
           toggleTheme={toggleTheme}
           isCollapsed={isCollapsed}
           onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+          homeCountry={homeCountry}
+          setHomeCountry={setHomeCountry}
         />
       </motion.aside>
 
@@ -82,6 +88,8 @@ export function AppShell({
                 onClose={() => setMobileOpen(false)}
                 isCollapsed={false}
                 onToggleCollapse={() => {}}
+                homeCountry={homeCountry}
+                setHomeCountry={setHomeCountry}
               />
             </motion.aside>
           </>
@@ -120,6 +128,8 @@ function SidebarContent({
   onClose,
   isCollapsed,
   onToggleCollapse,
+  homeCountry,
+  setHomeCountry,
 }: SidebarProps & {
   theme: string;
   toggleTheme: () => void;
@@ -201,6 +211,11 @@ function SidebarContent({
           {!isCollapsed && <span>My Maps</span>}
         </NavLink>
       </nav>
+
+      {/* Country of Origin */}
+      <div className={cn("border-t border-border", isCollapsed ? "py-2" : "py-1")}>
+        <CountrySelector value={homeCountry} onChange={setHomeCountry} isCollapsed={isCollapsed} />
+      </div>
 
       {/* Actions */}
       <div className={cn("py-4 space-y-2 border-t border-border", isCollapsed ? "px-2" : "px-3")}>
