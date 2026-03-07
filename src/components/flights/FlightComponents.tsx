@@ -20,14 +20,21 @@ import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { formatDateTime, formatCurrency, calculateDuration, cn } from "@/lib/utils";
 import { format } from "date-fns";
-import airportsData from "@/lib/airports.json";
 import type { Flight, Currency } from "@/db/types";
 
-const airports = airportsData as { name: string; iata: string; city: string; country: string }[];
+interface Airport {
+  iata: string;
+  name: string;
+  city: string;
+  country: string;
+}
 
 const getFlagEmoji = (countryCode: string) => {
   if (!countryCode) return "✈️";
-  const codePoints = countryCode
+  // Convert 3-letter to 2-letter for flags if possible, or just use first 2
+  // For now, let's just use the first 2 letters of the ISO-3 code which often works or fallback
+  const code = countryCode.length === 3 ? countryCode.substring(0, 2) : countryCode;
+  const codePoints = code
     .toUpperCase()
     .split("")
     .map((char) => 127397 + char.charCodeAt(0));
@@ -276,6 +283,14 @@ export function FlightForm({
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [airports, setAirports] = useState<Airport[]>([]);
+
+  React.useEffect(() => {
+    fetch("/data/airports-search.json")
+      .then((res) => res.json())
+      .then((data) => setAirports(data))
+      .catch((err) => console.error("Failed to load airports:", err));
+  }, []);
 
   const addSegment = () => {
     const lastSegment = form.segments[form.segments.length - 1];
@@ -330,7 +345,7 @@ export function FlightForm({
       icon: getFlagEmoji(ap.country),
       country: ap.country,
     }));
-  }, []);
+  }, [airports]);
 
   const filteredArrivalOptions = React.useMemo(() => {
     return airportOptions;

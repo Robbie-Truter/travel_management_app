@@ -2,11 +2,15 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/db/database'
 import type { Flight } from '@/db/types'
 
-export function useFlights(tripId: number) {
+export function useFlights(tripId?: number) {
   const flights = useLiveQuery(
-    () => db.flights.where('tripId').equals(tripId).sortBy('departureTime'),
+    () => tripId 
+      ? db.flights.where('tripId').equals(tripId).sortBy('departureTime') 
+      : db.flights.toArray(),
     [tripId]
   )
+
+  const loading = flights === undefined;
 
   const addFlight = async (flight: Omit<Flight, 'id' | 'createdAt'>) => {
     return db.flights.add({ ...flight, createdAt: new Date().toISOString() })
@@ -24,5 +28,5 @@ export function useFlights(tripId: number) {
     return db.flights.update(id, { isConfirmed: true })
   }
 
-  return { flights: flights ?? [], addFlight, updateFlight, deleteFlight, confirmFlight }
+  return { flights: flights ?? [], loading, addFlight, updateFlight, deleteFlight, confirmFlight }
 }

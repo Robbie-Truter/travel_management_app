@@ -4,56 +4,152 @@ export interface GeoPoint {
   countryCode: string; // ISO 3166-1 alpha-3
 }
 
-export const GEO_MAPPING: Record<string, GeoPoint> = {
-  // Common home locations
-  "South Africa": { coordinates: [24.6727, -28.4793], name: "South Africa", countryCode: "ZAF" },
-  "Cape Town": { coordinates: [18.4241, -33.9249], name: "Cape Town", countryCode: "ZAF" },
-  Johannesburg: { coordinates: [28.0473, -26.2041], name: "Johannesburg", countryCode: "ZAF" },
-  ZAR: { coordinates: [24.6727, -28.4793], name: "South Africa", countryCode: "ZAF" },
-
-  // Popular destinations
-  Japan: { coordinates: [138.2529, 36.2048], name: "Japan", countryCode: "JPN" },
-  Tokyo: { coordinates: [139.6503, 35.6762], name: "Tokyo", countryCode: "JPN" },
-  Kyoto: { coordinates: [135.7681, 35.0116], name: "Kyoto", countryCode: "JPN" },
-  Osaka: { coordinates: [135.5023, 34.6937], name: "Osaka", countryCode: "JPN" },
-
-  USA: { coordinates: [-95.7129, 37.0902], name: "USA", countryCode: "USA" },
-  "New York": { coordinates: [-74.006, 40.7128], name: "New York", countryCode: "USA" },
-  "Los Angeles": { coordinates: [-118.2437, 34.0522], name: "Los Angeles", countryCode: "USA" },
-
-  UK: { coordinates: [-3.436, 55.3781], name: "UK", countryCode: "GBR" },
-  London: { coordinates: [-0.1278, 51.5074], name: "London", countryCode: "GBR" },
-
-  France: { coordinates: [2.2137, 46.2276], name: "France", countryCode: "FRA" },
-  Paris: { coordinates: [2.3522, 48.8566], name: "Paris", countryCode: "FRA" },
-
-  Italy: { coordinates: [12.5674, 41.8719], name: "Italy", countryCode: "ITA" },
-  Rome: { coordinates: [12.4964, 41.9028], name: "Rome", countryCode: "ITA" },
-
-  Germany: { coordinates: [10.4515, 51.1657], name: "Germany", countryCode: "DEU" },
-  Berlin: { coordinates: [13.405, 52.52], name: "Berlin", countryCode: "DEU" },
-
-  Spain: { coordinates: [-3.7492, 40.4637], name: "Spain", countryCode: "ESP" },
-  Madrid: { coordinates: [-3.7038, 40.4168], name: "Madrid", countryCode: "ESP" },
-
-  Australia: { coordinates: [133.7751, -25.2744], name: "Australia", countryCode: "AUS" },
-  Sydney: { coordinates: [151.2093, -33.8688], name: "Sydney", countryCode: "AUS" },
-
-  Thailand: { coordinates: [100.9925, 15.87], name: "Thailand", countryCode: "THA" },
-  Bangkok: { coordinates: [100.5018, 13.7563], name: "Bangkok", countryCode: "THA" },
+// Minimal hardcoded country-level fallbacks (since airports are specific points)
+const COUNTRY_FALLBACKS: Record<string, [number, number]> = {
+  "South Africa": [24.6727, -28.4793],
+  Japan: [138.2529, 36.2048],
+  USA: [-95.7129, 37.0902],
+  UK: [-3.436, 55.3781],
+  France: [2.2137, 46.2276],
+  Italy: [12.5674, 41.8719],
+  Germany: [10.4515, 51.1657],
+  Spain: [-3.7492, 40.4637],
+  Australia: [133.7751, -25.2744],
+  Thailand: [100.9925, 15.87],
 };
+
+let AIRPORT_COORDINATES: Record<string, [number, number]> = {};
+const NAME_TO_IATA: Record<string, { iata: string; country: string }> = {};
+const COUNTRY_COORDS: Record<string, [number, number]> = { ...COUNTRY_FALLBACKS };
+
+export async function loadAirportCoordinates() {
+  if (Object.keys(AIRPORT_COORDINATES).length > 0) return;
+  try {
+    const [coordRes, searchRes, countryRes] = await Promise.all([
+      fetch("/data/airports-coordinates.json"),
+      fetch("/data/airports-search.json"),
+      fetch("/data/countries-coordinates.json"),
+    ]);
+
+    AIRPORT_COORDINATES = await coordRes.json();
+    const searchData = (await searchRes.json()) as {
+      iata: string;
+      name: string;
+      city: string;
+      country: string;
+    }[];
+    const countryData = (await countryRes.json()) as {
+      alpha2: string;
+      alpha3: string;
+      latitude: number;
+      longitude: number;
+      name: string;
+    }[];
+
+    // Build smart lookups
+    searchData.forEach((ap) => {
+      const lowerCity = ap.city.toLowerCase();
+      const lowerName = ap.name.toLowerCase();
+      const lowerIata = ap.iata.toLowerCase();
+      const countryCode = ap.country;
+
+      // 1. Name to IATA mapping
+      if (!NAME_TO_IATA[lowerCity])
+        NAME_TO_IATA[lowerCity] = { iata: ap.iata, country: countryCode };
+      if (!NAME_TO_IATA[lowerName])
+        NAME_TO_IATA[lowerName] = { iata: ap.iata, country: countryCode };
+      if (!NAME_TO_IATA[lowerIata])
+        NAME_TO_IATA[lowerIata] = { iata: ap.iata, country: countryCode };
+
+      // 2. Initial Country Coordinate fallback (using airport)
+      if (!COUNTRY_COORDS[countryCode] && AIRPORT_COORDINATES[ap.iata]) {
+        const [lat, lon] = AIRPORT_COORDINATES[ap.iata];
+        COUNTRY_COORDS[countryCode] = [lon, lat]; // Standardize to [lon, lat] for COUNTRY_COORDS
+      }
+    });
+
+    // 3. Overwrite with better Country Centroids
+    countryData.forEach((c) => {
+      COUNTRY_COORDS[c.alpha3] = [c.longitude, c.latitude];
+      COUNTRY_COORDS[c.alpha2] = [c.longitude, c.latitude];
+      COUNTRY_COORDS[c.name.toLowerCase()] = [c.longitude, c.latitude];
+    });
+  } catch (err) {
+    console.error("Failed to load geo data:", err);
+  }
+}
 
 export function getPointForDestination(dest: string): GeoPoint | undefined {
   if (!dest) return undefined;
 
-  // Try exact match
-  if (GEO_MAPPING[dest]) return GEO_MAPPING[dest];
+  let normalized = dest.trim();
+  
+  // Try to extract IATA code from brackets if present (e.g. "London (LHR)")
+  const iataMatch = normalized.match(/\(([A-Z]{3})\)/);
+  if (iataMatch) {
+    normalized = iataMatch[1];
+  } else if (normalized.length > 3 && normalized.includes("-")) {
+    // Handle "LHR - London" format
+    const parts = normalized.split("-");
+    const possibleIata = parts[0].trim();
+    if (possibleIata.length === 3) normalized = possibleIata;
+  }
 
-  // Try case-insensitive search
-  const lowerDest = dest.toLowerCase();
-  for (const key in GEO_MAPPING) {
-    if (key.toLowerCase() === lowerDest) return GEO_MAPPING[key];
-    if (lowerDest.includes(key.toLowerCase())) return GEO_MAPPING[key];
+  const lower = normalized.toLowerCase();
+
+  // 1. Direct IATA code match (fastest)
+  if (normalized.length === 3 && AIRPORT_COORDINATES[normalized.toUpperCase()]) {
+    const iata = normalized.toUpperCase();
+    const [lat, lon] = AIRPORT_COORDINATES[iata];
+    const country = NAME_TO_IATA[iata.toLowerCase()]?.country || "";
+    return {
+      coordinates: [lon, lat],
+      name: iata,
+      countryCode: country,
+    };
+  }
+
+  // 2. City or Airport Name match
+  if (NAME_TO_IATA[lower]) {
+    const info = NAME_TO_IATA[lower];
+    const coords = AIRPORT_COORDINATES[info.iata];
+    if (coords) {
+      return {
+        coordinates: [coords[1], coords[0]],
+        name: normalized,
+        countryCode: info.country,
+      };
+    }
+  }
+
+  // 3. Country-level lookup (from our new centroid data)
+  if (COUNTRY_COORDS[normalized.toUpperCase()]) {
+    const coords = COUNTRY_COORDS[normalized.toUpperCase()];
+    return {
+      coordinates: [coords[0], coords[1]],
+      name: normalized,
+      countryCode: normalized.toUpperCase(),
+    };
+  }
+
+  if (COUNTRY_COORDS[lower]) {
+    const coords = COUNTRY_COORDS[lower];
+    return {
+      coordinates: [coords[0], coords[1]],
+      name: normalized,
+      countryCode: "", 
+    };
+  }
+
+  // Partial match for country names
+  for (const [key, coords] of Object.entries(COUNTRY_COORDS)) {
+    if (key.length > 3 && (lower.includes(key) || key.includes(lower))) {
+      return {
+        coordinates: [coords[0], coords[1]],
+        name: normalized,
+        countryCode: "",
+      };
+    }
   }
 
   return undefined;
