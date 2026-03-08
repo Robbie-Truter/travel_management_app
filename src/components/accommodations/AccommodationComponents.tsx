@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   Hotel,
@@ -9,17 +9,20 @@ import {
   Edit,
   Trash2,
   CheckCircle,
+  Image as ImageIcon,
+  X,
+  Phone,
+  HelpCircle,
 } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Modal, ConfirmDialog } from "@/components/ui/Modal";
 import { Input, Textarea } from "@/components/ui/Input";
-import { formatDate, formatCurrency } from "@/lib/utils";
+import { formatDateTime, formatCurrency, fileToBase64 } from "@/lib/utils";
 import type { Accommodation, Currency } from "@/db/types";
 import { SearchableSelect } from "../ui/SearchableSelect";
-import { DateRangePicker } from "@/components/ui/DateRangePicker";
-import { format, parseISO } from "date-fns";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 const TYPE_OPTIONS = [
   { value: "hotel", label: "Hotel" },
@@ -31,13 +34,33 @@ const TYPE_OPTIONS = [
 ];
 
 const PLATFORM_OPTIONS = [
-  { value: "booking", label: "Booking.com", icon: "🏨" },
-  { value: "airbnb", label: "Airbnb", icon: "🏠" },
-  { value: "expedia", label: "Expedia", icon: "✈️" },
-  { value: "agoda", label: "Agoda", icon: "🏢" },
-  { value: "hotels", label: "Hotels.com", icon: "🏨" },
-  { value: "direct", label: "Direct", icon: "📞" },
-  { value: "other", label: "Other", icon: "❓" },
+  {
+    value: "booking",
+    label: "Booking.com",
+    icon: <img src="https://www.booking.com/favicon.ico" className="w-4 h-4 rounded-sm" />,
+  },
+  {
+    value: "airbnb",
+    label: "Airbnb",
+    icon: <img src="https://www.airbnb.com/favicon.ico" className="w-4 h-4 rounded-sm" />,
+  },
+  {
+    value: "expedia",
+    label: "Expedia",
+    icon: <img src="https://www.expedia.com/favicon.ico" className="w-4 h-4 rounded-sm" />,
+  },
+  {
+    value: "agoda",
+    label: "Agoda",
+    icon: <img src="https://www.agoda.com/favicon.ico" className="w-4 h-4 rounded-sm" />,
+  },
+  {
+    value: "hotels",
+    label: "Hotels.com",
+    icon: <img src="https://www.hotels.com/favicon.ico" className="w-4 h-4 rounded-sm" />,
+  },
+  { value: "direct", label: "Direct", icon: <Phone size={14} className="text-slate-400" /> },
+  { value: "other", label: "Other", icon: <HelpCircle size={14} className="text-slate-400" /> },
 ];
 
 interface AccommodationCardProps {
@@ -64,7 +87,12 @@ export function AccommodationCard({ acc, onEdit, onDelete, onConfirm }: Accommod
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
       >
-        <Card className={acc.isConfirmed ? "border-sage-500 dark:border-sage-500" : ""}>
+        <Card hover className={acc.isConfirmed ? "border-sage-500 dark:border-sage-500" : ""}>
+          {acc.image && (
+            <div className="rounded-t-xl h-40 w-full overflow-hidden border-b">
+              <img src={acc.image} alt={acc.name} className="w-full h-full object-cover" />
+            </div>
+          )}
           <CardContent className="pt-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2 min-w-0">
@@ -109,7 +137,7 @@ export function AccommodationCard({ acc, onEdit, onDelete, onConfirm }: Accommod
               <div className="flex items-center gap-1.5">
                 <Calendar size={13} />
                 <span>
-                  {formatDate(acc.checkIn)} → {formatDate(acc.checkOut)}
+                  {formatDateTime(acc.checkIn)} → {formatDateTime(acc.checkOut)}
                 </span>
                 <span className="text-text-muted">
                   ({nights} night{nights > 1 ? "s" : ""})
@@ -129,7 +157,7 @@ export function AccommodationCard({ acc, onEdit, onDelete, onConfirm }: Accommod
                     onClick={(e) => e.stopPropagation()}
                   >
                     <ExternalLink size={12} />
-                    Book
+                    View Booking
                   </a>
                 )}
               </div>
@@ -209,10 +237,12 @@ export function AccommodationForm({
     currency: initial?.currency ?? "USD",
     bookingLink: initial?.bookingLink ?? "",
     notes: initial?.notes ?? "",
+    image: initial?.image ?? "",
     isConfirmed: initial?.isConfirmed ?? false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const CURRENCIES = [
     { value: "USD", label: "USD" },
@@ -221,6 +251,13 @@ export function AccommodationForm({
   ];
 
   const set = (k: string, v: string | boolean) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const uploadedFile = await fileToBase64(file);
+    set("image", uploadedFile.base64);
+  };
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -252,6 +289,7 @@ export function AccommodationForm({
       currency: form.currency as Currency,
       bookingLink: form.bookingLink || undefined,
       notes: form.notes || undefined,
+      image: form.image || undefined,
       isConfirmed: form.isConfirmed,
     });
     setSaving(false);
@@ -276,6 +314,48 @@ export function AccommodationForm({
       }
     >
       <div className="space-y-4">
+        <div>
+          <label className="text-sm font-medium text-text-primary block mb-1.5">
+            Accommodation Image
+          </label>
+          <div
+            className="relative h-32 rounded-xl border-2 border-dashed border-border overflow-hidden cursor-pointer hover:border-lavender-400 transition-colors group"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {form.image ? (
+              <>
+                <img src={form.image} alt="Accommodation" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                  <span className="opacity-0 group-hover:opacity-100 text-white text-sm font-medium">
+                    Change Image
+                  </span>
+                </div>
+                <button
+                  className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    set("image", "");
+                  }}
+                >
+                  <X size={12} />
+                </button>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full gap-2 text-text-muted">
+                <ImageIcon size={24} />
+                <span className="text-sm">Click to upload an image</span>
+              </div>
+            )}
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageUpload}
+          />
+        </div>
+
         <Input
           id="acc-name"
           label="Name"
@@ -319,21 +399,22 @@ export function AccommodationForm({
           onChange={(e) => set("location", e.target.value)}
           error={errors.location}
         />
-        <DateRangePicker
-          label="Stay Duration"
-          value={{
-            from: form.checkIn ? parseISO(form.checkIn) : undefined,
-            to: form.checkOut ? parseISO(form.checkOut) : undefined,
-          }}
-          onChange={(range) => {
-            setForm((f) => ({
-              ...f,
-              checkIn: range.from ? format(range.from, "yyyy-MM-dd") : "",
-              checkOut: range.to ? format(range.to, "yyyy-MM-dd") : "",
-            }));
-          }}
-          error={errors.checkIn || errors.checkOut}
-        />
+        <div className="grid grid-cols-2 gap-3">
+          <DatePicker
+            label="Check-in"
+            showTime
+            value={form.checkIn}
+            onChange={(date) => set("checkIn", date ? date.toISOString() : "")}
+            error={errors.checkIn}
+          />
+          <DatePicker
+            label="Check-out"
+            showTime
+            value={form.checkOut}
+            onChange={(date) => set("checkOut", date ? date.toISOString() : "")}
+            error={errors.checkOut}
+          />
+        </div>
         <div className="grid grid-cols-3 gap-3">
           <div className="col-span-2">
             <Input
@@ -411,18 +492,39 @@ export function AccommodationComparison({
           </thead>
           <tbody className="divide-y divide-border">
             {[
+              {
+                label: "Image",
+                render: (a: Accommodation) =>
+                  a.image ? (
+                    <img
+                      src={a.image}
+                      alt={a.name}
+                      className="w-16 h-12 object-cover rounded shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-16 h-12 bg-surface-3 rounded flex items-center justify-center text-text-muted">
+                      <ImageIcon size={16} />
+                    </div>
+                  ),
+              },
               { label: "Type", render: (a: Accommodation) => a.type },
               {
                 label: "Platform",
                 render: (a: Accommodation) => {
                   const p = PLATFORM_OPTIONS.find((opt) => opt.value === a.platform);
-                  return p ? `${p.icon} ${p.label}` : (a.platform ?? "—");
+                  if (!p) return a.platform ?? "—";
+                  return (
+                    <div className="flex items-center gap-2">
+                      {p.icon}
+                      <span>{p.label}</span>
+                    </div>
+                  );
                 },
               },
               { label: "Country", render: (a: Accommodation) => a.country ?? "—" },
               { label: "Location", render: (a: Accommodation) => a.location },
-              { label: "Check-in", render: (a: Accommodation) => formatDate(a.checkIn) },
-              { label: "Check-out", render: (a: Accommodation) => formatDate(a.checkOut) },
+              { label: "Check-in", render: (a: Accommodation) => formatDateTime(a.checkIn) },
+              { label: "Check-out", render: (a: Accommodation) => formatDateTime(a.checkOut) },
               { label: "Price", render: (a: Accommodation) => formatCurrency(a.price, a.currency) },
               {
                 label: "Status",

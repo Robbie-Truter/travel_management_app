@@ -56,6 +56,7 @@ export interface Accommodation {
   currency: Currency;
   bookingLink?: string;
   notes?: string;
+  image?: string; // base64 encoded image
   isConfirmed: boolean;
   createdAt: string;
 }
