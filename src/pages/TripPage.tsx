@@ -348,7 +348,7 @@ export function TripPage() {
                     actionLabel="Add Stay"
                   />
                 ) : (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-4 max-w-4xl mx-auto">
                     <AnimatePresence>
                       {accommodations.map((a) => (
                         <AccommodationCard
