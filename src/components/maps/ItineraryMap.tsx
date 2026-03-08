@@ -7,17 +7,101 @@ import {
   Sphere,
   Graticule,
   ZoomableGroup,
+  useMapContext,
 } from "react-simple-maps";
 import { getPointForDestination, type GeoPoint, loadAirportCoordinates } from "@/lib/geoData";
 import type { Trip, Flight } from "@/db/types";
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+
+const ROUTE_COLORS = [
+  "#0ea5e9", // sky-500
+  "#f43f5e", // rose-500
+  "#8b5cf6", // violet-500
+  "#10b981", // emerald-500
+  "#f59e0b", // amber-500
+  "#6366f1", // indigo-500
+  "#ec4899", // pink-500
+  "#06b6d4", // cyan-500
+  "#84cc16", // lime-500
+  "#f97316", // orange-500
+];
 
 interface ItineraryMapProps {
   trips: Trip[];
   flights: Flight[];
   homeCountry: string | null;
+}
+
+function AnimatedConnection({
+  from,
+  to,
+  index,
+}: {
+  from: [number, number];
+  to: [number, number];
+  index: number;
+}) {
+  const { projection } = useMapContext();
+
+  if (!projection) return null;
+
+  const p1 = projection(from);
+  const p2 = projection(to);
+
+  if (!p1 || !p2) return null;
+
+  const [x1, y1] = p1;
+  const [x2, y2] = p2;
+
+  // Calculate angle for the plane icon
+  const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+
+  // Calculate duration based on distance
+  const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+  const duration = Math.max(3, distance / 20);
+
+  const color = ROUTE_COLORS[index % ROUTE_COLORS.length];
+
+  return (
+    <g>
+      <Line
+        from={from}
+        to={to}
+        stroke={color}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeDasharray="4 4"
+        className="transition-colors cursor-pointer"
+      />
+      <motion.g
+        animate={{
+          transform: [
+            `translate(${x1}px, ${y1}px)`,
+            `translate(${(x1 + x2) / 2}px, ${(y1 + y2) / 2 - 20}px)`,
+            `translate(${x2}px, ${y2}px)`,
+          ],
+        }}
+        transition={{
+          duration,
+          ease: "linear",
+          delay: index * 2,
+        }}
+      >
+        <text
+          fontSize={10}
+          textAnchor="middle"
+          alignmentBaseline="middle"
+          transform={`rotate(${angle + 45})`}
+          className="select-none pointer-events-none drop-shadow-sm"
+        >
+          ✈️
+        </text>
+      </motion.g>
+    </g>
+  );
 }
 
 export function ItineraryMap({ trips, flights, homeCountry }: ItineraryMapProps) {
@@ -102,6 +186,7 @@ export function ItineraryMap({ trips, flights, homeCountry }: ItineraryMapProps)
                     visitedCountryCodes.has(geo.id) ||
                     visitedCountryCodes.has(geo.properties.name) ||
                     visitedCountryCodes.has(geo.properties.iso_a3);
+
                   const isHome =
                     geo.id === homePoint?.countryCode ||
                     geo.properties.iso_a3 === homePoint?.countryCode;
@@ -112,7 +197,7 @@ export function ItineraryMap({ trips, flights, homeCountry }: ItineraryMapProps)
                       geography={geo}
                       fill={isHome ? "#8b5cf6" : isVisited ? "#fda4af" : "#f1f5f9"}
                       stroke={isVisited ? "#ffffff" : "#D1D5DB"}
-                      strokeWidth={0.5}
+                      strokeWidth={1}
                       className="outline-none transition-colors hover:fill-lavender-200 cursor-pointer"
                       onMouseEnter={() => {
                         setTooltipContent(geo.properties.name);
@@ -128,22 +213,19 @@ export function ItineraryMap({ trips, flights, homeCountry }: ItineraryMapProps)
 
             {/* Connections */}
             {connections.map((link, i) => (
-              <Line
-                key={`connection-${i}`}
-                from={link.from}
-                to={link.to}
-                stroke="#0c90e7"
-                strokeWidth={2.5}
-                strokeLinecap="round"
-                strokeDasharray="6 4"
-                className="hover:stroke-sky-pastel-600 transition-colors cursor-pointer"
-              />
+              <AnimatedConnection key={`connection-${i}`} from={link.from} to={link.to} index={i} />
             ))}
 
             {/* Home Marker */}
             {homePoint && (
               <Marker coordinates={homePoint.coordinates}>
-                <circle r={4} fill="#8b5cf6" stroke="#fff" strokeWidth={2} />
+                <circle
+                  r={4}
+                  fill="#8b5cf6"
+                  stroke="#fff"
+                  strokeWidth={2}
+                  className="animate-pulse"
+                />
                 <text
                   textAnchor="middle"
                   y={-10}
@@ -154,34 +236,40 @@ export function ItineraryMap({ trips, flights, homeCountry }: ItineraryMapProps)
                     fontWeight: "bold",
                   }}
                 >
-                  {homePoint.name.toUpperCase()}
+                  HOME
                 </text>
               </Marker>
             )}
 
             {/* Trip Markers */}
-            {displayPoints.map((point, i) => (
-              <Marker key={i} coordinates={point.coordinates}>
-                <circle r={3} fill="#f43f5e" stroke="#fff" strokeWidth={1.5} />
-                <text
-                  textAnchor="middle"
-                  y={10}
-                  style={{
-                    fontFamily: "system-ui",
-                    fill: "#be123c",
-                    fontSize: "7px",
-                    fontWeight: "600",
-                  }}
-                >
-                  {point.name}
-                </text>
-              </Marker>
-            ))}
+            {displayPoints.map((point, i) => {
+              const color = ROUTE_COLORS[i % ROUTE_COLORS.length];
+              return (
+                <Marker key={i} coordinates={point.coordinates}>
+                  <circle r={3} fill={color} stroke="#fff" strokeWidth={1.5} />
+                  <text
+                    textAnchor="middle"
+                    y={10}
+                    style={{
+                      fontFamily: "system-ui",
+                      fill: color,
+                      fontSize: "7px",
+                      fontWeight: "700",
+                      stroke: "#fff",
+                      strokeWidth: "1px",
+                      paintOrder: "stroke",
+                    }}
+                  >
+                    {point.countryCode}-{point.name}
+                  </text>
+                </Marker>
+              );
+            })}
           </ZoomableGroup>
         </ComposableMap>
 
         {/* Zoom Instructions */}
-        <div className="absolute bottom-4 right-4 bg-surface/80 backdrop-blur-sm border border-border px-3 py-1.5 rounded-lg text-[10px] font-bold text-text-secondary opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-wider pointer-events-none">
+        <div className="absolute bottom-4 right-4 bg-surface/80 backdrop-blur-sm border border-border px-3 py-1.5 rounded-lg text-[10px] font-bold text-text-secondary uppercase tracking-wider pointer-events-none">
           Scroll to Zoom • Click & Drag to Pan
         </div>
 
