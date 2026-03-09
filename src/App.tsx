@@ -4,6 +4,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { TripPage } from "@/pages/TripPage";
 import { MapsPage } from "@/pages/MapsPage";
+import { BrochurePage } from "@/components/brochure/BrochurePage";
 import { TripForm } from "@/components/trips/TripForm";
 import { useTrips } from "@/hooks/useTrips";
 import { importTripFromJSON } from "@/lib/export";
@@ -35,6 +36,7 @@ function AppContent() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/trips/:tripId" element={<TripPage />} />
         <Route path="/maps" element={<MapsPage />} />
+        <Route path="/brochure" element={<BrochurePage />} />
       </Routes>
 
       <TripForm open={newTripOpen} onClose={() => setNewTripOpen(false)} onSave={handleNewTrip} />

@@ -12,6 +12,7 @@ import {
   Upload,
   ChevronLeft,
   ChevronRight,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { CountrySelector } from "@/components/ui/CountrySelector";
@@ -209,6 +210,22 @@ function SidebarContent({
         >
           <Map size={isCollapsed ? 20 : 18} className="shrink-0" />
           {!isCollapsed && <span>My Maps</span>}
+        </NavLink>
+        <NavLink
+          to="/brochure"
+          onClick={onClose}
+          className={({ isActive }) =>
+            cn(
+              "flex items-center rounded-lg text-sm font-medium transition-colors overflow-hidden whitespace-nowrap",
+              isCollapsed ? "justify-center p-2.5" : "gap-3 px-3 py-2",
+              isActive
+                ? "bg-rose-pastel-300 text-white"
+                : "hover:bg-surface-3 hover:text-text-primary",
+            )
+          }
+        >
+          <FileText size={isCollapsed ? 20 : 18} className="shrink-0" />
+          {!isCollapsed && <span>Create Brochure</span>}
         </NavLink>
       </nav>
 
