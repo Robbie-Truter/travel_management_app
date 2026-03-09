@@ -18,6 +18,7 @@ import { AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Badge, statusLabels } from "@/components/ui/Badge";
 import { useTrip } from "@/hooks/useTrips";
+import { useDestinations } from "@/hooks/useDestinations";
 import { useFlights } from "@/hooks/useFlights";
 import { useAccommodations } from "@/hooks/useAccommodations";
 import { useActivities } from "@/hooks/useActivities";
@@ -27,6 +28,7 @@ import {
   AccommodationForm,
   AccommodationComparison,
 } from "@/components/accommodations/AccommodationComponents";
+import { DestinationCard, DestinationForm } from "@/components/destinations/DestinationComponents";
 import { ActivityCard, ActivityForm } from "@/components/activities/ActivityComponents";
 import { PlannerTimeline } from "@/components/planner/PlannerTimeline";
 import { NoteEditor } from "@/components/notes/NoteEditor";
@@ -34,11 +36,12 @@ import { TripOverview } from "@/components/overview/TripOverview";
 import { TripDestinations } from "@/components/trips/TripDestinations";
 import { formatDate, tripDuration } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import type { Flight, Accommodation, Activity, Trip, TripStatus } from "@/db/types";
+import type { Flight, Accommodation, Activity, Trip, TripStatus, Destination } from "@/db/types";
 import { DocumentUpload } from "@/components/documents/DocumentsPage";
 
 type Tab =
   | "overview"
+  | "countries"
   | "destinations"
   | "flights"
   | "accommodations"
@@ -49,6 +52,7 @@ type Tab =
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Overview", icon: LayoutGrid },
+  { id: "countries", label: "Countries", icon: MapPin },
   { id: "destinations", label: "Destinations", icon: MapPin },
   { id: "flights", label: "Flights", icon: Plane },
   { id: "accommodations", label: "Stays", icon: Hotel },
@@ -64,6 +68,12 @@ export function TripPage() {
   const id = Number(tripId);
   const trip = useTrip(id);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+
+  // Destinations
+  const { destinations, addDestination, updateDestination, deleteDestination } =
+    useDestinations(id);
+  const [destFormOpen, setDestFormOpen] = useState(false);
+  const [editingDest, setEditingDest] = useState<Destination | undefined>();
 
   // Flights
   const { flights, addFlight, updateFlight, deleteFlight, confirmFlight } = useFlights(id);
@@ -206,11 +216,11 @@ export function TripPage() {
             )}
 
             {/* DESTINATIONS (managed in Overview/Separate) */}
-            {activeTab === "destinations" && (
+            {activeTab === "countries" && (
               <div className="p-4 bg-surface border border-border rounded-xl">
                 <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
                   <MapPin size={20} className="text-lavender-500" />
-                  Trip Destinations
+                  Trip Countries
                 </h2>
                 <p className="text-sm text-text-secondary mb-6">
                   Manage the countries you'll be visiting during this trip.
@@ -219,9 +229,81 @@ export function TripPage() {
                 {/* For now, let's keep it in Overview as requested, but maybe a dedicated component is better */}
                 <TripDestinations
                   trip={trip as Trip}
+                  destinations={destinations}
                   flights={flights}
                   accommodations={accommodations}
                   activities={activities}
+                />
+              </div>
+            )}
+
+            {/* DESTINATIONS (CITIES/TOWNS) */}
+            {activeTab === "destinations" && (
+              <div className="p-4 bg-surface border border-border rounded-xl">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="font-bold text-lg flex items-center gap-2">
+                    <MapPin size={20} className="text-lavender-500" />
+                    Destinations{" "}
+                    <span className="text-text-muted font-normal text-sm">
+                      ({destinations.length})
+                    </span>
+                  </h2>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      setEditingDest(undefined);
+                      setDestFormOpen(true);
+                    }}
+                  >
+                    <Plus size={14} />
+                    Add Destination
+                  </Button>
+                </div>
+                <p className="text-sm text-text-secondary mb-6">
+                  Manage the cities and towns you'll be visiting during this trip.
+                </p>
+                {destinations.length === 0 ? (
+                  <EmptyState
+                    icon={MapPin}
+                    label="No destinations yet"
+                    action={() => setDestFormOpen(true)}
+                    actionLabel="Add Destination"
+                  />
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <AnimatePresence>
+                      {destinations.map((d) => (
+                        <DestinationCard
+                          key={d.id}
+                          destination={d}
+                          onEdit={(dest) => {
+                            setEditingDest(dest);
+                            setDestFormOpen(true);
+                          }}
+                          onDelete={deleteDestination}
+                        />
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                )}
+                <DestinationForm
+                  key={editingDest?.id ?? "new"}
+                  open={destFormOpen}
+                  onClose={() => {
+                    setDestFormOpen(false);
+                    setEditingDest(undefined);
+                  }}
+                  onSave={
+                    editingDest?.id
+                      ? async (data) => {
+                          await updateDestination(editingDest.id!, data);
+                        }
+                      : addDestination
+                  }
+                  initial={editingDest}
+                  tripId={id}
+                  availableCountries={trip.destinations}
                 />
               </div>
             )}

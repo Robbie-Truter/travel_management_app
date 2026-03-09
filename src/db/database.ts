@@ -1,9 +1,10 @@
 import type { Table } from "dexie";
 import Dexie from "dexie";
-import type { Trip, Flight, Accommodation, Activity, Note, Document } from "./types";
+import type { Trip, Flight, Accommodation, Activity, Note, Document, Destination } from "./types";
 
 export class TravelDB extends Dexie {
   trips!: Table<Trip>;
+  destinations!: Table<Destination>;
   flights!: Table<Flight>;
   accommodations!: Table<Accommodation>;
   activities!: Table<Activity>;
@@ -131,6 +132,10 @@ export class TravelDB extends Dexie {
           }
         }
       });
+
+    this.version(5).stores({
+      destinations: "++id, tripId, country, name",
+    });
   }
 }
 

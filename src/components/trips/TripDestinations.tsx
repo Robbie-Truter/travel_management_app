@@ -5,12 +5,13 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { COUNTRIES } from "@/lib/countries";
 import { useTrips } from "@/hooks/useTrips";
-import type { Trip, Flight, Accommodation, Activity } from "@/db/types";
+import type { Trip, Flight, Accommodation, Activity, Destination } from "@/db/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plane, Hotel, Compass, ChevronRight } from "lucide-react";
 
 interface TripDestinationsProps {
   trip: Trip;
+  destinations: Destination[];
   flights: Flight[];
   accommodations: Accommodation[];
   activities: Activity[];
@@ -18,6 +19,7 @@ interface TripDestinationsProps {
 
 export function TripDestinations({
   trip,
+  destinations,
   flights,
   accommodations,
   activities,
@@ -104,6 +106,8 @@ export function TripDestinations({
             const country = COUNTRIES.find((c) => c.name === countryName);
             const flagCode = country?.code.toLowerCase();
 
+            const countryDestinations =
+              destinations?.filter((d) => d.country?.trim() === countryName) || [];
             const countryFlights = flights.filter((f) => f.country?.trim() === countryName);
             const countryStays = accommodations.filter((a) => a.country?.trim() === countryName);
             const countryActivities = activities.filter((a) => a.country?.trim() === countryName);
@@ -151,6 +155,29 @@ export function TripDestinations({
 
                     {/* Content */}
                     <div className="p-5 space-y-6">
+                      {/* Destinations (Cities/Towns) */}
+                      <div>
+                        <h5 className="text-[10px] font-black uppercase tracking-widest text-lavender-600 mb-3 flex items-center gap-1.5">
+                          <MapPin size={12} />
+                          Destinations ({countryDestinations.length})
+                        </h5>
+                        {countryDestinations.length > 0 ? (
+                          <ul className="space-y-2">
+                            {countryDestinations.map((d) => (
+                              <li
+                                key={d.id}
+                                className="text-xs flex items-center justify-between text-text-secondary py-1 border-b border-border/30 last:border-0"
+                              >
+                                <span className="truncate font-medium flex-1">{d.name}</span>
+                                <ChevronRight size={10} className="text-text-muted shrink-0" />
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-[10px] text-text-muted italic">No destinations yet</p>
+                        )}
+                      </div>
+
                       {/* Flights */}
                       <div>
                         <h5 className="text-[10px] font-black uppercase tracking-widest text-sky-pastel-600 mb-3 flex items-center gap-1.5">

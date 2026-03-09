@@ -15,6 +15,17 @@ export interface Trip {
   updatedAt: string;
 }
 
+export interface Destination {
+  id?: number;
+  tripId: number;
+  name: string;
+  country: string;
+  image?: string; // base64 encoded image
+  notes?: string;
+  order?: number;
+  createdAt: string;
+}
+
 export interface FlightSegment {
   airline: string;
   flightNumber: string;
