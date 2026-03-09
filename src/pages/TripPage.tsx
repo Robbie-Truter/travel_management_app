@@ -503,12 +503,13 @@ export function TripPage() {
                     actionLabel="Add Activity"
                   />
                 ) : (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-4 max-w-4xl mx-auto">
                     <AnimatePresence>
                       {activities.map((a) => (
                         <ActivityCard
                           key={a.id}
                           activity={a}
+                          destinationName={destinations.find((d) => d.id === a.destinationId)?.name}
                           onEdit={(act: Activity) => {
                             setEditingAct(act);
                             setActFormOpen(true);
@@ -537,6 +538,7 @@ export function TripPage() {
                   initial={editingAct}
                   tripId={id}
                   destinations={trip.destinations}
+                  allDestinations={destinations}
                 />
               </div>
             )}

@@ -87,6 +87,8 @@ export interface Activity {
   name: string;
   currency: Currency;
   isConfirmed: boolean;
+  destinationId?: number;
+  image?: string; // base64 encoded image
   order: number;
   createdAt: string;
 }
