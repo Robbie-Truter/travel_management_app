@@ -13,10 +13,14 @@ import {
   BarChart2,
   MapPin,
   LayoutGrid,
+  Filter,
+  X,
 } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Badge, statusLabels } from "@/components/ui/Badge";
+import { Input } from "@/components/ui/Input";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { useTrip } from "@/hooks/useTrips";
 import { useDestinations } from "@/hooks/useDestinations";
 import { useFlights } from "@/hooks/useFlights";
@@ -30,11 +34,12 @@ import {
 } from "@/components/accommodations/AccommodationComponents";
 import { DestinationCard, DestinationForm } from "@/components/destinations/DestinationComponents";
 import { ActivityCard, ActivityForm } from "@/components/activities/ActivityComponents";
+import { ACTIVITY_TAGS } from "@/components/activities/activity-types";
 import { PlannerTimeline } from "@/components/planner/PlannerTimeline";
 import { NoteEditor } from "@/components/notes/NoteEditor";
 import { TripOverview } from "@/components/overview/TripOverview";
 import { TripDestinations } from "@/components/trips/TripDestinations";
-import { formatDate, tripDuration } from "@/lib/utils";
+import { formatDate, tripDuration, getCountryFlag } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { Flight, Accommodation, Activity, Trip, TripStatus, Destination } from "@/db/types";
 import { DocumentUpload } from "@/components/documents/DocumentsPage";
@@ -97,6 +102,23 @@ export function TripPage() {
   const { activities, addActivity, updateActivity, deleteActivity } = useActivities(id);
   const [actFormOpen, setActFormOpen] = useState(false);
   const [editingAct, setEditingAct] = useState<Activity | undefined>();
+
+  // Activity Filters
+  const [actFilterName, setActFilterName] = useState("");
+  const [actFilterCity, setActFilterCity] = useState("all");
+  const [actFilterType, setActFilterType] = useState<string>("all");
+  const [actFilterDate, setActFilterDate] = useState("");
+
+  const filteredActivities = activities.filter((a) => {
+    const matchesName =
+      !actFilterName || a.name.toLowerCase().includes(actFilterName.toLowerCase());
+
+    const matchesCity = actFilterCity === "all" || a.destinationId?.toString() === actFilterCity;
+    const matchesType = actFilterType === "all" || a.type === actFilterType;
+    const matchesDate = !actFilterDate || a.date === actFilterDate;
+
+    return matchesName && matchesCity && matchesType && matchesDate;
+  });
 
   if (!trip) {
     return (
@@ -476,36 +498,132 @@ export function TripPage() {
             {/* ACTIVITIES */}
             {activeTab === "activities" && (
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-semibold text-text-primary">
-                    Activities{" "}
-                    <span className="text-text-muted font-normal text-sm">
-                      ({activities.length})
-                    </span>
-                  </h2>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => {
-                      setEditingAct(undefined);
-                      setActFormOpen(true);
-                    }}
-                  >
-                    <Plus size={14} />
-                    Add Activity
-                  </Button>
+                <div className="flex flex-col gap-4 mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <h2 className="font-semibold text-text-primary whitespace-nowrap">
+                      Activities{" "}
+                      <span className="text-text-muted font-normal text-sm">
+                        ({filteredActivities.length} of {activities.length})
+                      </span>
+                    </h2>
+
+                    <div className="flex flex-wrap items-center gap-2 flex-1 justify-end">
+                      <div className="w-full sm:w-48">
+                        <Input
+                          id="act-name-filter"
+                          placeholder="Search activities..."
+                          value={actFilterName}
+                          onChange={(e) => setActFilterName(e.target.value)}
+                          className="bg-surface h-9 text-sm"
+                        />
+                      </div>
+                      <div className="w-full sm:w-48">
+                        <SearchableSelect
+                          id="act-city-filter"
+                          placeholder="All Cities"
+                          value={actFilterCity}
+                          options={[
+                            { value: "all", label: "All Cities", icon: <MapPin size={14} /> },
+                            ...destinations.map((d) => ({
+                              value: d.id!.toString(),
+                              label: `${d.name}`,
+                              icon: <span>{getCountryFlag(d.country)}</span>,
+                            })),
+                          ]}
+                          onChange={(val: string) => setActFilterCity(val)}
+                          includeSearch={true}
+                          className="h-9"
+                        />
+                      </div>
+                      <div className="w-full sm:w-40">
+                        <SearchableSelect
+                          id="act-type-filter"
+                          placeholder="All Types"
+                          value={actFilterType}
+                          options={[
+                            { value: "all", label: "All Types", icon: <Filter size={14} /> },
+                            ...ACTIVITY_TAGS.map((t) => ({
+                              value: t.value,
+                              label: t.label,
+                              icon: <span>{t.icon}</span>,
+                            })),
+                          ]}
+                          onChange={(val: string) => setActFilterType(val)}
+                          includeSearch={false}
+                          className="h-9"
+                        />
+                      </div>
+                      <div className="w-full sm:w-36">
+                        <Input
+                          id="act-date-filter"
+                          type="date"
+                          value={actFilterDate}
+                          onChange={(e) => setActFilterDate(e.target.value)}
+                          className="bg-surface h-9 text-sm"
+                        />
+                      </div>
+
+                      {(actFilterName ||
+                        actFilterCity !== "all" ||
+                        actFilterType !== "all" ||
+                        actFilterDate) && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setActFilterName("");
+                            setActFilterCity("all");
+                            setActFilterType("all");
+                            setActFilterDate("");
+                          }}
+                          className="h-9 text-text-muted hover:text-rose-pastel-500 px-2"
+                        >
+                          <X size={14} />
+                        </Button>
+                      )}
+
+                      <div className="h-6 w-px bg-border mx-1 hidden sm:block" />
+
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => {
+                          setEditingAct(undefined);
+                          setActFormOpen(true);
+                        }}
+                        className="h-9"
+                      >
+                        <Plus size={14} />
+                        Add Activity
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                {activities.length === 0 ? (
+
+                {filteredActivities.length === 0 ? (
                   <EmptyState
                     icon={Compass}
-                    label="No activities yet"
-                    action={() => setActFormOpen(true)}
-                    actionLabel="Add Activity"
+                    label={
+                      activities.length === 0
+                        ? "No activities yet"
+                        : "No activities match your filters"
+                    }
+                    action={
+                      activities.length === 0
+                        ? () => setActFormOpen(true)
+                        : () => {
+                            setActFilterName("");
+                            setActFilterCity("all");
+                            setActFilterType("all");
+                            setActFilterDate("");
+                          }
+                    }
+                    actionLabel={activities.length === 0 ? "Add Activity" : "Clear Filters"}
                   />
                 ) : (
                   <div className="flex flex-col gap-4 max-w-4xl mx-auto">
                     <AnimatePresence>
-                      {activities.map((a) => (
+                      {filteredActivities.map((a) => (
                         <ActivityCard
                           key={a.id}
                           activity={a}
