@@ -51,10 +51,17 @@ export function formatCurrency(amount: number, currency: "USD" | "ZAR" | "EUR") 
 }
 
 export function formatDuration(minutes: number) {
-  if (minutes < 60) return `${minutes}m`;
-  const h = Math.floor(minutes / 60);
+  if (!minutes || minutes <= 0) return "0m";
+  const d = Math.floor(minutes / (24 * 60));
+  const h = Math.floor((minutes % (24 * 60)) / 60);
   const m = minutes % 60;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+
+  const parts = [];
+  if (d > 0) parts.push(`${d}d`);
+  if (h > 0) parts.push(`${h}h`);
+  if (m > 0 || (d === 0 && h === 0)) parts.push(`${m}m`);
+
+  return parts.join(" ");
 }
 
 export function minutesToTime(minutes: number) {

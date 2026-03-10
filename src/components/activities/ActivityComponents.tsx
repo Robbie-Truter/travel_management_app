@@ -257,7 +257,11 @@ export function ActivityForm({
     type: initial?.type ?? "sightseeing",
     link: initial?.link ?? "",
     notes: initial?.notes ?? "",
-    duration: initial?.duration?.toString() ?? "",
+    durationDays: initial?.duration ? Math.floor(initial.duration / (24 * 60)).toString() : "",
+    durationHours: initial?.duration
+      ? Math.floor((initial.duration % (24 * 60)) / 60).toString()
+      : "",
+    durationMinutes: initial?.duration ? (initial.duration % 60).toString() : "",
     cost: initial?.cost?.toString() ?? "",
     currency: initial?.currency ?? "USD",
     destinationId: initial?.destinationId ?? undefined,
@@ -299,7 +303,10 @@ export function ActivityForm({
       type: form.type,
       link: form.link || undefined,
       notes: form.notes || undefined,
-      duration: form.duration ? Number(form.duration) : undefined,
+      duration:
+        Number(form.durationDays || 0) * 24 * 60 +
+          Number(form.durationHours || 0) * 60 +
+          Number(form.durationMinutes || 0) || undefined,
       cost: form.cost ? Number(form.cost) : undefined,
       currency: form.currency as Currency,
       destinationId: form.destinationId,
@@ -461,15 +468,40 @@ export function ActivityForm({
             onChange={(val: string) => set("destinationId", val ? Number(val) : undefined)}
             includeSearch={true}
           />
+          <div className="space-y-2">
+            <label className="text-sm font-medium flex items-center gap-2">
+              <Clock size={14} className="text-text-muted" />
+              Duration
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              <Input
+                id="act-dur-d"
+                type="number"
+                placeholder="Days"
+                value={form.durationDays}
+                onChange={(e) => set("durationDays", e.target.value)}
+                className="text-center"
+              />
+              <Input
+                id="act-dur-h"
+                type="number"
+                placeholder="Hours"
+                value={form.durationHours}
+                onChange={(e) => set("durationHours", e.target.value)}
+                className="text-center"
+              />
+              <Input
+                id="act-dur-m"
+                type="number"
+                placeholder="Mins"
+                value={form.durationMinutes}
+                onChange={(e) => set("durationMinutes", e.target.value)}
+                className="text-center"
+              />
+            </div>
+            <p className="text-[10px] text-text-muted mt-1 px-1">Days / Hours / Minutes</p>
+          </div>
           <div className="grid grid-cols-2 gap-3">
-            <Input
-              id="act-dur"
-              label="Duration (minutes)"
-              type="number"
-              placeholder="e.g. 90"
-              value={form.duration}
-              onChange={(e) => set("duration", e.target.value)}
-            />
             <Input
               id="act-cost"
               label="Estimated Cost"
