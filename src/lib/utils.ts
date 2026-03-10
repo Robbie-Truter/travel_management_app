@@ -58,7 +58,9 @@ export function formatDuration(minutes: number) {
 }
 
 export function minutesToTime(minutes: number) {
-  const h = Math.floor(minutes / 60).toString().padStart(2, "0");
+  const h = Math.floor(minutes / 60)
+    .toString()
+    .padStart(2, "0");
   const m = (minutes % 60).toString().padStart(2, "0");
   return `${h}:${m}`;
 }
@@ -93,4 +95,23 @@ export function base64ToFile(base64: string, filename: string): File {
   const byteArray = new Uint8Array(byteNumbers);
   const blob = new Blob([byteArray], { type: "application/octet-stream" });
   return new File([blob], filename, { type: "application/octet-stream" });
+}
+
+import { COUNTRIES } from "./countries";
+
+// Helper to get flag emoji from country code
+export function getFlagEmoji(countryCode: string) {
+  if (!countryCode) return "🌍";
+  const codePoints = countryCode
+    .toUpperCase()
+    .split("")
+    .map((char) => 127397 + char.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+}
+
+// Helper to get flag emoji from country name
+export function getCountryFlag(countryName: string) {
+  if (!countryName) return "🌍";
+  const country = COUNTRIES.find((c) => c.name.toLowerCase() === countryName.toLowerCase());
+  return country ? getFlagEmoji(country.code) : "🌍";
 }

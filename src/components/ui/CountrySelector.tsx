@@ -8,14 +8,7 @@ interface CountrySelectorProps {
   isCollapsed?: boolean;
 }
 
-// Helper to get flag emoji from country code
-function getFlagEmoji(countryCode: string) {
-  const codePoints = countryCode
-    .toUpperCase()
-    .split("")
-    .map((char) => 127397 + char.charCodeAt(0));
-  return String.fromCodePoint(...codePoints);
-}
+import { getFlagEmoji } from "@/lib/utils";
 
 export function CountrySelector({ value, onChange, isCollapsed }: CountrySelectorProps) {
   const options = React.useMemo(() => {

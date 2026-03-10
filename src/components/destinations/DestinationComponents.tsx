@@ -6,7 +6,7 @@ import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { Input, Textarea } from "@/components/ui/Input";
 import { motion } from "framer-motion";
 import type { Destination } from "@/db/types";
-import { fileToBase64 } from "@/lib/utils";
+import { fileToBase64, getCountryFlag } from "@/lib/utils";
 
 // --- DESTINATION CARD ---
 interface DestinationCardProps {
@@ -24,9 +24,9 @@ export function DestinationCard({ destination, onEdit, onDelete }: DestinationCa
       exit={{ opacity: 0, scale: 0.95 }}
       className="bg-surface border border-border rounded-xl overflow-hidden hover:border-lavender-500/30 transition-colors"
     >
-      <div className="flex flex-col sm:flex-row">
+      <div className="flex flex-col sm:flex-row h-full">
         {/* Image Section */}
-        <div className="sm:w-48 h-48 sm:h-auto shrink-0 bg-surface-2 relative border-b sm:border-b-0 sm:border-r border-border">
+        <div className="sm:w-48 h-48 sm:h-full shrink-0 bg-surface-2 relative border-b sm:border-b-0 sm:border-r border-border">
           {destination.image ? (
             <img
               src={destination.image}
@@ -48,7 +48,9 @@ export function DestinationCard({ destination, onEdit, onDelete }: DestinationCa
                 <h3 className="font-semibold text-lg text-text-primary">{destination.name}</h3>
                 <div className="flex items-center gap-1.5 mt-1 text-sm text-text-secondary">
                   <MapPin size={14} className="text-rose-pastel-500" />
-                  <span>{destination.country}</span>
+                  <span>
+                    {getCountryFlag(destination.country)} {destination.country}
+                  </span>
                 </div>
               </div>
 
@@ -240,7 +242,11 @@ export function DestinationForm({
               value={formData.country}
               options={
                 availableCountries.length > 0
-                  ? availableCountries.map((c) => ({ value: c, label: c }))
+                  ? availableCountries.map((c) => ({
+                      value: c,
+                      label: c,
+                      icon: <span>{getCountryFlag(c)}</span>,
+                    }))
                   : [{ value: "", label: "No countries added to trip yet" }]
               }
               onChange={(val: string) => setFormData((prev) => ({ ...prev, country: val }))}

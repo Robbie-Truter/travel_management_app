@@ -20,7 +20,14 @@ import { Modal, ConfirmDialog } from "@/components/ui/Modal";
 import { Input, Textarea } from "@/components/ui/Input";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
-import { formatCurrency, formatDuration, fileToBase64, cn, formatDate } from "@/lib/utils";
+import {
+  formatCurrency,
+  formatDuration,
+  fileToBase64,
+  cn,
+  formatDate,
+  getCountryFlag,
+} from "@/lib/utils";
 import { format } from "date-fns";
 import type { Activity, Currency, Destination } from "@/db/types";
 
@@ -91,13 +98,13 @@ export function ActivityCard({
 
             {/* Content Section */}
             <CardContent className="pt-4 flex-1">
-              <div className="flex items-start justify-between gap-3 w-105">
-                <div className="flex items-center gap-2 min-w-0">
+              <div className="flex items-start justify-between gap-3 w-full">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
                   <div className="w-8 h-8 rounded-lg bg-lavender-100 dark:bg-lavender-900/30 flex items-center justify-center shrink-0">
                     <Compass size={16} className="text-lavender-500" />
                   </div>
-                  <div className="min-w-0">
-                    <h2 className="font-bold text-[20px] text-text-primary truncate">
+                  <div className="min-w-0 flex-1">
+                    <h2 className="font-bold text-[20px] text-text-primary wrap-break-word whitespace-normal line-clamp-2">
                       {activity.name}
                     </h2>
                     <div className="flex flex-wrap items-center gap-2 mt-1">
@@ -424,7 +431,11 @@ export function ActivityForm({
               label="Country"
               placeholder="Select country..."
               value={form.country}
-              options={destinations.map((d) => ({ value: d, label: d }))}
+              options={destinations.map((d) => ({
+                value: d,
+                label: d,
+                icon: <span>{getCountryFlag(d)}</span>,
+              }))}
               onChange={(val: string) => set("country", val)}
               includeSearch={false}
             />
@@ -445,6 +456,7 @@ export function ActivityForm({
             options={allDestinations.map((d) => ({
               value: d.id!.toString(),
               label: `${d.name} (${d.country})`,
+              icon: <span>{getCountryFlag(d.country)}</span>,
             }))}
             onChange={(val: string) => set("destinationId", val ? Number(val) : undefined)}
             includeSearch={true}

@@ -21,7 +21,14 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Modal, ConfirmDialog } from "@/components/ui/Modal";
 import { Input, Textarea } from "@/components/ui/Input";
-import { formatDateTime, formatCurrency, fileToBase64, cn, formatDate } from "@/lib/utils";
+import {
+  formatDateTime,
+  formatCurrency,
+  fileToBase64,
+  cn,
+  formatDate,
+  getCountryFlag,
+} from "@/lib/utils";
 import type { Accommodation, Currency } from "@/db/types";
 import { SearchableSelect } from "../ui/SearchableSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
@@ -471,7 +478,11 @@ export function AccommodationForm({
           label="Country"
           placeholder="Select country..."
           value={form.country}
-          options={destinations.map((d) => ({ value: d, label: d }))}
+          options={destinations.map((d) => ({
+            value: d,
+            label: d,
+            icon: <span>{getCountryFlag(d)}</span>,
+          }))}
           onChange={(val: string) => set("country", val)}
           includeSearch={false}
         />

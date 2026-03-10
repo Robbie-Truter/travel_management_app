@@ -8,6 +8,7 @@ import { useTrips } from "@/hooks/useTrips";
 import type { Trip, Flight, Accommodation, Activity, Destination } from "@/db/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plane, Hotel, Compass, ChevronRight } from "lucide-react";
+import { getCountryFlag } from "@/lib/utils";
 
 interface TripDestinationsProps {
   trip: Trip;
@@ -72,7 +73,11 @@ export function TripDestinations({
               id="country-select"
               label="Select Country"
               placeholder="e.g. Japan"
-              options={COUNTRIES.map((c) => c.name)}
+              options={COUNTRIES.map((c) => ({
+                value: c.name,
+                label: c.name,
+                icon: <span>{getCountryFlag(c.name)}</span>,
+              }))}
               value={selectedCountry}
               onChange={(val) => setSelectedCountry(val)}
             />

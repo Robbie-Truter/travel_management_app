@@ -18,7 +18,14 @@ import { Modal, ConfirmDialog } from "@/components/ui/Modal";
 import { Input, Textarea } from "@/components/ui/Input";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
-import { formatDateTime, formatCurrency, calculateDuration, cn, formatDate } from "@/lib/utils";
+import {
+  formatDateTime,
+  formatCurrency,
+  calculateDuration,
+  cn,
+  formatDate,
+  getCountryFlag,
+} from "@/lib/utils";
 import { format } from "date-fns";
 import type { Flight, Currency } from "@/db/types";
 
@@ -465,7 +472,11 @@ export function FlightForm({
           label="Country"
           placeholder="Select country..."
           value={form.country}
-          options={destinations.map((d) => ({ value: d, label: d }))}
+          options={destinations.map((d) => ({
+            value: d,
+            label: d,
+            icon: <span>{getCountryFlag(d)}</span>,
+          }))}
           onChange={(val: string) => set("country", val)}
           includeSearch={false}
         />
