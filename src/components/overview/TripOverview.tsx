@@ -172,8 +172,8 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="flex flex-col p-0 h-110 overflow-y-auto group hover:shadow-card-hover transition-shadow text-center sm:text-left">
-          <div className="bg-lavender-50 dark:bg-lavender-900/10 p-5 border-b border-lavender-100 dark:border-lavender-900/20 text-left">
+        <Card className="flex flex-col p-0 h-110 overflow-hidden group hover:shadow-card-hover transition-shadow text-center sm:text-left">
+          <div className="bg-lavender-50 dark:bg-lavender-900/10 p-5 border-b border-lavender-100 dark:border-lavender-900/20 text-left shrink-0">
             <h3 className="font-bold text-lg flex items-center gap-2 text-lavender-700 dark:text-lavender-400">
               <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
                 <MapPin size={18} className="text-lavender-500" />
@@ -181,7 +181,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
               Destinations
             </h3>
           </div>
-          <div className="p-5 flex flex-col h-full">
+          <div className="p-5 flex flex-col h-full overflow-y-auto">
             <div className="grow">
               <p className="text-3xl font-bold text-text-primary">
                 {trip.destinations?.length ?? 0}
@@ -211,8 +211,8 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
           </div>
         </Card>
 
-        <Card className="flex flex-col p-0 h-110 overflow-y-auto group hover:shadow-card-hover transition-shadow">
-          <div className="bg-sky-pastel-50 dark:bg-sky-pastel-900/10 p-5 border-b border-sky-pastel-100 dark:border-sky-pastel-900/20">
+        <Card className="flex flex-col p-0 h-110 overflow-hidden group hover:shadow-card-hover transition-shadow">
+          <div className="bg-sky-pastel-50 dark:bg-sky-pastel-900/10 p-5 border-b border-sky-pastel-100 dark:border-sky-pastel-900/20 shrink-0">
             <h3 className="font-bold text-lg flex items-center gap-2 text-sky-pastel-700 dark:text-sky-pastel-400">
               <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
                 <Plane size={18} className="text-sky-pastel-500" />
@@ -220,7 +220,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
               Flights
             </h3>
           </div>
-          <div className="grow p-5">
+          <div className="grow p-5 overflow-y-auto">
             {flights.length > 0 ? (
               <div className="flex flex-col h-full space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -284,8 +284,8 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
           </div>
         </Card>
 
-        <Card className="flex flex-col p-0 h-110  overflow-y-auto group hover:shadow-card-hover transition-shadow">
-          <div className="bg-lavender-50 dark:bg-lavender-900/10 p-5 border-b border-lavender-100 dark:border-lavender-900/20">
+        <Card className="flex flex-col p-0 h-110 overflow-hidden group hover:shadow-card-hover transition-shadow">
+          <div className="bg-lavender-50 dark:bg-lavender-900/10 p-5 border-b border-lavender-100 dark:border-lavender-900/20 shrink-0">
             <h3 className="font-bold text-lg flex items-center gap-2 text-lavender-700 dark:text-lavender-400">
               <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
                 <Hotel size={18} className="text-lavender-500" />
@@ -293,7 +293,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
               Stays
             </h3>
           </div>
-          <div className="grow p-5">
+          <div className="grow p-5 overflow-y-auto">
             {accommodations.length > 0 ? (
               <div className="flex flex-col h-full space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -326,9 +326,10 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
                         .map((a) => (
                           <li key={a.id} className="group/item">
                             <div className="flex justify-between items-start mb-0.5">
-                              <span className="text-sm font-semibold text-text-primary group-hover/item:text-lavender-600 transition-colors">
+                              <div className="text-sm font-semibold text-text-primary group-hover/item:text-lavender-600 transition-colors">
+                                {a.country && <span className="font-semibold">{a.country}, </span>}
                                 {a.name}
-                              </span>
+                              </div>
                               {!a.isConfirmed && (
                                 <span className="text-[9px] px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded-full font-bold uppercase tracking-tighter border border-amber-100">
                                   Planning
@@ -336,7 +337,6 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
                               )}
                             </div>
                             <p className="text-[11px] text-text-secondary flex items-center gap-1">
-                              {a.country && <span className="font-semibold">{a.country}, </span>}
                               {a.location}
                             </p>
                             <p className="text-[10px] text-text-muted mt-0.5">
@@ -360,8 +360,8 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
           </div>
         </Card>
 
-        <Card className="flex flex-col p-0 h-110 overflow-y-auto group hover:shadow-card-hover transition-shadow">
-          <div className="bg-teal-pastel-50 dark:bg-teal-pastel-900/10 p-5 border-b border-teal-pastel-100 dark:border-teal-pastel-900/20">
+        <Card className="flex flex-col p-0 h-110 overflow-hidden group hover:shadow-card-hover transition-shadow">
+          <div className="bg-teal-pastel-50 dark:bg-teal-pastel-900/10 p-5 border-b border-teal-pastel-100 dark:border-teal-pastel-900/20 shrink-0">
             <h3 className="font-bold text-lg flex items-center gap-2 text-teal-pastel-700 dark:text-teal-pastel-400">
               <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
                 <Compass size={18} className="text-teal-pastel-500" />
@@ -369,7 +369,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
               Activities
             </h3>
           </div>
-          <div className="grow p-5">
+          <div className="grow p-5 overflow-y-auto">
             {activities.length > 0 ? (
               <div className="flex flex-col h-full space-y-4">
                 <div className="grid grid-cols-2 gap-4">

@@ -333,10 +333,12 @@ export function TripPage() {
             {/* FLIGHTS */}
             {activeTab === "flights" && (
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-semibold text-text-primary">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="font-bold text-xl text-text-primary tracking-tight">
                     Flights{" "}
-                    <span className="text-text-muted font-normal text-sm">({flights.length})</span>
+                    <span className="text-text-muted font-normal text-sm ml-2">
+                      ({flights.length} total)
+                    </span>
                   </h2>
                   <div className="flex gap-2">
                     {flights.length >= 2 && (
@@ -362,6 +364,7 @@ export function TripPage() {
                     </Button>
                   </div>
                 </div>
+
                 {flights.length === 0 ? (
                   <EmptyState
                     icon={Plane}
@@ -370,21 +373,81 @@ export function TripPage() {
                     actionLabel="Add Flight"
                   />
                 ) : (
-                  <div className="flex flex-col gap-4 max-w-4xl mx-auto">
-                    <AnimatePresence>
-                      {flights.map((f) => (
-                        <FlightCard
-                          key={f.id}
-                          flight={f}
-                          onEdit={(fl: Flight) => {
-                            setEditingFlight(fl);
-                            setFlightFormOpen(true);
-                          }}
-                          onDelete={deleteFlight}
-                          onConfirm={confirmFlight}
-                        />
-                      ))}
-                    </AnimatePresence>
+                  <div className="space-y-12 max-w-4xl mx-auto">
+                    {(trip.destinations || []).map((country) => {
+                      const countryFlights = flights.filter((f) => f.country === country);
+                      if (countryFlights.length === 0) return null;
+
+                      return (
+                        <div key={country} className="space-y-6">
+                          <div className="flex items-center gap-3 pb-3 border-b border-border/50">
+                            <span className="text-2xl" role="img" aria-label={country}>
+                              {getCountryFlag(country as string)}
+                            </span>
+                            <div>
+                              <h3 className="font-bold text-lg text-text-primary">{country}</h3>
+                              <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
+                                {countryFlights.length} {countryFlights.length === 1 ? "Flight" : "Flights"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-4">
+                            <AnimatePresence mode="popLayout">
+                              {countryFlights.map((f) => (
+                                <FlightCard
+                                  key={f.id}
+                                  flight={f}
+                                  onEdit={(fl: Flight) => {
+                                    setEditingFlight(fl);
+                                    setFlightFormOpen(true);
+                                  }}
+                                  onDelete={deleteFlight}
+                                  onConfirm={confirmFlight}
+                                />
+                              ))}
+                            </AnimatePresence>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {/* Fallback for items with no country or different country */}
+                    {(() => {
+                      const otherFlights = flights.filter(
+                        (f) => f.country && !trip.destinations?.includes(f.country),
+                      );
+                      if (otherFlights.length === 0) return null;
+                      return (
+                        <div className="space-y-6">
+                          <div className="flex items-center gap-3 pb-3 border-b border-border/50">
+                            <div className="w-8 h-8 rounded-lg bg-surface-3 flex items-center justify-center">
+                              <Plane size={16} className="text-text-muted" />
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-lg text-text-primary">Other Locations</h3>
+                              <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
+                                {otherFlights.length} {otherFlights.length === 1 ? "Flight" : "Flights"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-4">
+                            <AnimatePresence mode="popLayout">
+                              {otherFlights.map((f) => (
+                                <FlightCard
+                                  key={f.id}
+                                  flight={f}
+                                  onEdit={(fl: Flight) => {
+                                    setEditingFlight(fl);
+                                    setFlightFormOpen(true);
+                                  }}
+                                  onDelete={deleteFlight}
+                                  onConfirm={confirmFlight}
+                                />
+                              ))}
+                            </AnimatePresence>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
                 <FlightForm
@@ -417,11 +480,11 @@ export function TripPage() {
             {/* ACCOMMODATIONS */}
             {activeTab === "accommodations" && (
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-semibold text-text-primary">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="font-bold text-xl text-text-primary tracking-tight">
                     Accommodations{" "}
-                    <span className="text-text-muted font-normal text-sm">
-                      ({accommodations.length})
+                    <span className="text-text-muted font-normal text-sm ml-2">
+                      ({accommodations.length} total)
                     </span>
                   </h2>
                   <div className="flex gap-2">
@@ -452,21 +515,81 @@ export function TripPage() {
                     actionLabel="Add Stay"
                   />
                 ) : (
-                  <div className="flex flex-col gap-4 max-w-4xl mx-auto">
-                    <AnimatePresence>
-                      {accommodations.map((a) => (
-                        <AccommodationCard
-                          key={a.id}
-                          acc={a}
-                          onEdit={(ac: Accommodation) => {
-                            setEditingAcc(ac);
-                            setAccFormOpen(true);
-                          }}
-                          onDelete={deleteAccommodation}
-                          onConfirm={confirmAccommodation}
-                        />
-                      ))}
-                    </AnimatePresence>
+                  <div className="space-y-12 max-w-4xl mx-auto">
+                    {(trip.destinations || []).map((country) => {
+                      const countryAccs = accommodations.filter((a) => a.country === country);
+                      if (countryAccs.length === 0) return null;
+
+                      return (
+                        <div key={country} className="space-y-6">
+                          <div className="flex items-center gap-3 pb-3 border-b border-border/50">
+                            <span className="text-2xl" role="img" aria-label={country}>
+                              {getCountryFlag(country as string)}
+                            </span>
+                            <div>
+                              <h3 className="font-bold text-lg text-text-primary">{country}</h3>
+                              <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
+                                {countryAccs.length} {countryAccs.length === 1 ? "Stay" : "Stays"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-6">
+                            <AnimatePresence mode="popLayout">
+                              {countryAccs.map((a) => (
+                                <AccommodationCard
+                                  key={a.id}
+                                  acc={a}
+                                  onEdit={(ac: Accommodation) => {
+                                    setEditingAcc(ac);
+                                    setAccFormOpen(true);
+                                  }}
+                                  onDelete={deleteAccommodation}
+                                  onConfirm={confirmAccommodation}
+                                />
+                              ))}
+                            </AnimatePresence>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {/* Fallback for items with no country or different country */}
+                    {(() => {
+                      const otherAccs = accommodations.filter(
+                        (a) => a.country && !trip.destinations?.includes(a.country),
+                      );
+                      if (otherAccs.length === 0) return null;
+                      return (
+                        <div className="space-y-6">
+                          <div className="flex items-center gap-3 pb-3 border-b border-border/50">
+                            <div className="w-8 h-8 rounded-lg bg-surface-3 flex items-center justify-center">
+                              <Hotel size={16} className="text-text-muted" />
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-lg text-text-primary">Other Locations</h3>
+                              <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
+                                {otherAccs.length} {otherAccs.length === 1 ? "Stay" : "Stays"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-6">
+                            <AnimatePresence mode="popLayout">
+                              {otherAccs.map((a) => (
+                                <AccommodationCard
+                                  key={a.id}
+                                  acc={a}
+                                  onEdit={(ac: Accommodation) => {
+                                    setEditingAcc(ac);
+                                    setAccFormOpen(true);
+                                  }}
+                                  onDelete={deleteAccommodation}
+                                  onConfirm={confirmAccommodation}
+                                />
+                              ))}
+                            </AnimatePresence>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
                 <AccommodationForm
@@ -498,26 +621,26 @@ export function TripPage() {
             {/* ACTIVITIES */}
             {activeTab === "activities" && (
               <div>
-                <div className="flex flex-col gap-4 mb-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <h2 className="font-semibold text-text-primary whitespace-nowrap">
+                <div className="flex flex-col gap-6 mb-8">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <h2 className="font-bold text-xl text-text-primary whitespace-nowrap">
                       Activities{" "}
-                      <span className="text-text-muted font-normal text-sm">
+                      <span className="text-text-muted font-normal text-sm ml-2">
                         ({filteredActivities.length} of {activities.length})
                       </span>
                     </h2>
 
                     <div className="flex flex-wrap items-center gap-2 flex-1 justify-end">
-                      <div className="w-full sm:w-48">
+                      <div className="w-full sm:w-auto min-w-[160px]">
                         <Input
                           id="act-name-filter"
-                          placeholder="Search activities..."
+                          placeholder="Search..."
                           value={actFilterName}
                           onChange={(e) => setActFilterName(e.target.value)}
                           className="bg-surface h-9 text-sm"
                         />
                       </div>
-                      <div className="w-full sm:w-48">
+                      <div className="w-full sm:w-auto min-w-[160px]">
                         <SearchableSelect
                           id="act-city-filter"
                           placeholder="All Cities"
@@ -535,7 +658,7 @@ export function TripPage() {
                           className="h-9"
                         />
                       </div>
-                      <div className="w-full sm:w-40">
+                      <div className="w-full sm:w-auto min-w-[160px]">
                         <SearchableSelect
                           id="act-type-filter"
                           placeholder="All Types"
@@ -551,15 +674,6 @@ export function TripPage() {
                           onChange={(val: string) => setActFilterType(val)}
                           includeSearch={false}
                           className="h-9"
-                        />
-                      </div>
-                      <div className="w-full sm:w-36">
-                        <Input
-                          id="act-date-filter"
-                          type="date"
-                          value={actFilterDate}
-                          onChange={(e) => setActFilterDate(e.target.value)}
-                          className="bg-surface h-9 text-sm"
                         />
                       </div>
 
@@ -582,7 +696,7 @@ export function TripPage() {
                         </Button>
                       )}
 
-                      <div className="h-6 w-px bg-border mx-1 hidden sm:block" />
+                      <div className="h-6 w-px bg-border mx-1 hidden lg:block" />
 
                       <Button
                         variant="primary"
@@ -621,24 +735,86 @@ export function TripPage() {
                     actionLabel={activities.length === 0 ? "Add Activity" : "Clear Filters"}
                   />
                 ) : (
-                  <div className="flex flex-col gap-4 max-w-4xl mx-auto">
-                    <AnimatePresence>
-                      {filteredActivities.map((a) => (
-                        <ActivityCard
-                          key={a.id}
-                          activity={a}
-                          destinationName={destinations.find((d) => d.id === a.destinationId)?.name}
-                          onEdit={(act: Activity) => {
-                            setEditingAct(act);
-                            setActFormOpen(true);
-                          }}
-                          onDelete={deleteActivity}
-                          onConfirm={(id) => updateActivity(id, { isConfirmed: true })}
-                        />
-                      ))}
-                    </AnimatePresence>
+                  <div className="space-y-12 max-w-4xl mx-auto">
+                    {(trip.destinations || []).map((country) => {
+                      const countryActivities = filteredActivities.filter((a) => a.country === country);
+                      if (countryActivities.length === 0) return null;
+
+                      return (
+                        <div key={country} className="space-y-6">
+                          <div className="flex items-center gap-3 pb-3 border-b border-border/50">
+                            <span className="text-2xl" role="img" aria-label={country}>
+                              {getCountryFlag(country as string)}
+                            </span>
+                            <div>
+                              <h3 className="font-bold text-lg text-text-primary">{country}</h3>
+                              <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
+                                {countryActivities.length} {countryActivities.length === 1 ? "Activity" : "Activities"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-6">
+                            <AnimatePresence mode="popLayout">
+                              {countryActivities.map((a) => (
+                                <ActivityCard
+                                  key={a.id}
+                                  activity={a}
+                                  destinationName={destinations.find((d) => d.id === a.destinationId)?.name}
+                                  onEdit={(act: Activity) => {
+                                    setEditingAct(act);
+                                    setActFormOpen(true);
+                                  }}
+                                  onDelete={deleteActivity}
+                                  onConfirm={(id) => updateActivity(id, { isConfirmed: true })}
+                                />
+                              ))}
+                            </AnimatePresence>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {/* Fallback for items with no country or different country */}
+                    {(() => {
+                      const otherActivities = filteredActivities.filter(
+                        (a) => a.country && !trip.destinations?.includes(a.country),
+                      );
+                      if (otherActivities.length === 0) return null;
+                      return (
+                        <div className="space-y-6">
+                          <div className="flex items-center gap-3 pb-3 border-b border-border/50">
+                            <div className="w-8 h-8 rounded-lg bg-surface-3 flex items-center justify-center">
+                              <Compass size={16} className="text-text-muted" />
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-lg text-text-primary">Other Locations</h3>
+                              <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
+                                {otherActivities.length} {otherActivities.length === 1 ? "Activity" : "Activities"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-6">
+                            <AnimatePresence mode="popLayout">
+                              {otherActivities.map((a) => (
+                                <ActivityCard
+                                  key={a.id}
+                                  activity={a}
+                                  destinationName={destinations.find((d) => d.id === a.destinationId)?.name}
+                                  onEdit={(act: Activity) => {
+                                    setEditingAct(act);
+                                    setActFormOpen(true);
+                                  }}
+                                  onDelete={deleteActivity}
+                                  onConfirm={(id) => updateActivity(id, { isConfirmed: true })}
+                                />
+                              ))}
+                            </AnimatePresence>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
+
                 <ActivityForm
                   key={editingAct?.id ?? "new"}
                   open={actFormOpen}
