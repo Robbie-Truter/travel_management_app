@@ -3,7 +3,9 @@ import { FileText, Upload } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { fileToBase64 } from "@/lib/utils";
+import { DOCUMENT_TYPES } from "./document-types";
 import type { Document } from "@/db/types";
 
 interface DocumentModalProps {
@@ -14,10 +16,23 @@ interface DocumentModalProps {
 }
 
 export function DocumentModal({ open, onClose, onSave, initial }: DocumentModalProps) {
+  const getMimeFromBase64 = (b64?: string) => {
+    if (!b64 || !b64.startsWith("data:")) return undefined;
+    return b64.split(";")[0].split(":")[1];
+  };
+
   const [name, setName] = useState(initial?.name ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [file, setFile] = useState<string | undefined>(initial?.file);
-  const [fileType, setFileType] = useState<string | undefined>(initial?.type);
+  const [fileMimeType, setFileMimeType] = useState<string | undefined>(
+    getMimeFromBase64(initial?.file),
+  );
+  const [docType, setDocType] = useState<string>(
+    (() => {
+      const isCustomType = DOCUMENT_TYPES.some((t) => t.value === initial?.type);
+      return isCustomType ? (initial?.type ?? "other") : "other";
+    })(),
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -27,7 +42,10 @@ export function DocumentModal({ open, onClose, onSave, initial }: DocumentModalP
       setName(initial?.name ?? "");
       setDescription(initial?.description ?? "");
       setFile(initial?.file);
-      setFileType(initial?.type);
+      setFileMimeType(getMimeFromBase64(initial?.file));
+      // Try to find if initial.type is one of our DOCUMENT_TYPES, otherwise fallback to 'other'
+      const isCustomType = DOCUMENT_TYPES.some((t) => t.value === initial?.type);
+      setDocType(isCustomType ? (initial?.type ?? "other") : "other");
       setErrors({});
     }
   }, [open, initial]);
@@ -35,6 +53,7 @@ export function DocumentModal({ open, onClose, onSave, initial }: DocumentModalP
   const validate = () => {
     const e: Record<string, string> = {};
     if (!name.trim()) e.name = "Title is required";
+    if (!docType) e.docType = "Document type is required";
     if (!file) e.file = "File is required";
     return e;
   };
@@ -51,7 +70,7 @@ export function DocumentModal({ open, onClose, onSave, initial }: DocumentModalP
         name,
         description,
         file: file!,
-        type: fileType!,
+        type: docType,
       });
       onClose();
     } catch (err) {
@@ -68,7 +87,7 @@ export function DocumentModal({ open, onClose, onSave, initial }: DocumentModalP
     try {
       const { base64, type } = await fileToBase64(selectedFile);
       setFile(base64);
-      setFileType(type);
+      setFileMimeType(type);
 
       // Default name to filename if name is empty
       if (!name) {
@@ -117,7 +136,7 @@ export function DocumentModal({ open, onClose, onSave, initial }: DocumentModalP
           >
             {file ? (
               <div className="p-4">
-                {fileType?.startsWith("image/") ? (
+                {fileMimeType?.startsWith("image/") ? (
                   <div className="relative aspect-video rounded-lg overflow-hidden border border-border">
                     <img src={file} alt="Preview" className="w-full h-full object-cover" />
                   </div>
@@ -125,7 +144,7 @@ export function DocumentModal({ open, onClose, onSave, initial }: DocumentModalP
                   <div className="flex flex-col items-center justify-center py-4 gap-2 text-lavender-600">
                     <FileText size={48} className="text-lavender-400" />
                     <span className="text-sm font-medium uppercase">
-                      {fileType?.split("/")[1] || "FILE"}
+                      {fileMimeType?.split("/")[1] || "FILE"}
                     </span>
                   </div>
                 )}
@@ -162,6 +181,20 @@ export function DocumentModal({ open, onClose, onSave, initial }: DocumentModalP
           value={name}
           onChange={(e) => setName(e.target.value)}
           error={errors.name}
+        />
+
+        <SearchableSelect
+          id="doc-type"
+          label="Document Type"
+          placeholder="Select category..."
+          value={docType}
+          options={DOCUMENT_TYPES.map((t) => ({
+            value: t.value,
+            label: t.label,
+            icon: <t.icon size={14} />,
+          }))}
+          onChange={(val: string) => setDocType(val)}
+          error={errors.docType}
         />
 
         <Textarea

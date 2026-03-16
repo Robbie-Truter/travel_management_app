@@ -208,12 +208,6 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
             {trip.destinations?.length === 0 && (
               <p className="text-xs text-text-muted italic mt-2">No destinations added yet.</p>
             )}
-
-            <div className="mt-auto pt-4">
-              <p className="text-[10px] text-text-muted uppercase font-bold tracking-tighter">
-                Manage in Destinations Tab
-              </p>
-            </div>
           </div>
         </Card>
 

@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/Modal";
+import { DOCUMENT_TYPES } from "./document-types";
 import { formatDate } from "@/lib/utils";
 import type { Document as Documents } from "@/db/types";
 import { Document, Page, pdfjs } from "react-pdf";
@@ -62,13 +63,13 @@ export function DocumentsCard({ document, onDelete, onEdit }: DocumentsCardProps
         >
           {/* File/Image Preview */}
           <div className="relative h-64 sm:h-72 bg-linear-to-br from-slate-100 to-sky-pastel-100 dark:from-slate-900/30 dark:to-sky-pastel-900/30 overflow-hidden flex items-center justify-center">
-            {document.type?.startsWith("image/") ? (
+            {document.file.startsWith("data:image/") ? (
               <img
                 src={document.file}
                 alt={document.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-            ) : document.type?.startsWith("application/pdf") ? (
+            ) : document.file.startsWith("data:application/pdf") ? (
               <div className="w-full h-full flex items-center justify-center p-4">
                 <Document
                   file={document.file}
@@ -123,8 +124,19 @@ export function DocumentsCard({ document, onDelete, onEdit }: DocumentsCardProps
 
             {/* Type badge */}
             <div className="absolute bottom-2 left-2">
-              <Badge className="bg-white/90 text-black shadow-sm capitalize mb-1">
-                {document.type?.split("/")[1] || document.type || "File"}
+              <Badge className="bg-white/90 text-lavender-700 shadow-sm capitalize mb-1 flex items-center gap-1.5">
+                {(() => {
+                  const type = DOCUMENT_TYPES.find((t) => t.value === document.type);
+                  if (type) {
+                    return (
+                      <>
+                        <type.icon size={12} />
+                        {type.label}
+                      </>
+                    );
+                  }
+                  return document.type?.split("/")[1] || document.type || "File";
+                })()}
               </Badge>
             </div>
           </div>

@@ -144,7 +144,7 @@ export function PlannerTimeline({
 function DayColumn({ date, items }: { date: string; items: PlannerItem[] }) {
   return (
     <div className="shrink-0 w-80 group">
-      <div className="mb-4 sticky top-0 bg-surface/80 backdrop-blur-sm z-10 py-2 flex items-baseline gap-2">
+      <div className="mb-4 sticky top-0 bg-surface/80 backdrop-blur-sm z-10 p-2 flex rounded items-baseline gap-2">
         <h3 className="text-xl font-bold text-text-primary">{formatDate(date, "d")}</h3>
         <span className="text-sm font-medium text-text-secondary">
           {formatDate(date, "EEEE, MMM")}
