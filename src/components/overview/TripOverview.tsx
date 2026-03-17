@@ -3,7 +3,7 @@ import { useNotes } from "@/hooks/useNotes";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Plane, Hotel, Compass, Calendar, StickyNote, Plus, PiggyBank, MapPin } from "lucide-react";
-import { formatDate, formatCurrency, formatDuration, cn } from "@/lib/utils";
+import { formatDate, formatCurrency, formatDuration, cn, getCountryFlag } from "@/lib/utils";
 import { useMemo } from "react";
 import { useExchangeRates } from "@/hooks/useExchangeRates";
 import { Badge } from "@/components/ui/Badge";
@@ -178,7 +178,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
               <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
                 <MapPin size={18} className="text-lavender-500" />
               </div>
-              Destinations
+              Countries
             </h3>
           </div>
           <div className="p-5 flex flex-col h-full overflow-y-auto">
@@ -197,7 +197,7 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
                       key={country}
                       className="px-2 py-1 bg-surface-3 rounded-md text-[11px] font-medium text-text-primary border border-border flex items-center gap-1.5"
                     >
-                      <MapPin size={10} className="text-lavender-500" />
+                      <span className="text-[14px]">{getCountryFlag(country)}</span>
                       {country}
                     </span>
                   ))}

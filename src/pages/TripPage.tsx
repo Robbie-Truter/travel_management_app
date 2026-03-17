@@ -186,7 +186,7 @@ export function TripPage() {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.3 }}
-          className="flex overflow-x-auto px-4"
+          className="flex overflow-x-auto px-4 scrollbar-thin"
         >
           {TABS.map((tab) => {
             const Icon = tab.icon;
@@ -387,7 +387,8 @@ export function TripPage() {
                             <div>
                               <h3 className="font-bold text-lg text-text-primary">{country}</h3>
                               <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
-                                {countryFlights.length} {countryFlights.length === 1 ? "Flight" : "Flights"}
+                                {countryFlights.length}{" "}
+                                {countryFlights.length === 1 ? "Flight" : "Flights"}
                               </p>
                             </div>
                           </div>
@@ -423,9 +424,12 @@ export function TripPage() {
                               <Plane size={16} className="text-text-muted" />
                             </div>
                             <div>
-                              <h3 className="font-bold text-lg text-text-primary">Other Locations</h3>
+                              <h3 className="font-bold text-lg text-text-primary">
+                                Other Locations
+                              </h3>
                               <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
-                                {otherFlights.length} {otherFlights.length === 1 ? "Flight" : "Flights"}
+                                {otherFlights.length}{" "}
+                                {otherFlights.length === 1 ? "Flight" : "Flights"}
                               </p>
                             </div>
                           </div>
@@ -565,7 +569,9 @@ export function TripPage() {
                               <Hotel size={16} className="text-text-muted" />
                             </div>
                             <div>
-                              <h3 className="font-bold text-lg text-text-primary">Other Locations</h3>
+                              <h3 className="font-bold text-lg text-text-primary">
+                                Other Locations
+                              </h3>
                               <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
                                 {otherAccs.length} {otherAccs.length === 1 ? "Stay" : "Stays"}
                               </p>
@@ -737,7 +743,9 @@ export function TripPage() {
                 ) : (
                   <div className="space-y-12 max-w-4xl mx-auto">
                     {(trip.destinations || []).map((country) => {
-                      const countryActivities = filteredActivities.filter((a) => a.country === country);
+                      const countryActivities = filteredActivities.filter(
+                        (a) => a.country === country,
+                      );
                       if (countryActivities.length === 0) return null;
 
                       return (
@@ -749,7 +757,8 @@ export function TripPage() {
                             <div>
                               <h3 className="font-bold text-lg text-text-primary">{country}</h3>
                               <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
-                                {countryActivities.length} {countryActivities.length === 1 ? "Activity" : "Activities"}
+                                {countryActivities.length}{" "}
+                                {countryActivities.length === 1 ? "Activity" : "Activities"}
                               </p>
                             </div>
                           </div>
@@ -759,7 +768,9 @@ export function TripPage() {
                                 <ActivityCard
                                   key={a.id}
                                   activity={a}
-                                  destinationName={destinations.find((d) => d.id === a.destinationId)?.name}
+                                  destinationName={
+                                    destinations.find((d) => d.id === a.destinationId)?.name
+                                  }
                                   onEdit={(act: Activity) => {
                                     setEditingAct(act);
                                     setActFormOpen(true);
@@ -786,9 +797,12 @@ export function TripPage() {
                               <Compass size={16} className="text-text-muted" />
                             </div>
                             <div>
-                              <h3 className="font-bold text-lg text-text-primary">Other Locations</h3>
+                              <h3 className="font-bold text-lg text-text-primary">
+                                Other Locations
+                              </h3>
                               <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
-                                {otherActivities.length} {otherActivities.length === 1 ? "Activity" : "Activities"}
+                                {otherActivities.length}{" "}
+                                {otherActivities.length === 1 ? "Activity" : "Activities"}
                               </p>
                             </div>
                           </div>
@@ -798,7 +812,9 @@ export function TripPage() {
                                 <ActivityCard
                                   key={a.id}
                                   activity={a}
-                                  destinationName={destinations.find((d) => d.id === a.destinationId)?.name}
+                                  destinationName={
+                                    destinations.find((d) => d.id === a.destinationId)?.name
+                                  }
                                   onEdit={(act: Activity) => {
                                     setEditingAct(act);
                                     setActFormOpen(true);

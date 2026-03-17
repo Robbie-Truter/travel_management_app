@@ -52,15 +52,15 @@ export function DashboardPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">My Trips</h1>
+          <h1 className="text-2xl font-bold text-text-primary tracking-tight">My Trips</h1>
           <p className="text-sm text-text-secondary mt-0.5">
             {trips.length} trip{trips.length !== 1 ? "s" : ""} planned
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+          <div className="relative w-full sm:w-auto">
             <Search
               size={15}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
@@ -70,16 +70,20 @@ export function DashboardPage() {
               placeholder="Search trips..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-9 pl-9 pr-4 rounded-lg border border-border bg-surface text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-lavender-400 focus:border-transparent w-48"
+              className="h-9 pl-9 pr-4 rounded-lg border border-border bg-surface text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-lavender-400 focus:border-transparent w-full sm:w-64 shadow-xs"
             />
           </div>
-          <Button variant="secondary" size="md" onClick={() => importRef.current?.click()}>
+          <Button
+            variant="secondary"
+            className="w-full sm:w-auto"
+            onClick={() => importRef.current?.click()}
+          >
             <Upload size={15} />
             Import
           </Button>
           <Button
             variant="primary"
-            size="md"
+            className="w-full sm:w-auto"
             onClick={() => {
               setEditingTrip(undefined);
               setFormOpen(true);

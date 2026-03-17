@@ -177,7 +177,7 @@ function SidebarContent({
       </div>
 
       {/* Nav */}
-      <nav className={cn("flex-1 py-4 space-y-1", isCollapsed ? "px-2" : "px-3")}>
+      <nav className={cn("flex-1 py-4 space-y-1 overflow-y-auto min-h-0 scrollbar-hide", isCollapsed ? "px-2" : "px-3")}>
         <NavLink
           to="/"
           onClick={onClose}
