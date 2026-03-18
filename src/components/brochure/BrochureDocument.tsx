@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    height: "100%",
+    flex: 1,
     padding: 60,
   },
   coverImage: {
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   section: {
-    marginBottom: 24,
+    // Removed marginBottom to prevent extra blank pages at the end of the PDF
   },
   sectionHeader: {
     fontSize: 20,
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     padding: 16,
     borderRadius: 8,
-    marginBottom: 12,
+    // No marginBottom — use marginTop on non-first cards to avoid blank trailing pages
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -195,7 +195,6 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3,
     borderLeftColor: "#fb923c",
     marginTop: 12,
-    fontStyle: "italic",
   },
 });
 
@@ -262,7 +261,7 @@ export function BrochureDocument({
           )}
 
           {note && (
-            <View style={styles.noteBox}>
+            <View style={styles.noteBox} wrap={false}>
               <Text style={[styles.text, { color: "#9a3412" }]}>"{note}"</Text>
             </View>
           )}
@@ -270,15 +269,18 @@ export function BrochureDocument({
 
         {/* FLIGHTS SECTION (Grouped by Country) */}
         {flights.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionHeader}>Flights</Text>
+          <View style={[styles.section, { marginTop: 20 }]}>
+            {trip.destinations.some((c) => flights.some((f) => f.country === c)) ||
+            flights.some((f) => !f.country || !trip.destinations.includes(f.country)) ? (
+              <Text style={styles.sectionHeader}>Flights</Text>
+            ) : null}
             {trip.destinations.map((country) => {
               const countryFlights = flights.filter((f) => f.country === country);
               if (countryFlights.length === 0) return null;
 
               return (
                 <View key={country}>
-                  <View style={styles.countryHeader}>
+                  <View style={styles.countryHeader} wrap={false}>
                     <Text style={styles.countryLabel}>{country}</Text>
                     <Text style={styles.itemCount}>
                       {countryFlights.length} {countryFlights.length === 1 ? "Flight" : "Flights"}
@@ -286,7 +288,7 @@ export function BrochureDocument({
                   </View>
 
                   {countryFlights.map((flight, i) => (
-                    <View key={i} style={styles.card}>
+                    <View key={i} style={{ ...styles.card, ...(i > 0 ? { marginTop: 12 } : {}) }} wrap={false}>
                       <View style={styles.row}>
                         <Text style={styles.cardTitle}>
                           {flight.description ||
@@ -368,14 +370,14 @@ export function BrochureDocument({
 
               return (
                 <View>
-                  <View style={styles.countryHeader}>
+                  <View style={styles.countryHeader} wrap={false}>
                     <Text style={styles.countryLabel}>Other Locations</Text>
                     <Text style={styles.itemCount}>
                       {otherFlights.length} {otherFlights.length === 1 ? "Flight" : "Flights"}
                     </Text>
                   </View>
                   {otherFlights.map((flight, i) => (
-                    <View key={i} style={styles.card}>
+                    <View key={i} style={{ ...styles.card, ...(i > 0 ? { marginTop: 12 } : {}) }} wrap={false}>
                       <View style={styles.row}>
                         <Text style={styles.cardTitle}>
                           {flight.description ||
@@ -460,7 +462,7 @@ export function BrochureDocument({
 
               return (
                 <View key={country}>
-                  <View style={styles.countryHeader}>
+                  <View style={styles.countryHeader} wrap={false}>
                     <Text style={styles.countryLabel}>{country}</Text>
                     <Text style={styles.itemCount}>
                       {countryAccs.length} {countryAccs.length === 1 ? "Stay" : "Stays"}
@@ -468,7 +470,7 @@ export function BrochureDocument({
                   </View>
 
                   {countryAccs.map((acc, i) => (
-                    <View key={i} style={styles.card}>
+                    <View key={i} style={{ ...styles.card, ...(i > 0 ? { marginTop: 12 } : {}) }} wrap={false}>
                       <View style={styles.row}>
                         <Text style={styles.cardTitle}>{acc.name}</Text>
                         <View style={getStatusBadgeStyle(acc.isConfirmed)}>
@@ -564,14 +566,14 @@ export function BrochureDocument({
 
               return (
                 <View>
-                  <View style={styles.countryHeader}>
+                  <View style={styles.countryHeader} wrap={false}>
                     <Text style={styles.countryLabel}>Other Locations</Text>
                     <Text style={styles.itemCount}>
                       {otherAccs.length} {otherAccs.length === 1 ? "Stay" : "Stays"}
                     </Text>
                   </View>
                   {otherAccs.map((acc, i) => (
-                    <View key={i} style={styles.card}>
+                    <View key={i} style={{ ...styles.card, ...(i > 0 ? { marginTop: 12 } : {}) }} wrap={false}>
                       <View style={styles.row}>
                         <Text style={styles.cardTitle}>{acc.name}</Text>
                         <View style={getStatusBadgeStyle(acc.isConfirmed)}>
@@ -661,7 +663,7 @@ export function BrochureDocument({
       {activities.length > 0 && (
         <Page size="A4" style={styles.page}>
           <View style={styles.section}>
-            <Text style={styles.sectionHeader}>Activity Timeline</Text>
+            {activities.length > 0 && <Text style={styles.sectionHeader}>Activity Timeline</Text>}
             {trip.destinations.map((country) => {
               const countryActivities = activities.filter((a) => a.country === country);
               if (countryActivities.length === 0) return null;
@@ -671,7 +673,7 @@ export function BrochureDocument({
 
               return (
                 <View key={country} style={{ marginBottom: 20 }}>
-                  <View style={styles.countryHeader}>
+                  <View style={styles.countryHeader} wrap={false}>
                     <Text style={styles.countryLabel}>{country}</Text>
                     <Text style={styles.itemCount}>
                       {countryActivities.length}{" "}
@@ -693,7 +695,7 @@ export function BrochureDocument({
                         .filter((a) => a.date === date)
                         .sort((a, b) => a.order - b.order)
                         .map((act, i) => (
-                          <View key={i} style={[styles.card, { marginLeft: 16 }]}>
+                          <View key={i} style={{ ...styles.card, marginLeft: 16, ...(i > 0 ? { marginTop: 12 } : {}) }} wrap={false}>
                             <View style={styles.row}>
                               <Text style={styles.cardTitle}>{act.name}</Text>
                               <View style={getStatusBadgeStyle(act.isConfirmed)}>
@@ -760,7 +762,7 @@ export function BrochureDocument({
 
               return (
                 <View style={{ marginTop: 20 }}>
-                  <View style={styles.countryHeader}>
+                  <View style={styles.countryHeader} wrap={false}>
                     <Text style={styles.countryLabel}>Other Locations</Text>
                     <Text style={styles.itemCount}>
                       {otherActivities.length}{" "}
@@ -781,7 +783,7 @@ export function BrochureDocument({
                         .filter((a) => a.date === date)
                         .sort((a, b) => a.order - b.order)
                         .map((act, i) => (
-                          <View key={i} style={[styles.card, { marginLeft: 16 }]}>
+                          <View key={i} style={{ ...styles.card, marginLeft: 16, ...(i > 0 ? { marginTop: 12 } : {}) }} wrap={false}>
                             <View style={styles.row}>
                               <Text style={styles.cardTitle}>{act.name}</Text>
                               <View style={getStatusBadgeStyle(act.isConfirmed)}>
