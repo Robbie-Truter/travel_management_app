@@ -10,7 +10,7 @@ import {
   useMapContext,
 } from "react-simple-maps";
 import { getPointForDestination, type GeoPoint, loadAirportCoordinates } from "@/lib/geoData";
-import type { Trip, Flight } from "@/db/types";
+import type { Flight } from "@/db/types";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 
@@ -30,7 +30,6 @@ const ROUTE_COLORS = [
 ];
 
 interface ItineraryMapProps {
-  trips: Trip[];
   flights: Flight[];
   homeCountry: string | null;
 }
@@ -104,7 +103,7 @@ function AnimatedConnection({
   );
 }
 
-export function ItineraryMap({ trips, flights, homeCountry }: ItineraryMapProps) {
+export function ItineraryMap({ flights, homeCountry }: ItineraryMapProps) {
   const [tooltipContent, setTooltipContent] = useState("");
   const [coordsLoaded, setCoordsLoaded] = useState(false);
 
@@ -162,7 +161,7 @@ export function ItineraryMap({ trips, flights, homeCountry }: ItineraryMapProps)
       visitedCountryCodes,
       connections: flightConnections,
     };
-  }, [trips, flights, coordsLoaded, homeCountry]);
+  }, [flights, coordsLoaded, homeCountry]);
 
   const { homePoint, displayPoints, visitedCountryCodes, connections } = mapData;
 
