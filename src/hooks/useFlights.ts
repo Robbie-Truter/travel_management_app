@@ -10,21 +10,26 @@ export function useFlights(tripId?: number) {
   const { data: flights, isLoading } = useQuery({
     queryKey: ["flights", tripId],
     queryFn: async () => {
-      let query = supabase.from("flights").select("*").order("departure_time", { ascending: true });
+      let query = supabase.from("flights").select("*").order("created_at", { ascending: true });
       if (tripId) {
         query = query.eq("trip_id", tripId);
       }
       const { data, error } = await query;
       if (error) throw error;
 
-      return data.map((doc) => ({
-        ...doc,
-        tripId: doc.trip_id,
-        isConfirmed: doc.is_confirmed,
-        bookingLink: doc.booking_link,
-        createdAt: doc.created_at,
-        // The segments JSONB comes back exactly as the array we put in
-      })) as Flight[];
+      return data
+        .map((doc) => ({
+          ...doc,
+          tripId: doc.trip_id,
+          isConfirmed: doc.is_confirmed,
+          bookingLink: doc.booking_link,
+          createdAt: doc.created_at,
+        }))
+        .sort((a, b) => {
+          const timeA = (a.segments?.[0]?.departureTime) || "";
+          const timeB = (b.segments?.[0]?.departureTime) || "";
+          return timeA.localeCompare(timeB);
+        }) as Flight[];
     },
     enabled: !!user && (tripId === undefined || !!tripId),
   });
