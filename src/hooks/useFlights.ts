@@ -21,6 +21,7 @@ export function useFlights(tripId?: number) {
         .map((doc) => ({
           ...doc,
           tripId: doc.trip_id,
+          tripCountryId: doc.trip_country_id,
           isConfirmed: doc.is_confirmed,
           bookingLink: doc.booking_link,
           createdAt: doc.created_at,
@@ -40,8 +41,8 @@ export function useFlights(tripId?: number) {
       const dbFlight = {
         user_id: user.id,
         trip_id: flight.tripId,
+        trip_country_id: flight.tripCountryId,
         description: flight.description,
-        country: flight.country,
         segments: flight.segments,
         price: flight.price,
         currency: flight.currency,
@@ -61,8 +62,8 @@ export function useFlights(tripId?: number) {
     mutationFn: async ({ id, changes }: { id: number; changes: Partial<Flight> }) => {
       const updateData: Record<string, unknown> = {};
       if (changes.tripId !== undefined) updateData.trip_id = changes.tripId;
+      if (changes.tripCountryId !== undefined) updateData.trip_country_id = changes.tripCountryId;
       if (changes.description !== undefined) updateData.description = changes.description;
-      if (changes.country !== undefined) updateData.country = changes.country;
       if (changes.segments !== undefined) updateData.segments = changes.segments;
       if (changes.price !== undefined) updateData.price = changes.price;
       if (changes.currency !== undefined) updateData.currency = changes.currency;

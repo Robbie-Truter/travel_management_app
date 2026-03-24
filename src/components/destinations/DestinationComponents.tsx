@@ -5,7 +5,7 @@ import { Modal } from "@/components/ui/Modal";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { Input, Textarea } from "@/components/ui/Input";
 import { motion } from "framer-motion";
-import type { Destination } from "@/db/types";
+import type { Destination, TripCountry } from "@/db/types";
 import { fileToBase64, getCountryFlag } from "@/lib/utils";
 
 // --- DESTINATION CARD ---
@@ -13,9 +13,12 @@ interface DestinationCardProps {
   destination: Destination;
   onEdit: (dest: Destination) => void;
   onDelete: (id: number) => void;
+  tripCountries?: TripCountry[];
 }
 
-export function DestinationCard({ destination, onEdit, onDelete }: DestinationCardProps) {
+export function DestinationCard({ destination, onEdit, onDelete, tripCountries = [] }: DestinationCardProps) {
+  const tc = tripCountries.find(c => c.id === destination.tripCountryId);
+
   return (
     <motion.div
       layout
@@ -49,7 +52,7 @@ export function DestinationCard({ destination, onEdit, onDelete }: DestinationCa
                 <div className="flex items-center gap-1.5 mt-1 text-sm text-text-secondary">
                   <MapPin size={14} className="text-rose-pastel-500" />
                   <span>
-                    {getCountryFlag(destination.country)} {destination.country}
+                    {tc ? `${getCountryFlag(tc.countryName)} ${tc.countryName}` : "No country"}
                   </span>
                 </div>
               </div>
@@ -100,7 +103,7 @@ interface DestinationFormProps {
   onSave: (data: Omit<Destination, "id" | "createdAt">) => Promise<unknown>;
   initial?: Destination;
   tripId: number;
-  availableCountries: string[];
+  tripCountries?: TripCountry[];
 }
 
 export function DestinationForm({
@@ -109,12 +112,12 @@ export function DestinationForm({
   onSave,
   initial,
   tripId,
-  availableCountries,
+  tripCountries = [],
 }: DestinationFormProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: initial?.name || "",
-    country: initial?.country || "",
+    tripCountryId: initial?.tripCountryId || tripCountries[0]?.id || undefined,
     notes: initial?.notes || "",
     image: initial?.image || "",
   });
@@ -135,14 +138,14 @@ export function DestinationForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) return alert("Please enter a destination name.");
-    if (!formData.country) return alert("Please select a country.");
+    if (!formData.tripCountryId) return alert("Please select a country.");
 
     setLoading(true);
     try {
       await onSave({
         tripId,
         name: formData.name.trim(),
-        country: formData.country,
+        tripCountryId: formData.tripCountryId,
         notes: formData.notes.trim() || undefined,
         image: formData.image || undefined,
       });
@@ -239,20 +242,20 @@ export function DestinationForm({
               id="country"
               label="Country"
               placeholder="Select a country..."
-              value={formData.country}
+              value={formData.tripCountryId?.toString() || ""}
               options={
-                availableCountries.length > 0
-                  ? availableCountries.map((c) => ({
-                      value: c,
-                      label: c,
-                      icon: <span>{getCountryFlag(c)}</span>,
+                tripCountries.length > 0
+                  ? tripCountries.map((tc) => ({
+                      value: tc.id!.toString(),
+                      label: tc.countryName,
+                      icon: <span>{getCountryFlag(tc.countryName)}</span>,
                     }))
                   : [{ value: "", label: "No countries added to trip yet" }]
               }
-              onChange={(val: string) => setFormData((prev) => ({ ...prev, country: val }))}
+              onChange={(val: string) => setFormData((prev) => ({ ...prev, tripCountryId: Number(val) }))}
               includeSearch={false}
             />
-            {availableCountries.length === 0 && (
+            {tripCountries.length === 0 && (
               <p className="text-xs text-rose-pastel-500">
                 You need to add countries to the trip first.
               </p>

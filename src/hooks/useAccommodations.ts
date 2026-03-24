@@ -22,6 +22,7 @@ export function useAccommodations(tripId: number) {
       return data.map((doc) => ({
         ...doc,
         tripId: doc.trip_id,
+        tripCountryId: doc.trip_country_id,
         checkIn: doc.check_in,
         checkOut: doc.check_out,
         checkInAfter: doc.check_in_after,
@@ -52,8 +53,8 @@ export function useAccommodations(tripId: number) {
       const dbAcc = {
         user_id: user.id,
         trip_id: acc.tripId,
+        trip_country_id: acc.tripCountryId,
         name: acc.name,
-        country: acc.country,
         type: acc.type,
         platform: acc.platform,
         location: acc.location,
@@ -98,7 +99,7 @@ export function useAccommodations(tripId: number) {
       }
 
       if (changes.name !== undefined) updateData.name = changes.name;
-      if (changes.country !== undefined) updateData.country = changes.country;
+      if (changes.tripCountryId !== undefined) updateData.trip_country_id = changes.tripCountryId;
       if (changes.type !== undefined) updateData.type = changes.type;
       if (changes.platform !== undefined) updateData.platform = changes.platform;
       if (changes.location !== undefined) updateData.location = changes.location;

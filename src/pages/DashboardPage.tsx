@@ -20,7 +20,8 @@ export function DashboardPage() {
   const filtered = trips.filter(
     (t) =>
       t.name.toLowerCase().includes(search.toLowerCase()) ||
-      t.destinations?.some((d) => d.toLowerCase().includes(search.toLowerCase())),
+      t.destinations?.some((d) => d.toLowerCase().includes(search.toLowerCase())) ||
+      t.tripCountries?.some((tc) => tc.countryName.toLowerCase().includes(search.toLowerCase())),
   );
 
   const handleSave = async (data: Omit<Trip, "id" | "createdAt" | "updatedAt">) => {

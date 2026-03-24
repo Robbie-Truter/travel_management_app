@@ -23,6 +23,7 @@ const ACTIVITY_TAGS = [
 
 interface TripOverviewProps {
   trip: Trip;
+  tripCountries: TripCountry[];
   flights: Flight[];
   accommodations: Accommodation[];
   activities: Activity[];

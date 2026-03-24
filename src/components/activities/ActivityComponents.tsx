@@ -97,11 +97,6 @@ export function ActivityCard({
                       {activity.name}
                     </h2>
                     <div className="flex flex-wrap items-center gap-2 mt-1">
-                      {activity.country && (
-                        <Badge variant="default" className="text-[10px] h-5 py-0 px-2 opacity-70">
-                          {activity.country}
-                        </Badge>
-                      )}
                       {destinationName && (
                         <Badge
                           variant="default"
@@ -225,7 +220,7 @@ interface ActivityFormProps {
   initial?: Activity;
   tripId: number;
   defaultDate?: string;
-  destinations?: string[]; // Countries
+  tripCountries?: TripCountry[]; // Countries with IDs
   allDestinations?: Destination[]; // Specific cities/towns
 }
 
@@ -236,13 +231,13 @@ export function ActivityForm({
   initial,
   tripId,
   defaultDate,
-  destinations = [],
+  tripCountries = [],
   allDestinations = [],
 }: ActivityFormProps) {
   const [form, setForm] = useState({
     name: initial?.name ?? "",
     date: initial?.date ?? defaultDate ?? "",
-    country: initial?.country ?? destinations[0] ?? "",
+    tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
     type: initial?.type ?? "sightseeing",
     link: initial?.link ?? "",
     notes: initial?.notes ?? "",
@@ -288,7 +283,7 @@ export function ActivityForm({
       tripId,
       name: form.name,
       date: form.date,
-      country: form.country,
+      tripCountryId: form.tripCountryId,
       type: form.type,
       link: form.link || undefined,
       notes: form.notes || undefined,
@@ -426,13 +421,13 @@ export function ActivityForm({
               id="act-country"
               label="Country"
               placeholder="Select country..."
-              value={form.country}
-              options={destinations.map((d) => ({
-                value: d,
-                label: d,
-                icon: <span>{getCountryFlag(d)}</span>,
+              value={form.tripCountryId?.toString() || ""}
+              options={tripCountries.map((tc) => ({
+                value: tc.id!.toString(),
+                label: tc.countryName,
+                icon: <span>{getCountryFlag(tc.countryName)}</span>,
               }))}
-              onChange={(val: string) => set("country", val)}
+              onChange={(val: string) => set("tripCountryId", Number(val))}
               includeSearch={false}
             />
             <SearchableSelect
@@ -449,11 +444,14 @@ export function ActivityForm({
             label="Destination (City/Town)"
             placeholder="Link to a destination..."
             value={form.destinationId?.toString() ?? ""}
-            options={allDestinations.map((d) => ({
-              value: d.id!.toString(),
-              label: `${d.name} (${d.country})`,
-              icon: <span>{getCountryFlag(d.country)}</span>,
-            }))}
+            options={allDestinations.map((d) => {
+              const tc = tripCountries.find(c => c.id === d.tripCountryId);
+              return {
+                value: d.id!.toString(),
+                label: `${d.name} (${tc?.countryName || ""})`,
+                icon: <span>{getCountryFlag(tc?.countryName || "")}</span>,
+              };
+            })}
             onChange={(val: string) => set("destinationId", val ? Number(val) : undefined)}
             includeSearch={true}
           />

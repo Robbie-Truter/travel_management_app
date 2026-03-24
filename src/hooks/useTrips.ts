@@ -14,7 +14,7 @@ export function useTrips() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("trips")
-        .select("*")
+        .select("*, trip_countries(*)")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -26,6 +26,14 @@ export function useTrips() {
         endDate: doc.end_date,
         createdAt: doc.created_at,
         updatedAt: doc.updated_at,
+        tripCountries: doc.trip_countries.map((tc: any) => ({
+          ...tc,
+          tripId: tc.trip_id,
+          countryName: tc.country_name,
+          countryCode: tc.country_code,
+          budgetLimit: tc.budget_limit,
+          createdAt: tc.created_at,
+        })),
         coverImage: doc.cover_image
           ? doc.cover_image.startsWith("data:") || doc.cover_image.startsWith("http")
             ? doc.cover_image
@@ -51,7 +59,6 @@ export function useTrips() {
       const dbTrip = {
         user_id: user.id,
         name: trip.name,
-        destinations: trip.destinations,
         start_date: trip.startDate,
         end_date: trip.endDate,
         status: trip.status,
@@ -86,7 +93,6 @@ export function useTrips() {
 
       // Map camelCase keys back to snake_case
       if (changes.name !== undefined) updateData.name = changes.name;
-      if (changes.destinations !== undefined) updateData.destinations = changes.destinations;
       if (changes.startDate !== undefined) updateData.start_date = changes.startDate;
       if (changes.endDate !== undefined) updateData.end_date = changes.endDate;
       if (changes.status !== undefined) updateData.status = changes.status;

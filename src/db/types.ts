@@ -4,23 +4,34 @@ export type Currency = "USD" | "EUR" | "ZAR";
 export interface Trip {
   id?: number;
   name: string;
-  destinations: string[];
   startDate: string;
   endDate: string;
   status: TripStatus;
   description?: string;
+  tripCountries?: TripCountry[];
   budget?: string;
-  coverImage?: string; // base64 encoded image
+  coverImage?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface TripCountry {
+  id?: number;
+  tripId: number;
+  countryName: string;
+  countryCode: string;
+  budgetLimit?: number;
+  notes?: string;
+  order: number;
+  createdAt: string;
 }
 
 export interface Destination {
   id?: number;
   tripId: number;
+  tripCountryId: number;
   name: string;
-  country: string;
-  image?: string; // base64 encoded image
+  image?: string;
   notes?: string;
   order?: number;
   createdAt: string;
@@ -42,8 +53,8 @@ export interface FlightSegment {
 export interface Flight {
   id?: number;
   tripId: number;
+  tripCountryId?: number;
   description?: string;
-  country?: string;
   segments: FlightSegment[];
   price: number;
   currency: Currency;
@@ -56,8 +67,8 @@ export interface Flight {
 export interface Accommodation {
   id?: number;
   tripId: number;
+  tripCountryId?: number;
   name: string;
-  country?: string;
   type: "hotel" | "airbnb" | "hostel" | "resort" | "other";
   platform?: string;
   location: string;
@@ -67,7 +78,7 @@ export interface Accommodation {
   currency: Currency;
   bookingLink?: string;
   notes?: string;
-  image?: string; // base64 encoded image
+  image?: string;
   checkInAfter?: string;
   checkOutBefore?: string;
   isConfirmed: boolean;
@@ -77,18 +88,18 @@ export interface Accommodation {
 export interface Activity {
   id?: number;
   tripId: number;
+  tripCountryId?: number;
+  destinationId?: number;
+  name: string;
   date: string;
-  country?: string;
   type?: string;
   link?: string;
   notes?: string;
-  duration?: number; // minutes
+  duration?: number;
   cost?: number;
-  name: string;
   currency: Currency;
   isConfirmed: boolean;
-  destinationId?: number;
-  image?: string; // base64 encoded image
+  image?: string;
   order: number;
   createdAt: string;
 }

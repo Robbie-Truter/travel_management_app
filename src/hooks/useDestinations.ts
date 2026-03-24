@@ -23,6 +23,7 @@ export function useDestinations(tripId: number) {
       return data.map((doc) => ({
         ...doc,
         tripId: doc.trip_id,
+        tripCountryId: doc.trip_country_id,
         createdAt: doc.created_at,
         image: doc.image
           ? doc.image.startsWith("data:") || doc.image.startsWith("http")
@@ -51,8 +52,8 @@ export function useDestinations(tripId: number) {
       const dbDest = {
         user_id: user.id,
         trip_id: destination.tripId,
+        trip_country_id: destination.tripCountryId,
         name: destination.name,
-        country: destination.country,
         image: imagePath,
         notes: destination.notes,
         order: destination.order,
@@ -88,7 +89,7 @@ export function useDestinations(tripId: number) {
       }
 
       if (changes.name !== undefined) dbUpdates.name = changes.name;
-      if (changes.country !== undefined) dbUpdates.country = changes.country;
+      if (changes.tripCountryId !== undefined) dbUpdates.trip_country_id = changes.tripCountryId;
       if (changes.notes !== undefined) dbUpdates.notes = changes.notes;
       if (changes.order !== undefined) dbUpdates.order = changes.order;
 

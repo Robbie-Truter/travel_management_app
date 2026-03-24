@@ -175,7 +175,6 @@ export function AccommodationCard({ acc, onEdit, onDelete, onConfirm }: Accommod
                 <div className="flex items-center gap-3">
                   <MapPin size={25} />
                   <span>
-                    {acc.country && `${acc.country}, `}
                     {acc.location}
                   </span>
                 </div>
@@ -319,7 +318,7 @@ interface AccommodationFormProps {
   onSave: (data: Omit<Accommodation, "id" | "createdAt">) => Promise<void>;
   initial?: Accommodation;
   tripId: number;
-  destinations?: string[];
+  tripCountries?: TripCountry[];
 }
 
 export function AccommodationForm({
@@ -328,11 +327,11 @@ export function AccommodationForm({
   onSave,
   initial,
   tripId,
-  destinations = [],
+  tripCountries = [],
 }: AccommodationFormProps) {
   const [form, setForm] = useState({
     name: initial?.name ?? "",
-    country: initial?.country ?? destinations[0] ?? "",
+    tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
     type: initial?.type ?? "hotel",
     platform: initial?.platform ?? "booking",
     location: initial?.location ?? "",
@@ -386,7 +385,7 @@ export function AccommodationForm({
     await onSave({
       tripId,
       name: form.name,
-      country: form.country,
+      tripCountryId: form.tripCountryId,
       type: form.type as Accommodation["type"],
       platform: form.platform,
       location: form.location,
@@ -477,13 +476,13 @@ export function AccommodationForm({
           id="acc-country"
           label="Country"
           placeholder="Select country..."
-          value={form.country}
-          options={destinations.map((d) => ({
-            value: d,
-            label: d,
-            icon: <span>{getCountryFlag(d)}</span>,
+          value={form.tripCountryId?.toString() || ""}
+          options={tripCountries.map((tc) => ({
+            value: tc.id!.toString(),
+            label: tc.countryName,
+            icon: <span>{getCountryFlag(tc.countryName)}</span>,
           }))}
-          onChange={(val: string) => set("country", val)}
+          onChange={(val: string) => set("tripCountryId", Number(val))}
           includeSearch={false}
         />
         <div className="grid grid-cols-2 gap-3">

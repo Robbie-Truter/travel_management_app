@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Badge, statusLabels } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/Modal";
-import { formatDate, tripDuration } from "@/lib/utils";
+import { formatDate, tripDuration, getFlagEmoji } from "@/lib/utils";
 import { exportTripAsJSON } from "@/lib/export";
 import type { Trip, TripStatus } from "@/db/types";
 
@@ -112,13 +112,20 @@ export function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
 
           <CardContent className="pt-4">
             <h3 className="font-semibold text-text-primary truncate">{trip.name}</h3>
-            <div className="flex items-center gap-1 mt-1 text-sm text-text-secondary">
-              <MapPin size={13} />
-              <span className="truncate">
-                {trip.destinations?.length > 0
-                  ? `${trip.destinations.join(", ")}`
-                  : "No destinations added"}
-              </span>
+            <div className="flex items-center gap-1 mt-1 text-sm text-text-secondary overflow-hidden">
+              <MapPin size={13} className="flex-shrink-0" />
+              <div className="flex items-center gap-1.5 truncate">
+                {trip.tripCountries && trip.tripCountries.length > 0 ? (
+                  trip.tripCountries.map((tc) => (
+                    <span key={tc.id} className="flex items-center gap-1">
+                      <span>{getFlagEmoji(tc.countryCode)}</span>
+                      <span className="truncate">{tc.countryName}</span>
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-text-muted italic">No countries added</span>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-1 mt-1 text-xs text-text-muted">
               <Calendar size={12} />

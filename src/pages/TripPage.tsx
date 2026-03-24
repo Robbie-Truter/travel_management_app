@@ -22,6 +22,7 @@ import { Badge, statusLabels } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { useTrip } from "@/hooks/useTrips";
+import { useTripCountries } from "@/hooks/useTripCountries";
 import { useDestinations } from "@/hooks/useDestinations";
 import { useFlights } from "@/hooks/useFlights";
 import { useAccommodations } from "@/hooks/useAccommodations";
@@ -72,6 +73,7 @@ export function TripPage() {
   const navigate = useNavigate();
   const id = Number(tripId);
   const trip = useTrip(id);
+  const { tripCountries, loading: countriesLoading } = useTripCountries(id);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
   // Destinations
@@ -234,10 +236,11 @@ export function TripPage() {
                 flights={flights}
                 accommodations={accommodations}
                 activities={activities}
+                tripCountries={tripCountries}
               />
             )}
 
-            {/* DESTINATIONS (managed in Overview/Separate) */}
+            {/* COUNTRIES */}
             {activeTab === "countries" && (
               <div className="p-4 bg-surface border border-border rounded-xl">
                 <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
@@ -247,10 +250,9 @@ export function TripPage() {
                 <p className="text-sm text-text-secondary mb-6">
                   Manage the countries you'll be visiting during this trip.
                 </p>
-                {/* We will pass a specific prop to TripOverview or handle it here */}
-                {/* For now, let's keep it in Overview as requested, but maybe a dedicated component is better */}
                 <TripDestinations
                   trip={trip as Trip}
+                  tripCountries={tripCountries}
                   destinations={destinations}
                   flights={flights}
                   accommodations={accommodations}
@@ -304,6 +306,7 @@ export function TripPage() {
                             setDestFormOpen(true);
                           }}
                           onDelete={deleteDestination}
+                          tripCountries={tripCountries}
                         />
                       ))}
                     </AnimatePresence>
@@ -325,7 +328,7 @@ export function TripPage() {
                   }
                   initial={editingDest}
                   tripId={id}
-                  availableCountries={trip.destinations}
+                  tripCountries={tripCountries}
                 />
               </div>
             )}
@@ -374,18 +377,20 @@ export function TripPage() {
                   />
                 ) : (
                   <div className="space-y-12 max-w-4xl mx-auto">
-                    {(trip.destinations || []).map((country) => {
-                      const countryFlights = flights.filter((f) => f.country === country);
+                    {tripCountries.map((tc) => {
+                      const countryFlights = flights.filter((f) => f.tripCountryId === tc.id);
                       if (countryFlights.length === 0) return null;
 
                       return (
-                        <div key={country} className="space-y-6">
+                        <div key={tc.id} className="space-y-6">
                           <div className="flex items-center gap-3 pb-3 border-b border-border/50">
-                            <span className="text-2xl" role="img" aria-label={country}>
-                              {getCountryFlag(country as string)}
+                            <span className="text-2xl" role="img" aria-label={tc.countryName}>
+                              {getCountryFlag(tc.countryName)}
                             </span>
                             <div>
-                              <h3 className="font-bold text-lg text-text-primary">{country}</h3>
+                              <h3 className="font-bold text-lg text-text-primary">
+                                {tc.countryName}
+                              </h3>
                               <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
                                 {countryFlights.length}{" "}
                                 {countryFlights.length === 1 ? "Flight" : "Flights"}
@@ -414,7 +419,9 @@ export function TripPage() {
                     {/* Fallback for items with no country or different country */}
                     {(() => {
                       const otherFlights = flights.filter(
-                        (f) => f.country && !trip.destinations?.includes(f.country),
+                        (f) =>
+                          !f.tripCountryId ||
+                          !tripCountries.find((tc) => tc.id === f.tripCountryId),
                       );
                       if (otherFlights.length === 0) return null;
                       return (
@@ -470,7 +477,7 @@ export function TripPage() {
                   }
                   initial={editingFlight}
                   tripId={id}
-                  destinations={trip.destinations}
+                  tripCountries={tripCountries}
                   lastFlight={flights[flights.length - 1]}
                 />
                 <FlightComparison
@@ -520,18 +527,20 @@ export function TripPage() {
                   />
                 ) : (
                   <div className="space-y-12 max-w-4xl mx-auto">
-                    {(trip.destinations || []).map((country) => {
-                      const countryAccs = accommodations.filter((a) => a.country === country);
+                    {tripCountries.map((tc) => {
+                      const countryAccs = accommodations.filter((a) => a.tripCountryId === tc.id);
                       if (countryAccs.length === 0) return null;
 
                       return (
-                        <div key={country} className="space-y-6">
+                        <div key={tc.id} className="space-y-6">
                           <div className="flex items-center gap-3 pb-3 border-b border-border/50">
-                            <span className="text-2xl" role="img" aria-label={country}>
-                              {getCountryFlag(country as string)}
+                            <span className="text-2xl" role="img" aria-label={tc.countryName}>
+                              {getCountryFlag(tc.countryName)}
                             </span>
                             <div>
-                              <h3 className="font-bold text-lg text-text-primary">{country}</h3>
+                              <h3 className="font-bold text-lg text-text-primary">
+                                {tc.countryName}
+                              </h3>
                               <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
                                 {countryAccs.length} {countryAccs.length === 1 ? "Stay" : "Stays"}
                               </p>
@@ -559,7 +568,9 @@ export function TripPage() {
                     {/* Fallback for items with no country or different country */}
                     {(() => {
                       const otherAccs = accommodations.filter(
-                        (a) => a.country && !trip.destinations?.includes(a.country),
+                        (a) =>
+                          !a.tripCountryId ||
+                          !tripCountries.find((tc) => tc.id === a.tripCountryId),
                       );
                       if (otherAccs.length === 0) return null;
                       return (
@@ -614,7 +625,7 @@ export function TripPage() {
                   }
                   initial={editingAcc}
                   tripId={id}
-                  destinations={trip.destinations}
+                  tripCountries={tripCountries}
                 />
                 <AccommodationComparison
                   open={accCompareOpen}
@@ -653,11 +664,14 @@ export function TripPage() {
                           value={actFilterCity}
                           options={[
                             { value: "all", label: "All Cities", icon: <MapPin size={14} /> },
-                            ...destinations.map((d) => ({
-                              value: d.id!.toString(),
-                              label: `${d.name}`,
-                              icon: <span>{getCountryFlag(d.country)}</span>,
-                            })),
+                            ...destinations.map((d) => {
+                              const tc = tripCountries.find((c) => c.id === d.tripCountryId);
+                              return {
+                                value: d.id!.toString(),
+                                label: `${d.name}`,
+                                icon: <span>{getCountryFlag(tc?.countryName || "")}</span>,
+                              };
+                            }),
                           ]}
                           onChange={(val: string) => setActFilterCity(val)}
                           includeSearch={true}
@@ -742,20 +756,22 @@ export function TripPage() {
                   />
                 ) : (
                   <div className="space-y-12 max-w-4xl mx-auto">
-                    {(trip.destinations || []).map((country) => {
+                    {tripCountries.map((tc) => {
                       const countryActivities = filteredActivities.filter(
-                        (a) => a.country === country,
+                        (a) => a.tripCountryId === tc.id,
                       );
                       if (countryActivities.length === 0) return null;
 
                       return (
-                        <div key={country} className="space-y-6">
+                        <div key={tc.id} className="space-y-6">
                           <div className="flex items-center gap-3 pb-3 border-b border-border/50">
-                            <span className="text-2xl" role="img" aria-label={country}>
-                              {getCountryFlag(country as string)}
+                            <span className="text-2xl" role="img" aria-label={tc.countryName}>
+                              {getCountryFlag(tc.countryName)}
                             </span>
                             <div>
-                              <h3 className="font-bold text-lg text-text-primary">{country}</h3>
+                              <h3 className="font-bold text-lg text-text-primary">
+                                {tc.countryName}
+                              </h3>
                               <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
                                 {countryActivities.length}{" "}
                                 {countryActivities.length === 1 ? "Activity" : "Activities"}
@@ -787,7 +803,9 @@ export function TripPage() {
                     {/* Fallback for items with no country or different country */}
                     {(() => {
                       const otherActivities = filteredActivities.filter(
-                        (a) => a.country && !trip.destinations?.includes(a.country),
+                        (a) =>
+                          !a.tripCountryId ||
+                          !tripCountries.find((tc) => tc.id === a.tripCountryId),
                       );
                       if (otherActivities.length === 0) return null;
                       return (
@@ -847,7 +865,7 @@ export function TripPage() {
                   }
                   initial={editingAct}
                   tripId={id}
-                  destinations={trip.destinations}
+                  tripCountries={tripCountries}
                   allDestinations={destinations}
                 />
               </div>
