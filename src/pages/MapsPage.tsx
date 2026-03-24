@@ -54,7 +54,7 @@ export function MapsPage() {
             transition={{ duration: 0.5 }}
             className="w-full h-full"
           >
-            <ItineraryMap trips={trips} flights={flights} homeCountry={homeCountry} />
+            <ItineraryMap flights={flights} homeCountry={homeCountry} />
           </motion.div>
         )}
       </div>

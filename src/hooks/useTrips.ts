@@ -1,38 +1,188 @@
 import { useState, useEffect } from "react";
-import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/db/database";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/useAuth";
+import { uploadFile, getFileUrl, deleteFile } from "@/lib/storage";
 import type { Trip } from "@/db/types";
 
 export function useTrips() {
-  const trips = useLiveQuery(() => db.trips.orderBy("createdAt").reverse().toArray(), []);
-  const loading = trips === undefined;
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  const addTrip = async (trip: Omit<Trip, "id" | "createdAt" | "updatedAt">) => {
-    const now = new Date().toISOString();
-    return db.trips.add({ ...trip, createdAt: now, updatedAt: now });
+  const { data: trips, isLoading } = useQuery({
+    queryKey: ["trips", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("trips")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      // Map snake_case from DB to camelCase for the frontend
+      return data.map((doc) => ({
+        ...doc,
+        startDate: doc.start_date,
+        endDate: doc.end_date,
+        createdAt: doc.created_at,
+        updatedAt: doc.updated_at,
+        coverImage: doc.cover_image
+          ? doc.cover_image.startsWith("data:") || doc.cover_image.startsWith("http")
+            ? doc.cover_image
+            : getFileUrl("trip-covers", doc.cover_image)
+          : undefined,
+      })) as Trip[];
+    },
+    enabled: !!user,
+  });
+
+  const addTripMutation = useMutation({
+    mutationFn: async (trip: Omit<Trip, "id" | "createdAt" | "updatedAt">) => {
+      if (!user) throw new Error("Not authenticated");
+
+      let coverImagePath = trip.coverImage;
+      if (trip.coverImage && trip.coverImage.startsWith("data:")) {
+        const fileName = `${Date.now()}_cover.jpg`;
+        coverImagePath = await uploadFile("trip-covers", `${user.id}/${fileName}`, trip.coverImage);
+      }
+
+      const now = new Date().toISOString();
+      // Map to snake_case for Supabase
+      const dbTrip = {
+        user_id: user.id,
+        name: trip.name,
+        destinations: trip.destinations,
+        start_date: trip.startDate,
+        end_date: trip.endDate,
+        status: trip.status,
+        description: trip.description,
+        budget: trip.budget,
+        cover_image: coverImagePath,
+        created_at: now,
+        updated_at: now,
+      };
+
+      const { data, error } = await supabase.from("trips").insert([dbTrip]).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["trips"] }),
+  });
+
+  const updateTripMutation = useMutation({
+    mutationFn: async ({ id, changes }: { id: number; changes: Partial<Trip> }) => {
+      if (!user) throw new Error("Not authenticated");
+      const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
+
+      // Handle image upload if it's a new base64 image
+      if (changes.coverImage && changes.coverImage.startsWith("data:")) {
+        // Optional: delete old image if you have the old path
+        const fileName = `${Date.now()}_cover.jpg`;
+        const path = await uploadFile("trip-covers", `${user.id}/${fileName}`, changes.coverImage);
+        updateData.cover_image = path;
+      } else if (changes.coverImage !== undefined) {
+        updateData.cover_image = changes.coverImage;
+      }
+
+      // Map camelCase keys back to snake_case
+      if (changes.name !== undefined) updateData.name = changes.name;
+      if (changes.destinations !== undefined) updateData.destinations = changes.destinations;
+      if (changes.startDate !== undefined) updateData.start_date = changes.startDate;
+      if (changes.endDate !== undefined) updateData.end_date = changes.endDate;
+      if (changes.status !== undefined) updateData.status = changes.status;
+      if (changes.description !== undefined) updateData.description = changes.description;
+      if (changes.budget !== undefined) updateData.budget = changes.budget;
+
+      const { data, error } = await supabase
+        .from("trips")
+        .update(updateData)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["trips"] });
+      queryClient.invalidateQueries({ queryKey: ["trip"] });
+    },
+  });
+
+  const deleteTripMutation = useMutation({
+    mutationFn: async (id: number) => {
+      // 1. Get trip to find cover image path
+      const { data: trip } = await supabase
+        .from("trips")
+        .select("cover_image")
+        .eq("id", id)
+        .single();
+
+      // 2. Delete cover image if exists
+      if (trip?.cover_image && !trip.cover_image.startsWith("http")) {
+        await deleteFile("trip-covers", trip.cover_image).catch(console.error);
+      }
+
+      // 3. Delete trip (will cascade to other tables in DB)
+      const { error } = await supabase.from("trips").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["trips"] }),
+  });
+
+  const getTrip = async (id: number): Promise<Trip | undefined> => {
+    const { data, error } = await supabase.from("trips").select("*").eq("id", id).single();
+    if (error || !data) return undefined;
+    return {
+      ...data,
+      startDate: data.start_date,
+      endDate: data.end_date,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+      coverImage: data.cover_image
+        ? data.cover_image.startsWith("data:") || data.cover_image.startsWith("http")
+          ? data.cover_image
+          : getFileUrl("trip-covers", data.cover_image)
+        : undefined,
+    } as Trip;
   };
 
-  const updateTrip = async (id: number, changes: Partial<Trip>) => {
-    return db.trips.update(id, { ...changes, updatedAt: new Date().toISOString() });
+  return {
+    trips: trips ?? [],
+    loading: isLoading,
+    addTrip: async (trip: Omit<Trip, "id" | "createdAt" | "updatedAt">) =>
+      addTripMutation.mutateAsync(trip),
+    updateTrip: async (id: number, changes: Partial<Trip>) =>
+      updateTripMutation.mutateAsync({ id, changes }),
+    deleteTrip: async (id: number) => deleteTripMutation.mutateAsync(id),
+    getTrip,
   };
-
-  const deleteTrip = async (id: number) => {
-    await Promise.all([
-      db.trips.delete(id),
-      db.flights.where("tripId").equals(id).delete(),
-      db.accommodations.where("tripId").equals(id).delete(),
-      db.activities.where("tripId").equals(id).delete(),
-      db.notes.where("tripId").equals(id).delete(),
-    ]);
-  };
-
-  const getTrip = async (id: number) => db.trips.get(id);
-
-  return { trips: trips ?? [], loading, addTrip, updateTrip, deleteTrip, getTrip };
 }
 
 export function useTrip(id: number | undefined) {
-  const trip = useLiveQuery(() => (id ? db.trips.get(id) : undefined), [id]);
+  const { user } = useAuth();
+
+  const { data: trip } = useQuery({
+    queryKey: ["trip", id],
+    queryFn: async () => {
+      if (!id) return undefined;
+      const { data, error } = await supabase.from("trips").select("*").eq("id", id).single();
+      if (error) throw error;
+      return {
+        ...data,
+        startDate: data.start_date,
+        endDate: data.end_date,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+        coverImage: data.cover_image
+          ? data.cover_image.startsWith("data:") || data.cover_image.startsWith("http")
+            ? data.cover_image
+            : getFileUrl("trip-covers", data.cover_image)
+          : undefined,
+      } as Trip;
+    },
+    enabled: !!id && !!user,
+  });
+
   return trip;
 }
 

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
-import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/db/database";
+import { supabase } from "@/lib/supabase";
 import { BrochureDocument } from "./BrochureDocument";
 import { Button } from "@/components/ui/Button";
 import { Check, Download, FileText, Loader2, RefreshCw, ArrowLeft } from "lucide-react";
@@ -9,7 +8,7 @@ import { cn } from "@/lib/utils";
 import type { Trip, Flight, Accommodation, Activity } from "@/db/types";
 
 export function BrochurePage() {
-  const trips = useLiveQuery(() => db.trips.orderBy("createdAt").reverse().toArray(), []);
+  const [trips, setTrips] = useState<Trip[] | undefined>(undefined);
   const [selectedTripId, setSelectedTripId] = useState<number | null>(null);
   const [tripData, setTripData] = useState<{
     trip: Trip;
@@ -20,25 +19,81 @@ export function BrochurePage() {
   } | null>(null);
   const [loadingPdf, setLoadingPdf] = useState(false);
 
+  // Load all trips for the sidebar
+  useEffect(() => {
+    async function fetchTrips() {
+      const { data } = await supabase.from("trips").select("*").order("created_at", { ascending: false });
+      if (data) {
+        setTrips(data.map(d => ({
+          ...d,
+          startDate: d.start_date,
+          endDate: d.end_date,
+          createdAt: d.created_at,
+          updatedAt: d.updated_at,
+          coverImage: d.cover_image
+        })) as Trip[]);
+      } else {
+        setTrips([]);
+      }
+    }
+    fetchTrips();
+  }, []);
+
   // Load associated trip data when a trip is selected
   useEffect(() => {
     async function loadData() {
-      if (selectedTripId) {
-        setLoadingPdf(true);
-        const trip = await db.trips.get(selectedTripId);
-        if (trip) {
-          const flights = await db.flights.where("tripId").equals(selectedTripId).toArray();
-          const accommodations = await db.accommodations
-            .where("tripId")
-            .equals(selectedTripId)
-            .toArray();
-          const activities = await db.activities.where("tripId").equals(selectedTripId).toArray();
-          const note = await db.notes.where("tripId").equals(selectedTripId).first();
-          setTripData({ trip, flights, accommodations, activities, note: note?.content });
-        }
-        setLoadingPdf(false);
-      } else {
+      if (!selectedTripId) {
         setTripData(null);
+        return;
+      }
+
+      setLoadingPdf(true);
+      
+      try {
+        const [tripRes, flightsRes, accRes, actRes, notesRes] = await Promise.all([
+          supabase.from("trips").select("*").eq("id", selectedTripId).single(),
+          supabase.from("flights").select("*").eq("trip_id", selectedTripId).order("departure_time", { ascending: true }),
+          supabase.from("accommodations").select("*").eq("trip_id", selectedTripId).order("check_in", { ascending: true }),
+          supabase.from("activities").select("*").eq("trip_id", selectedTripId).order("date", { ascending: true }),
+          supabase.from("notes").select("*").eq("trip_id", selectedTripId).maybeSingle()
+        ]);
+
+        if (tripRes.data) {
+          const trip = {
+            ...tripRes.data,
+            startDate: tripRes.data.start_date,
+            endDate: tripRes.data.end_date,
+            createdAt: tripRes.data.created_at,
+            updatedAt: tripRes.data.updated_at,
+            coverImage: tripRes.data.cover_image
+          } as Trip;
+
+          const flights = (flightsRes.data || []).map(f => ({
+            ...f, tripId: f.trip_id, isConfirmed: f.is_confirmed, bookingLink: f.booking_link, createdAt: f.created_at
+          })) as Flight[];
+
+          const accommodations = (accRes.data || []).map(a => ({
+            ...a, tripId: a.trip_id, checkIn: a.check_in, checkOut: a.check_out, 
+            checkInAfter: a.check_in_after, checkOutBefore: a.check_out_before,
+            bookingLink: a.booking_link, isConfirmed: a.is_confirmed, createdAt: a.created_at
+          })) as Accommodation[];
+
+          const activities = (actRes.data || []).map(a => ({
+            ...a, tripId: a.trip_id, destinationId: a.destination_id, isConfirmed: a.is_confirmed, createdAt: a.created_at
+          })) as Activity[];
+
+          setTripData({
+            trip,
+            flights,
+            accommodations,
+            activities,
+            note: notesRes.data?.content
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load PDF data", err);
+      } finally {
+        setLoadingPdf(false);
       }
     }
     loadData();

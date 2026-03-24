@@ -13,10 +13,12 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { CountrySelector } from "@/components/ui/CountrySelector";
 import { useTheme, useSettings } from "@/hooks/useTrips";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
@@ -137,6 +139,7 @@ function SidebarContent({
   onClose?: () => void;
 }) {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   const handleNewTrip = () => {
     onNewTrip();
@@ -146,6 +149,11 @@ function SidebarContent({
   const handleImport = () => {
     onImport();
     onClose?.();
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
   };
 
   return (
@@ -273,6 +281,19 @@ function SidebarContent({
               {theme === "dark" ? "Light Mode" : "Dark Mode"}
             </span>
           )}
+        </Button>
+
+        <Button
+          variant="ghost"
+          className={cn(
+            "w-full justify-start transition-all overflow-hidden text-rose-pastel-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-950/30 dark:hover:text-rose-400",
+            isCollapsed ? "px-0 justify-center" : "",
+          )}
+          onClick={handleSignOut}
+          title={isCollapsed ? "Sign Out" : undefined}
+        >
+          <LogOut size={16} className="shrink-0" />
+          {!isCollapsed && <span className="ml-2 whitespace-nowrap">Sign Out</span>}
         </Button>
 
         {/* Collapse Toggle Button (Desktop only) */}
