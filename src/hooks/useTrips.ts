@@ -26,14 +26,24 @@ export function useTrips() {
         endDate: doc.end_date,
         createdAt: doc.created_at,
         updatedAt: doc.updated_at,
-        tripCountries: doc.trip_countries.map((tc: any) => ({
-          ...tc,
-          tripId: tc.trip_id,
-          countryName: tc.country_name,
-          countryCode: tc.country_code,
-          budgetLimit: tc.budget_limit,
-          createdAt: tc.created_at,
-        })),
+        tripCountries: doc.trip_countries.map(
+          (tc: {
+            trip_id: number;
+            country_name: string;
+            country_code: string;
+            budget_limit: number;
+            notes: string;
+            order: number;
+            created_at: string;
+          }) => ({
+            ...tc,
+            tripId: tc.trip_id,
+            countryName: tc.country_name,
+            countryCode: tc.country_code,
+            budgetLimit: tc.budget_limit,
+            createdAt: tc.created_at,
+          }),
+        ),
         coverImage: doc.cover_image
           ? doc.cover_image.startsWith("data:") || doc.cover_image.startsWith("http")
             ? doc.cover_image

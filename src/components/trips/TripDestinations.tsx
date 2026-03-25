@@ -33,7 +33,7 @@ export function TripDestinations({
 
   const handleAdd = async () => {
     if (!selectedCountryName) return;
-    const countryData = COUNTRIES.find(c => c.name === selectedCountryName);
+    const countryData = COUNTRIES.find((c) => c.name === selectedCountryName);
     if (!countryData) return;
 
     if (tripCountries.some((tc) => tc.countryName === selectedCountryName)) {
@@ -48,7 +48,7 @@ export function TripDestinations({
       countryCode: countryData.code,
       order: tripCountries.length,
     });
-    
+
     setIsAdding(false);
     setSelectedCountryName("");
   };
@@ -119,7 +119,8 @@ export function TripDestinations({
           {tripCountries.map((tc) => {
             const flagCode = tc.countryCode.toLowerCase();
 
-            const countryDestinations = destinations?.filter((d) => d.tripCountryId === tc.id) || [];
+            const countryDestinations =
+              destinations?.filter((d) => d.tripCountryId === tc.id) || [];
             const countryFlights = flights.filter((f) => f.tripCountryId === tc.id);
             const countryStays = accommodations.filter((a) => a.tripCountryId === tc.id);
             const countryActivities = activities.filter((a) => a.tripCountryId === tc.id);

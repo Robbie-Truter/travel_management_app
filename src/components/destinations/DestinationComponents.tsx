@@ -16,8 +16,13 @@ interface DestinationCardProps {
   tripCountries?: TripCountry[];
 }
 
-export function DestinationCard({ destination, onEdit, onDelete, tripCountries = [] }: DestinationCardProps) {
-  const tc = tripCountries.find(c => c.id === destination.tripCountryId);
+export function DestinationCard({
+  destination,
+  onEdit,
+  onDelete,
+  tripCountries = [],
+}: DestinationCardProps) {
+  const tc = tripCountries.find((c) => c.trip_id === destination.tripCountryId);
 
   return (
     <motion.div
@@ -117,7 +122,7 @@ export function DestinationForm({
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: initial?.name || "",
-    tripCountryId: initial?.tripCountryId || tripCountries[0]?.id || undefined,
+    tripCountryId: initial?.tripCountryId || tripCountries[0]?.trip_id || undefined,
     notes: initial?.notes || "",
     image: initial?.image || "",
   });
@@ -246,13 +251,15 @@ export function DestinationForm({
               options={
                 tripCountries.length > 0
                   ? tripCountries.map((tc) => ({
-                      value: tc.id!.toString(),
+                      value: tc.trip_id!.toString(),
                       label: tc.countryName,
                       icon: <span>{getCountryFlag(tc.countryName)}</span>,
                     }))
                   : [{ value: "", label: "No countries added to trip yet" }]
               }
-              onChange={(val: string) => setFormData((prev) => ({ ...prev, tripCountryId: Number(val) }))}
+              onChange={(val: string) =>
+                setFormData((prev) => ({ ...prev, tripCountryId: Number(val) }))
+              }
               includeSearch={false}
             />
             {tripCountries.length === 0 && (
