@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import { supabase } from "@/lib/supabase";
-import { BrochureDocument } from "./BrochureDocument";
+import { BrochureDocument } from "@/components/brochure/BrochureDocument";
 import { Button } from "@/components/ui/Button";
 import { Check, Download, FileText, Loader2, RefreshCw, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";

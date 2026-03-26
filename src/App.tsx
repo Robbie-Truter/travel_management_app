@@ -5,7 +5,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { TripPage } from "@/pages/TripPage";
 import { MapsPage } from "@/pages/MapsPage";
-import { BrochurePage } from "@/components/brochure/BrochurePage";
+import { BrochurePage } from "@/pages/BrochurePage";
 import { AuthPage } from "@/pages/AuthPage";
 import { TripForm } from "@/components/trips/TripForm";
 import { AuthProvider } from "@/contexts/AuthContext";
