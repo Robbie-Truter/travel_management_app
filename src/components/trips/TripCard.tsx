@@ -113,7 +113,7 @@ export function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
           <CardContent className="pt-4">
             <h3 className="font-semibold text-text-primary truncate">{trip.name}</h3>
             <div className="flex items-center gap-1 mt-1 text-sm text-text-secondary overflow-hidden">
-              <MapPin size={13} className="flex-shrink-0" />
+              <MapPin size={13} className="shrink-0" />
               <div className="flex items-center gap-1.5 truncate">
                 {trip.tripCountries && trip.tripCountries.length > 0 ? (
                   trip.tripCountries.map((tc) => (

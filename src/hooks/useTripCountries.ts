@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
-import type { TripCountry } from "@/db/types";
+import type { TripCountry, TripCountryRow } from "@/db/types";
 
 export function useTripCountries(tripId: number) {
   const { user } = useAuth();
@@ -9,7 +9,7 @@ export function useTripCountries(tripId: number) {
 
   const { data: tripCountries, isLoading } = useQuery({
     queryKey: ["tripCountries", tripId],
-    queryFn: async () => {
+    queryFn: async (): Promise<TripCountry[]> => {
       const { data, error } = await supabase
         .from("trip_countries")
         .select("*")
@@ -18,8 +18,9 @@ export function useTripCountries(tripId: number) {
         .order("created_at", { ascending: true });
 
       if (error) throw error;
-      
-      return data.map(doc => ({
+      if (!data) return [];
+
+      return (data as TripCountryRow[]).map((doc) => ({
         ...doc,
         tripId: doc.trip_id,
         countryName: doc.country_name,
@@ -44,8 +45,12 @@ export function useTripCountries(tripId: number) {
         order: country.order,
         created_at: new Date().toISOString(),
       };
-      
-      const { data, error } = await supabase.from("trip_countries").insert([dbCountry]).select().single();
+
+      const { data, error } = await supabase
+        .from("trip_countries")
+        .insert([dbCountry])
+        .select()
+        .single();
       if (error) throw error;
       return data;
     },
@@ -60,7 +65,7 @@ export function useTripCountries(tripId: number) {
       if (updates.budgetLimit !== undefined) dbUpdates.budget_limit = updates.budgetLimit;
       if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
       if (updates.order !== undefined) dbUpdates.order = updates.order;
-      
+
       const { error } = await supabase.from("trip_countries").update(dbUpdates).eq("id", id);
       if (error) throw error;
     },
@@ -78,8 +83,10 @@ export function useTripCountries(tripId: number) {
   return {
     tripCountries: tripCountries ?? [],
     loading: isLoading,
-    addTripCountry: async (country: Omit<TripCountry, "id" | "createdAt">) => addTripCountryMutation.mutateAsync(country),
-    updateTripCountry: async (id: number, updates: Partial<TripCountry>) => updateTripCountryMutation.mutateAsync({ id, updates }),
+    addTripCountry: async (country: Omit<TripCountry, "id" | "createdAt">) =>
+      addTripCountryMutation.mutateAsync(country),
+    updateTripCountry: async (id: number, updates: Partial<TripCountry>) =>
+      updateTripCountryMutation.mutateAsync({ id, updates }),
     deleteTripCountry: async (id: number) => deleteTripCountryMutation.mutateAsync(id),
   };
 }

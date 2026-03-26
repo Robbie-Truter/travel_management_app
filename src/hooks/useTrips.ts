@@ -3,7 +3,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { uploadFile, getFileUrl, deleteFile } from "@/lib/storage";
-import type { Trip } from "@/db/types";
+import type {
+  Trip,
+  TripRow,
+  TripCountryRow,
+} from "@/db/types";
 
 export function useTrips() {
   const { user } = useAuth();
@@ -11,45 +15,39 @@ export function useTrips() {
 
   const { data: trips, isLoading } = useQuery({
     queryKey: ["trips", user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<Trip[]> => {
       const { data, error } = await supabase
         .from("trips")
         .select("*, trip_countries(*)")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
+      if (!data) return [];
 
       // Map snake_case from DB to camelCase for the frontend
-      return data.map((doc) => ({
-        ...doc,
-        startDate: doc.start_date,
-        endDate: doc.end_date,
-        createdAt: doc.created_at,
-        updatedAt: doc.updated_at,
-        tripCountries: doc.trip_countries.map(
-          (tc: {
-            trip_id: number;
-            country_name: string;
-            country_code: string;
-            budget_limit: number;
-            notes: string;
-            order: number;
-            created_at: string;
-          }) => ({
-            ...tc,
-            tripId: tc.trip_id,
-            countryName: tc.country_name,
-            countryCode: tc.country_code,
-            budgetLimit: tc.budget_limit,
-            createdAt: tc.created_at,
-          }),
-        ),
-        coverImage: doc.cover_image
-          ? doc.cover_image.startsWith("data:") || doc.cover_image.startsWith("http")
-            ? doc.cover_image
-            : getFileUrl("trip-covers", doc.cover_image)
-          : undefined,
-      })) as Trip[];
+      return (data as TripRow[]).map(
+        (d) =>
+          ({
+            ...d,
+            startDate: d.start_date,
+            endDate: d.end_date,
+            createdAt: d.created_at,
+            updatedAt: d.updated_at,
+            tripCountries: (d.trip_countries || []).map((tc: TripCountryRow) => ({
+              ...tc,
+              tripId: tc.trip_id,
+              countryName: tc.country_name,
+              countryCode: tc.country_code,
+              budgetLimit: tc.budget_limit,
+              createdAt: tc.created_at,
+            })),
+            coverImage: d.cover_image
+              ? d.cover_image.startsWith("data:") || d.cover_image.startsWith("http")
+                ? d.cover_image
+                : getFileUrl("trip-covers", d.cover_image)
+              : undefined,
+          }) as Trip,
+      );
     },
     enabled: !!user,
   });
@@ -146,18 +144,31 @@ export function useTrips() {
   });
 
   const getTrip = async (id: number): Promise<Trip | undefined> => {
-    const { data, error } = await supabase.from("trips").select("*").eq("id", id).single();
+    const { data, error } = await supabase
+      .from("trips")
+      .select("*, trip_countries(*)")
+      .eq("id", id)
+      .single();
     if (error || !data) return undefined;
+    const tripRow = data as TripRow;
     return {
-      ...data,
-      startDate: data.start_date,
-      endDate: data.end_date,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at,
-      coverImage: data.cover_image
-        ? data.cover_image.startsWith("data:") || data.cover_image.startsWith("http")
-          ? data.cover_image
-          : getFileUrl("trip-covers", data.cover_image)
+      ...tripRow,
+      startDate: tripRow.start_date,
+      endDate: tripRow.end_date,
+      createdAt: tripRow.created_at,
+      updatedAt: tripRow.updated_at,
+      tripCountries: (tripRow.trip_countries || []).map((tc: TripCountryRow) => ({
+        ...tc,
+        tripId: tc.trip_id,
+        countryName: tc.country_name,
+        countryCode: tc.country_code,
+        budgetLimit: tc.budget_limit,
+        createdAt: tc.created_at,
+      })),
+      coverImage: tripRow.cover_image
+        ? tripRow.cover_image.startsWith("data:") || tripRow.cover_image.startsWith("http")
+          ? tripRow.cover_image
+          : getFileUrl("trip-covers", tripRow.cover_image)
         : undefined,
     } as Trip;
   };
@@ -179,20 +190,35 @@ export function useTrip(id: number | undefined) {
 
   const { data: trip } = useQuery({
     queryKey: ["trip", id],
-    queryFn: async () => {
+    queryFn: async (): Promise<Trip | undefined> => {
       if (!id) return undefined;
-      const { data, error } = await supabase.from("trips").select("*").eq("id", id).single();
+      const { data, error } = await supabase
+        .from("trips")
+        .select("*, trip_countries(*)")
+        .eq("id", id)
+        .single();
       if (error) throw error;
+      if (!data) return undefined;
+
+      const tripRow = data as TripRow;
       return {
-        ...data,
-        startDate: data.start_date,
-        endDate: data.end_date,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at,
-        coverImage: data.cover_image
-          ? data.cover_image.startsWith("data:") || data.cover_image.startsWith("http")
-            ? data.cover_image
-            : getFileUrl("trip-covers", data.cover_image)
+        ...tripRow,
+        startDate: tripRow.start_date,
+        endDate: tripRow.end_date,
+        createdAt: tripRow.created_at,
+        updatedAt: tripRow.updated_at,
+        tripCountries: (tripRow.trip_countries || []).map((tc: TripCountryRow) => ({
+          ...tc,
+          tripId: tc.trip_id,
+          countryName: tc.country_name,
+          countryCode: tc.country_code,
+          budgetLimit: tc.budget_limit,
+          createdAt: tc.created_at,
+        })),
+        coverImage: tripRow.cover_image
+          ? tripRow.cover_image.startsWith("data:") || tripRow.cover_image.startsWith("http")
+            ? tripRow.cover_image
+            : getFileUrl("trip-covers", tripRow.cover_image)
           : undefined,
       } as Trip;
     },

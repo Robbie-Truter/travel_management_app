@@ -241,7 +241,9 @@ export function BrochureDocument({
         <View style={styles.coverPage}>
           {trip.coverImage && <Image src={trip.coverImage} style={styles.coverImage} />}
           <Text style={styles.coverTitle}>{trip.name}</Text>
-          <Text style={styles.coverDestinations}>{trip.destinations.join(" • ")}</Text>
+          <Text style={styles.coverDestinations}>
+            {trip.tripCountries?.map((tc) => tc.countryName).join(" • ") || "No destinations"}
+          </Text>
           <Text style={styles.coverDates}>
             {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
           </Text>
@@ -270,18 +272,15 @@ export function BrochureDocument({
         {/* FLIGHTS SECTION (Grouped by Country) */}
         {flights.length > 0 && (
           <View style={[styles.section, { marginTop: 20 }]}>
-            {trip.destinations.some((c) => flights.some((f) => f.country === c)) ||
-            flights.some((f) => !f.country || !trip.destinations.includes(f.country)) ? (
-              <Text style={styles.sectionHeader}>Flights</Text>
-            ) : null}
-            {trip.destinations.map((country) => {
-              const countryFlights = flights.filter((f) => f.country === country);
+            <Text style={styles.sectionHeader}>Flights</Text>
+            {trip.tripCountries?.map((tc) => {
+              const countryFlights = flights.filter((f) => f.tripCountryId === tc.id);
               if (countryFlights.length === 0) return null;
 
               return (
-                <View key={country}>
+                <View key={tc.id}>
                   <View style={styles.countryHeader} wrap={false}>
-                    <Text style={styles.countryLabel}>{country}</Text>
+                    <Text style={styles.countryLabel}>{tc.countryName}</Text>
                     <Text style={styles.itemCount}>
                       {countryFlights.length} {countryFlights.length === 1 ? "Flight" : "Flights"}
                     </Text>
@@ -364,7 +363,9 @@ export function BrochureDocument({
             {/* Other Flights Fallback */}
             {(() => {
               const otherFlights = flights.filter(
-                (f) => !f.country || !trip.destinations.includes(f.country),
+                (f) =>
+                  !f.tripCountryId ||
+                  !trip.tripCountries?.some((tc) => tc.id === f.tripCountryId),
               );
               if (otherFlights.length === 0) return null;
 
@@ -456,14 +457,14 @@ export function BrochureDocument({
         <Page size="A4" style={styles.page}>
           <View style={styles.section}>
             <Text style={styles.sectionHeader}>Accommodations</Text>
-            {trip.destinations.map((country) => {
-              const countryAccs = accommodations.filter((a) => a.country === country);
+            {trip.tripCountries?.map((tc) => {
+              const countryAccs = accommodations.filter((a) => a.tripCountryId === tc.id);
               if (countryAccs.length === 0) return null;
 
               return (
-                <View key={country}>
+                <View key={tc.id}>
                   <View style={styles.countryHeader} wrap={false}>
-                    <Text style={styles.countryLabel}>{country}</Text>
+                    <Text style={styles.countryLabel}>{tc.countryName}</Text>
                     <Text style={styles.itemCount}>
                       {countryAccs.length} {countryAccs.length === 1 ? "Stay" : "Stays"}
                     </Text>
@@ -560,7 +561,9 @@ export function BrochureDocument({
             {/* Other Stays Fallback */}
             {(() => {
               const otherAccs = accommodations.filter(
-                (a) => !a.country || !trip.destinations.includes(a.country),
+                (a) =>
+                  !a.tripCountryId ||
+                  !trip.tripCountries?.some((tc) => tc.id === a.tripCountryId),
               );
               if (otherAccs.length === 0) return null;
 
@@ -664,17 +667,17 @@ export function BrochureDocument({
         <Page size="A4" style={styles.page}>
           <View style={styles.section}>
             {activities.length > 0 && <Text style={styles.sectionHeader}>Activity Timeline</Text>}
-            {trip.destinations.map((country) => {
-              const countryActivities = activities.filter((a) => a.country === country);
+            {trip.tripCountries?.map((tc) => {
+              const countryActivities = activities.filter((a) => a.tripCountryId === tc.id);
               if (countryActivities.length === 0) return null;
 
               // Group activities by date within the country group
               const dates = Array.from(new Set(countryActivities.map((a) => a.date))).sort();
 
               return (
-                <View key={country} style={{ marginBottom: 20 }}>
+                <View key={tc.id} style={{ marginBottom: 20 }}>
                   <View style={styles.countryHeader} wrap={false}>
-                    <Text style={styles.countryLabel}>{country}</Text>
+                    <Text style={styles.countryLabel}>{tc.countryName}</Text>
                     <Text style={styles.itemCount}>
                       {countryActivities.length}{" "}
                       {countryActivities.length === 1 ? "Activity" : "Activities"}
@@ -755,7 +758,9 @@ export function BrochureDocument({
             {/* Other Activities Fallback */}
             {(() => {
               const otherActivities = activities.filter(
-                (a) => !a.country || !trip.destinations.includes(a.country),
+                (a) =>
+                  !a.tripCountryId ||
+                  !trip.tripCountries?.some((tc) => tc.id === a.tripCountryId),
               );
               if (otherActivities.length === 0) return null;
               const dates = Array.from(new Set(otherActivities.map((a) => a.date))).sort();

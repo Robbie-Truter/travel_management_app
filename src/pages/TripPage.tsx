@@ -71,9 +71,11 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
 export function TripPage() {
   const { tripId } = useParams<{ tripId: string }>();
   const navigate = useNavigate();
+
   const id = Number(tripId);
   const trip = useTrip(id);
-  const { tripCountries, loading: countriesLoading } = useTripCountries(id);
+
+  const { tripCountries } = useTripCountries(id);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
   // Destinations
@@ -171,7 +173,9 @@ export function TripPage() {
             <div className="flex items-center gap-3 mt-1 text-white/80 text-sm">
               <span className="flex items-center gap-1">
                 <MapPin size={13} />
-                {trip.destinations?.length > 0 ? trip.destinations.join(", ") : "No destinations"}
+                {(trip?.tripCountries || []).length > 0
+                  ? (trip?.tripCountries ?? []).map((tc) => tc.countryName).join(", ")
+                  : "No countries"}
               </span>
               <span>
                 {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
@@ -378,11 +382,11 @@ export function TripPage() {
                 ) : (
                   <div className="space-y-12 max-w-4xl mx-auto">
                     {tripCountries.map((tc) => {
-                      const countryFlights = flights.filter((f) => f.tripCountryId === tc.trip_id);
+                      const countryFlights = flights.filter((f) => f.tripCountryId === tc.id);
                       if (countryFlights.length === 0) return null;
 
                       return (
-                        <div key={tc.trip_id} className="space-y-6">
+                        <div key={tc.id} className="space-y-6">
                           <div className="flex items-center gap-3 pb-3 border-b border-border/50">
                             <span className="text-2xl" role="img" aria-label={tc.countryName}>
                               {getCountryFlag(tc.countryName)}
@@ -421,7 +425,7 @@ export function TripPage() {
                       const otherFlights = flights.filter(
                         (f) =>
                           !f.tripCountryId ||
-                          !tripCountries.find((tc) => tc.trip_id === f.tripCountryId),
+                          !tripCountries.find((tc) => tc.id === f.tripCountryId),
                       );
                       if (otherFlights.length === 0) return null;
                       return (
@@ -528,13 +532,11 @@ export function TripPage() {
                 ) : (
                   <div className="space-y-12 max-w-4xl mx-auto">
                     {tripCountries.map((tc) => {
-                      const countryAccs = accommodations.filter(
-                        (a) => a.tripCountryId === tc.trip_id,
-                      );
+                      const countryAccs = accommodations.filter((a) => a.tripCountryId === tc.id);
                       if (countryAccs.length === 0) return null;
 
                       return (
-                        <div key={tc.trip_id} className="space-y-6">
+                        <div key={tc.id} className="space-y-6">
                           <div className="flex items-center gap-3 pb-3 border-b border-border/50">
                             <span className="text-2xl" role="img" aria-label={tc.countryName}>
                               {getCountryFlag(tc.countryName)}
@@ -572,7 +574,7 @@ export function TripPage() {
                       const otherAccs = accommodations.filter(
                         (a) =>
                           !a.tripCountryId ||
-                          !tripCountries.find((tc) => tc.trip_id === a.tripCountryId),
+                          !tripCountries.find((tc) => tc.id === a.tripCountryId),
                       );
                       if (otherAccs.length === 0) return null;
                       return (
@@ -667,7 +669,7 @@ export function TripPage() {
                           options={[
                             { value: "all", label: "All Cities", icon: <MapPin size={14} /> },
                             ...destinations.map((d) => {
-                              const tc = tripCountries.find((c) => c.trip_id === d.tripCountryId);
+                              const tc = tripCountries.find((c) => c.id === d.tripCountryId);
                               return {
                                 value: d.id!.toString(),
                                 label: `${d.name}`,
@@ -760,12 +762,12 @@ export function TripPage() {
                   <div className="space-y-12 max-w-4xl mx-auto">
                     {tripCountries.map((tc) => {
                       const countryActivities = filteredActivities.filter(
-                        (a) => a.tripCountryId === tc.trip_id,
+                        (a) => a.tripCountryId === tc.id,
                       );
                       if (countryActivities.length === 0) return null;
 
                       return (
-                        <div key={tc.trip_id} className="space-y-6">
+                        <div key={tc.id} className="space-y-6">
                           <div className="flex items-center gap-3 pb-3 border-b border-border/50">
                             <span className="text-2xl" role="img" aria-label={tc.countryName}>
                               {getCountryFlag(tc.countryName)}
@@ -807,7 +809,7 @@ export function TripPage() {
                       const otherActivities = filteredActivities.filter(
                         (a) =>
                           !a.tripCountryId ||
-                          !tripCountries.find((tc) => tc.trip_id === a.tripCountryId),
+                          !tripCountries.find((tc) => tc.id === a.tripCountryId),
                       );
                       if (otherActivities.length === 0) return null;
                       return (

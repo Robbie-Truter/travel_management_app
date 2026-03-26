@@ -1,4 +1,4 @@
-import type { Flight, Accommodation, Activity, Trip } from "@/db/types";
+import type { Flight, Accommodation, Activity, Trip, TripCountry } from "@/db/types";
 import { useNotes } from "@/hooks/useNotes";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -54,7 +54,13 @@ function EmptyState({
   );
 }
 
-export function TripOverview({ trip, flights, accommodations, activities }: TripOverviewProps) {
+export function TripOverview({
+  trip,
+  tripCountries,
+  flights,
+  accommodations,
+  activities,
+}: TripOverviewProps) {
   const { note } = useNotes(trip.id!);
   const { data: currencyRates } = useExchangeRates();
 
@@ -184,30 +190,28 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
           </div>
           <div className="p-5 flex flex-col h-full overflow-y-auto">
             <div className="grow">
-              <p className="text-3xl font-bold text-text-primary">
-                {trip.destinations?.length ?? 0}
-              </p>
+              <p className="text-3xl font-bold text-text-primary">{tripCountries?.length ?? 0}</p>
               <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">
                 Countries Visited
               </p>
 
-              {trip.destinations?.length > 0 && (
+              {(tripCountries?.length ?? 0) > 0 && (
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {trip.destinations.map((country) => (
+                  {tripCountries?.map((tc) => (
                     <span
-                      key={country}
+                      key={tc.id}
                       className="px-2 py-1 bg-surface-3 rounded-md text-[11px] font-medium text-text-primary border border-border flex items-center gap-1.5"
                     >
-                      <span className="text-[14px]">{getCountryFlag(country)}</span>
-                      {country}
+                      <span className="text-[14px]">{getCountryFlag(tc.countryName)}</span>
+                      {tc.countryName}
                     </span>
                   ))}
                 </div>
               )}
             </div>
 
-            {trip.destinations?.length === 0 && (
-              <p className="text-xs text-text-muted italic mt-2">No destinations added yet.</p>
+            {(tripCountries?.length ?? 0) === 0 && (
+              <p className="text-xs text-text-muted italic mt-2">No countries added yet.</p>
             )}
           </div>
         </Card>

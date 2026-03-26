@@ -12,7 +12,6 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Modal, ConfirmDialog } from "@/components/ui/Modal";
 import { Input, Textarea } from "@/components/ui/Input";
@@ -27,7 +26,7 @@ import {
   getCountryFlag,
 } from "@/lib/utils";
 import { format } from "date-fns";
-import type { Flight, Currency } from "@/db/types";
+import type { Flight, Currency, TripCountry } from "@/db/types";
 
 interface Airport {
   iata: string;
@@ -361,7 +360,7 @@ export function FlightForm({
     }));
   };
 
-  const set = (k: string, v: string | boolean) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: string, v: string | boolean | number) => setForm((f) => ({ ...f, [k]: v }));
 
   const airportOptions = React.useMemo(() => {
     return airports.map((ap) => ({

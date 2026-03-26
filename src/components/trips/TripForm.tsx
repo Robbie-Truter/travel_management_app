@@ -62,7 +62,6 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
     setSaving(true);
     await onSave({
       name,
-      destinations: initial?.destinations ?? [],
       startDate,
       endDate,
       status,
