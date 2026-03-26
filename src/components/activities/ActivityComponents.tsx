@@ -29,7 +29,7 @@ import {
   getCountryFlag,
 } from "@/lib/utils";
 import { format } from "date-fns";
-import type { Activity, Currency, Destination } from "@/db/types";
+import type { Activity, Currency, Destination, TripCountry } from "@/db/types";
 
 import { ACTIVITY_TAGS } from "./activity-types";
 

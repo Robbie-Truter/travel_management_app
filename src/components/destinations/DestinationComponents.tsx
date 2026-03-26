@@ -22,7 +22,7 @@ export function DestinationCard({
   onDelete,
   tripCountries = [],
 }: DestinationCardProps) {
-  const tc = tripCountries.find((c) => c.trip_id === destination.tripCountryId);
+  const tc = tripCountries.find((c) => c.id === destination.tripCountryId);
 
   return (
     <motion.div
@@ -122,7 +122,7 @@ export function DestinationForm({
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: initial?.name || "",
-    tripCountryId: initial?.tripCountryId || tripCountries[0]?.trip_id || undefined,
+    tripCountryId: initial?.tripCountryId || tripCountries[0]?.id || undefined,
     notes: initial?.notes || "",
     image: initial?.image || "",
   });
@@ -251,7 +251,7 @@ export function DestinationForm({
               options={
                 tripCountries.length > 0
                   ? tripCountries.map((tc) => ({
-                      value: tc.trip_id!.toString(),
+                      value: tc.id!.toString(),
                       label: tc.countryName,
                       icon: <span>{getCountryFlag(tc.countryName)}</span>,
                     }))

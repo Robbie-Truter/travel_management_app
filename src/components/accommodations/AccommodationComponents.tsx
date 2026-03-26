@@ -29,7 +29,7 @@ import {
   formatDate,
   getCountryFlag,
 } from "@/lib/utils";
-import type { Accommodation, Currency } from "@/db/types";
+import type { Accommodation, Currency, TripCountry } from "@/db/types";
 import { SearchableSelect } from "../ui/SearchableSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
 
@@ -356,7 +356,7 @@ export function AccommodationForm({
     { value: "ZAR", label: "ZAR" },
   ];
 
-  const set = (k: string, v: string | boolean) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: string, v: string | boolean | number) => setForm((f) => ({ ...f, [k]: v }));
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -598,12 +598,14 @@ interface AccommodationComparisonProps {
   open: boolean;
   onClose: () => void;
   accommodations: Accommodation[];
+  tripCountries?: TripCountry[];
 }
 
 export function AccommodationComparison({
   open,
   onClose,
   accommodations,
+  tripCountries = [],
 }: AccommodationComparisonProps) {
   return (
     <Modal open={open} onClose={onClose} title="Compare Accommodations" size="xl">
@@ -650,7 +652,11 @@ export function AccommodationComparison({
                   );
                 },
               },
-              { label: "Country", render: (a: Accommodation) => a.country ?? "—" },
+              {
+                label: "Country",
+                render: (a: Accommodation) =>
+                  tripCountries.find((tc) => tc.id === a.tripCountryId)?.countryName ?? "—",
+              },
               { label: "Location", render: (a: Accommodation) => a.location },
               { label: "Check-in", render: (a: Accommodation) => formatDateTime(a.checkIn) },
               { label: "Check-in After", render: (a: Accommodation) => a.checkInAfter ?? "3 PM" },

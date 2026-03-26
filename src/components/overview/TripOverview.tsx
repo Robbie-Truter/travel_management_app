@@ -70,7 +70,15 @@ export function TripOverview({
 
   const confirmedStays = accommodations.filter((a) => a.isConfirmed);
   const unconfirmedStays = accommodations.filter((a) => !a.isConfirmed);
-  const upcomingStays = accommodations.filter((a) => new Date(a.checkOut) > new Date());
+  const countryMap = useMemo(() => {
+    const map: Record<number, string> = {};
+    tripCountries.forEach((tc) => {
+      if (tc.id) map[tc.id] = tc.countryName;
+    });
+    return map;
+  }, [tripCountries]);
+
+  const upcomingStays = accommodations.filter((a) => new Date(a.checkIn) >= new Date());
 
   const confirmedActivities = activities.filter((a) => a.isConfirmed);
   const unconfirmedActivities = activities.filter((a) => !a.isConfirmed);
@@ -332,7 +340,11 @@ export function TripOverview({
                           <li key={a.id} className="group/item">
                             <div className="flex justify-between items-start mb-0.5">
                               <div className="text-sm font-semibold text-text-primary group-hover/item:text-lavender-600 transition-colors">
-                                {a.country && <span className="font-semibold">{a.country}, </span>}
+                                {a.tripCountryId && (
+                                  <span className="font-semibold">
+                                    {countryMap[a.tripCountryId]},{" "}
+                                  </span>
+                                )}
                                 {a.name}
                               </div>
                               {!a.isConfirmed && (
@@ -414,9 +426,9 @@ export function TripOverview({
                               )}
                             </div>
                             <div className="flex flex-wrap items-center gap-2 my-1">
-                              {a.country && (
+                              {a.tripCountryId && (
                                 <span className="text-[9px] text-text-muted px-1.5 py-0.5 bg-surface-3 rounded border border-border">
-                                  {a.country}
+                                  {countryMap[a.tripCountryId]}
                                 </span>
                               )}
                               {a.type && (
