@@ -228,15 +228,15 @@ export function AccommodationForm({
         <div className="grid grid-cols-2 gap-3">
           <Input
             id="acc-check-in-after"
+            type="time"
             label="Check-in After"
-            placeholder="e.g. 3 PM"
             value={form.checkInAfter}
             onChange={(e) => set("checkInAfter", e.target.value)}
           />
           <Input
             id="acc-check-out-before"
+            type="time"
             label="Check-out Before"
-            placeholder="e.g. 11 AM"
             value={form.checkOutBefore}
             onChange={(e) => set("checkOutBefore", e.target.value)}
           />
