@@ -1,31 +1,84 @@
+// Common Shared Types
 export type TripStatus = "planning" | "booked" | "ongoing" | "completed" | "cancelled";
 export type Currency = "USD" | "EUR" | "ZAR";
+
+// --- Trips ---
+export interface TripRow {
+  id: number;
+  user_id: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  status: TripStatus;
+  description?: string;
+  budget?: string;
+  cover_image?: string;
+  created_at: string;
+  updated_at: string;
+  trip_countries?: TripCountryRow[];
+}
 
 export interface Trip {
   id?: number;
   name: string;
-  destinations: string[];
   startDate: string;
   endDate: string;
   status: TripStatus;
   description?: string;
+  tripCountries?: TripCountry[];
   budget?: string;
-  coverImage?: string; // base64 encoded image
+  coverImage?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// --- TripCountries ---
+export interface TripCountryRow {
+  id: number;
+  trip_id: number;
+  country_name: string;
+  country_code: string;
+  budget_limit?: number;
+  notes?: string;
+  order: number;
+  created_at: string;
+}
+
+export interface TripCountry {
+  id?: number;
+  tripId: number;
+  countryName: string;
+  countryCode: string;
+  budgetLimit?: number;
+  notes?: string;
+  order: number;
+  createdAt: string;
+}
+
+// --- Destinations ---
+export interface DestinationRow {
+  id: number;
+  trip_id: number;
+  trip_country_id: number;
+  name: string;
+  image?: string;
+  notes?: string;
+  order?: number;
+  created_at: string;
 }
 
 export interface Destination {
   id?: number;
   tripId: number;
+  tripCountryId: number;
   name: string;
-  country: string;
-  image?: string; // base64 encoded image
+  image?: string;
   notes?: string;
   order?: number;
   createdAt: string;
 }
 
+// --- Flights ---
 export interface FlightSegment {
   airline: string;
   flightNumber: string;
@@ -39,11 +92,26 @@ export interface FlightSegment {
   };
 }
 
+export interface FlightRow {
+  id: number;
+  user_id: string;
+  trip_id: number;
+  trip_country_id?: number;
+  description?: string;
+  segments: FlightSegment[];
+  price: number;
+  currency: Currency;
+  booking_link?: string;
+  notes?: string;
+  is_confirmed: boolean;
+  created_at: string;
+}
+
 export interface Flight {
   id?: number;
   tripId: number;
+  tripCountryId?: number;
   description?: string;
-  country?: string;
   segments: FlightSegment[];
   price: number;
   currency: Currency;
@@ -53,11 +121,34 @@ export interface Flight {
   createdAt: string;
 }
 
+// --- Accommodations ---
+export interface AccommodationRow {
+  id: number;
+  user_id: string;
+  trip_id: number;
+  trip_country_id?: number;
+  name: string;
+  type: "hotel" | "airbnb" | "hostel" | "resort" | "other";
+  platform?: string;
+  location: string;
+  check_in: string;
+  check_out: string;
+  price: number;
+  currency: Currency;
+  booking_link?: string;
+  notes?: string;
+  image?: string;
+  check_in_after?: string;
+  check_out_before?: string;
+  is_confirmed: boolean;
+  created_at: string;
+}
+
 export interface Accommodation {
   id?: number;
   tripId: number;
+  tripCountryId?: number;
   name: string;
-  country?: string;
   type: "hotel" | "airbnb" | "hostel" | "resort" | "other";
   platform?: string;
   location: string;
@@ -67,30 +158,60 @@ export interface Accommodation {
   currency: Currency;
   bookingLink?: string;
   notes?: string;
-  image?: string; // base64 encoded image
+  image?: string;
   checkInAfter?: string;
   checkOutBefore?: string;
   isConfirmed: boolean;
   createdAt: string;
 }
 
-export interface Activity {
-  id?: number;
-  tripId: number;
+// --- Activities ---
+export interface ActivityRow {
+  id: number;
+  user_id: string;
+  trip_id: number;
+  trip_country_id?: number;
+  destination_id?: number;
+  name: string;
   date: string;
-  country?: string;
   type?: string;
   link?: string;
   notes?: string;
-  duration?: number; // minutes
+  duration?: number;
   cost?: number;
+  currency: Currency;
+  is_confirmed: boolean;
+  image?: string;
+  order: number;
+  created_at: string;
+}
+
+export interface Activity {
+  id?: number;
+  tripId: number;
+  tripCountryId?: number;
+  destinationId?: number;
   name: string;
+  date: string;
+  type?: string;
+  link?: string;
+  notes?: string;
+  duration?: number;
+  cost?: number;
   currency: Currency;
   isConfirmed: boolean;
-  destinationId?: number;
-  image?: string; // base64 encoded image
+  image?: string;
   order: number;
   createdAt: string;
+}
+
+// --- Notes ---
+export interface NoteRow {
+  id: number;
+  user_id: string;
+  trip_id: number;
+  content: string;
+  updated_at: string;
 }
 
 export interface Note {
@@ -98,6 +219,18 @@ export interface Note {
   tripId: number;
   content: string;
   updatedAt: string;
+}
+
+// --- Documents ---
+export interface DocumentRow {
+  id: number;
+  user_id: string;
+  trip_id: number;
+  name: string;
+  description?: string;
+  type: string;
+  file: string;
+  created_at: string;
 }
 
 export interface Document {
@@ -110,6 +243,7 @@ export interface Document {
   createdAt: string;
 }
 
+// --- Helper Types ---
 export interface PlannerItem {
   id: string;
   type: "flight" | "accommodation" | "activity";

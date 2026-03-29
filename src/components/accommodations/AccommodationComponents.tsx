@@ -29,7 +29,7 @@ import {
   formatDate,
   getCountryFlag,
 } from "@/lib/utils";
-import type { Accommodation, Currency } from "@/db/types";
+import type { Accommodation, Currency, TripCountry } from "@/db/types";
 import { SearchableSelect } from "../ui/SearchableSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
 
@@ -175,7 +175,6 @@ export function AccommodationCard({ acc, onEdit, onDelete, onConfirm }: Accommod
                 <div className="flex items-center gap-3">
                   <MapPin size={25} />
                   <span>
-                    {acc.country && `${acc.country}, `}
                     {acc.location}
                   </span>
                 </div>
@@ -319,7 +318,7 @@ interface AccommodationFormProps {
   onSave: (data: Omit<Accommodation, "id" | "createdAt">) => Promise<void>;
   initial?: Accommodation;
   tripId: number;
-  destinations?: string[];
+  tripCountries?: TripCountry[];
 }
 
 export function AccommodationForm({
@@ -328,11 +327,11 @@ export function AccommodationForm({
   onSave,
   initial,
   tripId,
-  destinations = [],
+  tripCountries = [],
 }: AccommodationFormProps) {
   const [form, setForm] = useState({
     name: initial?.name ?? "",
-    country: initial?.country ?? destinations[0] ?? "",
+    tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
     type: initial?.type ?? "hotel",
     platform: initial?.platform ?? "booking",
     location: initial?.location ?? "",
@@ -357,7 +356,7 @@ export function AccommodationForm({
     { value: "ZAR", label: "ZAR" },
   ];
 
-  const set = (k: string, v: string | boolean) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: string, v: string | boolean | number) => setForm((f) => ({ ...f, [k]: v }));
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -386,7 +385,7 @@ export function AccommodationForm({
     await onSave({
       tripId,
       name: form.name,
-      country: form.country,
+      tripCountryId: form.tripCountryId,
       type: form.type as Accommodation["type"],
       platform: form.platform,
       location: form.location,
@@ -477,13 +476,13 @@ export function AccommodationForm({
           id="acc-country"
           label="Country"
           placeholder="Select country..."
-          value={form.country}
-          options={destinations.map((d) => ({
-            value: d,
-            label: d,
-            icon: <span>{getCountryFlag(d)}</span>,
+          value={form.tripCountryId?.toString() || ""}
+          options={tripCountries.map((tc) => ({
+            value: tc.id!.toString(),
+            label: tc.countryName,
+            icon: <span>{getCountryFlag(tc.countryName)}</span>,
           }))}
-          onChange={(val: string) => set("country", val)}
+          onChange={(val: string) => set("tripCountryId", Number(val))}
           includeSearch={false}
         />
         <div className="grid grid-cols-2 gap-3">
@@ -599,12 +598,14 @@ interface AccommodationComparisonProps {
   open: boolean;
   onClose: () => void;
   accommodations: Accommodation[];
+  tripCountries?: TripCountry[];
 }
 
 export function AccommodationComparison({
   open,
   onClose,
   accommodations,
+  tripCountries = [],
 }: AccommodationComparisonProps) {
   return (
     <Modal open={open} onClose={onClose} title="Compare Accommodations" size="xl">
@@ -651,7 +652,11 @@ export function AccommodationComparison({
                   );
                 },
               },
-              { label: "Country", render: (a: Accommodation) => a.country ?? "—" },
+              {
+                label: "Country",
+                render: (a: Accommodation) =>
+                  tripCountries.find((tc) => tc.id === a.tripCountryId)?.countryName ?? "—",
+              },
               { label: "Location", render: (a: Accommodation) => a.location },
               { label: "Check-in", render: (a: Accommodation) => formatDateTime(a.checkIn) },
               { label: "Check-in After", render: (a: Accommodation) => a.checkInAfter ?? "3 PM" },

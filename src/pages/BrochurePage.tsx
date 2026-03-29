@@ -1,11 +1,20 @@
 import { useState, useEffect } from "react";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import { supabase } from "@/lib/supabase";
-import { BrochureDocument } from "./BrochureDocument";
+import { BrochureDocument } from "@/components/brochure/BrochureDocument";
 import { Button } from "@/components/ui/Button";
 import { Check, Download, FileText, Loader2, RefreshCw, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Trip, Flight, Accommodation, Activity } from "@/db/types";
+import type {
+  Trip,
+  TripCountryRow,
+  Flight,
+  FlightRow,
+  Accommodation,
+  AccommodationRow,
+  Activity,
+  ActivityRow,
+} from "@/db/types";
 
 export function BrochurePage() {
   const [trips, setTrips] = useState<Trip[] | undefined>(undefined);
@@ -22,16 +31,29 @@ export function BrochurePage() {
   // Load all trips for the sidebar
   useEffect(() => {
     async function fetchTrips() {
-      const { data } = await supabase.from("trips").select("*").order("created_at", { ascending: false });
+      const { data } = await supabase
+        .from("trips")
+        .select("*, trip_countries(*)")
+        .order("created_at", { ascending: false });
       if (data) {
-        setTrips(data.map(d => ({
-          ...d,
-          startDate: d.start_date,
-          endDate: d.end_date,
-          createdAt: d.created_at,
-          updatedAt: d.updated_at,
-          coverImage: d.cover_image
-        })) as Trip[]);
+        setTrips(
+          data.map((d) => ({
+            ...d,
+            startDate: d.start_date,
+            endDate: d.end_date,
+            createdAt: d.created_at,
+            updatedAt: d.updated_at,
+            tripCountries: (d.trip_countries || []).map((tc: TripCountryRow) => ({
+              ...tc,
+              tripId: tc.trip_id,
+              countryName: tc.country_name,
+              countryCode: tc.country_code,
+              budgetLimit: tc.budget_limit,
+              createdAt: tc.created_at,
+            })),
+            coverImage: d.cover_image,
+          })) as Trip[],
+        );
       } else {
         setTrips([]);
       }
@@ -48,14 +70,26 @@ export function BrochurePage() {
       }
 
       setLoadingPdf(true);
-      
+
       try {
         const [tripRes, flightsRes, accRes, actRes, notesRes] = await Promise.all([
-          supabase.from("trips").select("*").eq("id", selectedTripId).single(),
-          supabase.from("flights").select("*").eq("trip_id", selectedTripId).order("departure_time", { ascending: true }),
-          supabase.from("accommodations").select("*").eq("trip_id", selectedTripId).order("check_in", { ascending: true }),
-          supabase.from("activities").select("*").eq("trip_id", selectedTripId).order("date", { ascending: true }),
-          supabase.from("notes").select("*").eq("trip_id", selectedTripId).maybeSingle()
+          supabase.from("trips").select("*, trip_countries(*)").eq("id", selectedTripId).single(),
+          supabase
+            .from("flights")
+            .select("*")
+            .eq("trip_id", selectedTripId)
+            .order("departure_time", { ascending: true }),
+          supabase
+            .from("accommodations")
+            .select("*")
+            .eq("trip_id", selectedTripId)
+            .order("check_in", { ascending: true }),
+          supabase
+            .from("activities")
+            .select("*")
+            .eq("trip_id", selectedTripId)
+            .order("date", { ascending: true }),
+          supabase.from("notes").select("*").eq("trip_id", selectedTripId).maybeSingle(),
         ]);
 
         if (tripRes.data) {
@@ -65,21 +99,46 @@ export function BrochurePage() {
             endDate: tripRes.data.end_date,
             createdAt: tripRes.data.created_at,
             updatedAt: tripRes.data.updated_at,
-            coverImage: tripRes.data.cover_image
+            tripCountries: (tripRes.data.trip_countries || []).map((tc: TripCountryRow) => ({
+              ...tc,
+              tripId: tc.trip_id,
+              countryName: tc.country_name,
+              countryCode: tc.country_code,
+              budgetLimit: tc.budget_limit,
+              createdAt: tc.created_at,
+            })),
+            coverImage: tripRes.data.cover_image,
           } as Trip;
 
-          const flights = (flightsRes.data || []).map(f => ({
-            ...f, tripId: f.trip_id, isConfirmed: f.is_confirmed, bookingLink: f.booking_link, createdAt: f.created_at
+          const flights = (flightsRes.data as FlightRow[] || []).map((f) => ({
+            ...f,
+            tripId: f.trip_id,
+            tripCountryId: f.trip_country_id,
+            isConfirmed: f.is_confirmed,
+            bookingLink: f.booking_link,
+            createdAt: f.created_at,
           })) as Flight[];
 
-          const accommodations = (accRes.data || []).map(a => ({
-            ...a, tripId: a.trip_id, checkIn: a.check_in, checkOut: a.check_out, 
-            checkInAfter: a.check_in_after, checkOutBefore: a.check_out_before,
-            bookingLink: a.booking_link, isConfirmed: a.is_confirmed, createdAt: a.created_at
+          const accommodations = (accRes.data as AccommodationRow[] || []).map((a) => ({
+            ...a,
+            tripId: a.trip_id,
+            tripCountryId: a.trip_country_id,
+            checkIn: a.check_in,
+            checkOut: a.check_out,
+            checkInAfter: a.check_in_after,
+            checkOutBefore: a.check_out_before,
+            bookingLink: a.booking_link,
+            isConfirmed: a.is_confirmed,
+            createdAt: a.created_at,
           })) as Accommodation[];
 
-          const activities = (actRes.data || []).map(a => ({
-            ...a, tripId: a.trip_id, destinationId: a.destination_id, isConfirmed: a.is_confirmed, createdAt: a.created_at
+          const activities = (actRes.data as ActivityRow[] || []).map((a) => ({
+            ...a,
+            tripId: a.trip_id,
+            tripCountryId: a.trip_country_id,
+            destinationId: a.destination_id,
+            isConfirmed: a.is_confirmed,
+            createdAt: a.created_at,
           })) as Activity[];
 
           setTripData({
@@ -87,7 +146,7 @@ export function BrochurePage() {
             flights,
             accommodations,
             activities,
-            note: notesRes.data?.content
+            note: notesRes.data?.content,
           });
         }
       } catch (err) {
@@ -150,7 +209,8 @@ export function BrochurePage() {
                         {selectedTripId === trip.id && <Check size={16} className="text-primary" />}
                       </div>
                       <span className="text-xs text-text-secondary line-clamp-1">
-                        {trip.destinations.join(", ")}
+                        {trip.tripCountries?.map((tc) => tc.countryName).join(", ") ||
+                          "No countries"}
                       </span>
                     </button>
                   ))

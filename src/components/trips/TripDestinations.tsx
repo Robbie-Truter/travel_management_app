@@ -4,14 +4,15 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { COUNTRIES } from "@/lib/countries";
-import { useTrips } from "@/hooks/useTrips";
-import type { Trip, Flight, Accommodation, Activity, Destination } from "@/db/types";
+import { useTripCountries } from "@/hooks/useTripCountries";
+import type { Trip, Flight, Accommodation, Activity, Destination, TripCountry } from "@/db/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plane, Hotel, Compass, ChevronRight } from "lucide-react";
 import { getCountryFlag } from "@/lib/utils";
 
 interface TripDestinationsProps {
   trip: Trip;
+  tripCountries: TripCountry[];
   destinations: Destination[];
   flights: Flight[];
   accommodations: Accommodation[];
@@ -20,39 +21,47 @@ interface TripDestinationsProps {
 
 export function TripDestinations({
   trip,
+  tripCountries,
   destinations,
   flights,
   accommodations,
   activities,
 }: TripDestinationsProps) {
-  const { updateTrip } = useTrips();
+  const { addTripCountry, deleteTripCountry } = useTripCountries(trip.id!);
   const [isAdding, setIsAdding] = useState(false);
-  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedCountryName, setSelectedCountryName] = useState("");
 
   const handleAdd = async () => {
-    if (!selectedCountry) return;
-    if (trip.destinations?.includes(selectedCountry)) {
+    if (!selectedCountryName) return;
+    const countryData = COUNTRIES.find((c) => c.name === selectedCountryName);
+    if (!countryData) return;
+
+    if (tripCountries.some((tc) => tc.countryName === selectedCountryName)) {
       setIsAdding(false);
-      setSelectedCountry("");
+      setSelectedCountryName("");
       return;
     }
 
-    const newDestinations = [...(trip.destinations ?? []), selectedCountry];
-    await updateTrip(trip.id!, { destinations: newDestinations });
+    await addTripCountry({
+      tripId: trip.id!,
+      countryName: countryData.name,
+      countryCode: countryData.code,
+      order: tripCountries.length,
+    });
+
     setIsAdding(false);
-    setSelectedCountry("");
+    setSelectedCountryName("");
   };
 
-  const handleRemove = async (country: string) => {
-    const newDestinations = (trip.destinations ?? []).filter((d) => d !== country);
-    await updateTrip(trip.id!, { destinations: newDestinations });
+  const handleRemove = async (id: number) => {
+    await deleteTripCountry(id);
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">
-          Visited Countries ({trip.destinations?.length ?? 0})
+          Visited Countries ({tripCountries.length})
         </h3>
         {!isAdding && (
           <Button variant="secondary" size="sm" onClick={() => setIsAdding(true)}>
@@ -78,8 +87,8 @@ export function TripDestinations({
                 label: c.name,
                 icon: <span>{getCountryFlag(c.name)}</span>,
               }))}
-              value={selectedCountry}
-              onChange={(val) => setSelectedCountry(val)}
+              value={selectedCountryName}
+              onChange={(val) => setSelectedCountryName(val)}
             />
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
@@ -88,7 +97,7 @@ export function TripDestinations({
               className="flex-1 sm:flex-none"
               onClick={() => {
                 setIsAdding(false);
-                setSelectedCountry("");
+                setSelectedCountryName("");
               }}
             >
               Cancel
@@ -97,7 +106,7 @@ export function TripDestinations({
               variant="primary"
               className="flex-1 sm:flex-none"
               onClick={handleAdd}
-              disabled={!selectedCountry}
+              disabled={!selectedCountryName}
             >
               Add
             </Button>
@@ -107,19 +116,18 @@ export function TripDestinations({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <AnimatePresence>
-          {trip.destinations?.map((countryName) => {
-            const country = COUNTRIES.find((c) => c.name === countryName);
-            const flagCode = country?.code.toLowerCase();
+          {tripCountries.map((tc) => {
+            const flagCode = tc.countryCode.toLowerCase();
 
             const countryDestinations =
-              destinations?.filter((d) => d.country?.trim() === countryName) || [];
-            const countryFlights = flights.filter((f) => f.country?.trim() === countryName);
-            const countryStays = accommodations.filter((a) => a.country?.trim() === countryName);
-            const countryActivities = activities.filter((a) => a.country?.trim() === countryName);
+              destinations?.filter((d) => d.tripCountryId === tc.id) || [];
+            const countryFlights = flights.filter((f) => f.tripCountryId === tc.id);
+            const countryStays = accommodations.filter((a) => a.tripCountryId === tc.id);
+            const countryActivities = activities.filter((a) => a.tripCountryId === tc.id);
 
             return (
               <motion.div
-                key={countryName}
+                key={tc.id}
                 layout
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -133,7 +141,7 @@ export function TripDestinations({
                         {flagCode ? (
                           <span
                             className={`fi fi-${flagCode} text-2xl rounded-sm shadow-sm`}
-                            title={countryName}
+                            title={tc.countryName}
                           />
                         ) : (
                           <MapPin size={20} className="text-lavender-400" />
@@ -141,18 +149,18 @@ export function TripDestinations({
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-bold text-lg text-text-primary truncate">
-                          {countryName}
+                          {tc.countryName}
                         </h4>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
-                            Destination
+                            {tc.budgetLimit ? `Budget: ${tc.budgetLimit}` : "Destination"}
                           </span>
                         </div>
                       </div>
                       <button
-                        onClick={() => handleRemove(countryName)}
+                        onClick={() => handleRemove(tc.id!)}
                         className="opacity-0 group-hover:opacity-100 p-2 text-text-muted hover:text-rose-pastel-500 transition-all shrink-0"
-                        title={`Remove ${countryName}`}
+                        title={`Remove ${tc.countryName}`}
                       >
                         <X size={18} />
                       </button>
@@ -262,7 +270,7 @@ export function TripDestinations({
           })}
         </AnimatePresence>
 
-        {(!trip.destinations || trip.destinations.length === 0) && !isAdding && (
+        {tripCountries.length === 0 && !isAdding && (
           <div className="col-span-full py-12 flex flex-col items-center justify-center text-center bg-surface-2 rounded-2xl border-2 border-dashed border-border">
             <div className="w-12 h-12 rounded-full bg-lavender-100 dark:bg-lavender-900/30 flex items-center justify-center mb-3">
               <MapPin size={20} className="text-lavender-500" />
@@ -280,9 +288,9 @@ export function TripDestinations({
       </div>
 
       {/* Unassigned Items Section */}
-      {(flights.some((f) => !f.country) ||
-        accommodations.some((a) => !a.country) ||
-        activities.some((a) => !a.country)) && (
+      {(flights.some((f) => !f.tripCountryId) ||
+        accommodations.some((a) => !a.tripCountryId) ||
+        activities.some((a) => !a.tripCountryId)) && (
         <div className="mt-12 pt-8 border-t border-border">
           <div className="flex items-center gap-2 mb-6">
             <div className="w-8 h-8 rounded-full bg-surface-3 flex items-center justify-center border border-border">
@@ -299,16 +307,16 @@ export function TripDestinations({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {flights.filter((f) => !f.country).length > 0 && (
+            {flights.filter((f) => !f.tripCountryId).length > 0 && (
               <Card className="bg-surface-2 border-dashed">
                 <CardContent className="p-4">
                   <h5 className="text-[10px] font-black uppercase tracking-widest text-sky-pastel-600 mb-3 flex items-center gap-1.5">
                     <Plane size={12} />
-                    Unassigned Flights ({flights.filter((f) => !f.country).length})
+                    Unassigned Flights ({flights.filter((f) => !f.tripCountryId).length})
                   </h5>
                   <ul className="space-y-2">
                     {flights
-                      .filter((f) => !f.country)
+                      .filter((f) => !f.tripCountryId)
                       .map((f) => (
                         <li
                           key={f.id}
@@ -323,16 +331,16 @@ export function TripDestinations({
               </Card>
             )}
 
-            {accommodations.filter((a) => !a.country).length > 0 && (
+            {accommodations.filter((a) => !a.tripCountryId).length > 0 && (
               <Card className="bg-surface-2 border-dashed">
                 <CardContent className="p-4">
                   <h5 className="text-[10px] font-black uppercase tracking-widest text-lavender-600 mb-3 flex items-center gap-1.5">
                     <Hotel size={12} />
-                    Unassigned Stays ({accommodations.filter((a) => !a.country).length})
+                    Unassigned Stays ({accommodations.filter((a) => !a.tripCountryId).length})
                   </h5>
                   <ul className="space-y-2">
                     {accommodations
-                      .filter((a) => !a.country)
+                      .filter((a) => !a.tripCountryId)
                       .map((s) => (
                         <li
                           key={s.id}
@@ -346,16 +354,16 @@ export function TripDestinations({
               </Card>
             )}
 
-            {activities.filter((a) => !a.country).length > 0 && (
+            {activities.filter((a) => !a.tripCountryId).length > 0 && (
               <Card className="bg-surface-2 border-dashed">
                 <CardContent className="p-4">
                   <h5 className="text-[10px] font-black uppercase tracking-widest text-teal-pastel-600 mb-3 flex items-center gap-1.5">
                     <Compass size={12} />
-                    Unassigned Activities ({activities.filter((a) => !a.country).length})
+                    Unassigned Activities ({activities.filter((a) => !a.tripCountryId).length})
                   </h5>
                   <ul className="space-y-2">
                     {activities
-                      .filter((a) => !a.country)
+                      .filter((a) => !a.tripCountryId)
                       .map((a) => (
                         <li
                           key={a.id}

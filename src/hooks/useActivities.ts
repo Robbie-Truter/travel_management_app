@@ -8,7 +8,13 @@ export function useActivities(tripId: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: activities, isLoading } = useQuery({
+  const {
+    data: activities,
+    isLoading,
+    isRefetching,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["activities", tripId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -23,6 +29,7 @@ export function useActivities(tripId: number) {
       return data.map((doc) => ({
         ...doc,
         tripId: doc.trip_id,
+        tripCountryId: doc.trip_country_id,
         destinationId: doc.destination_id,
         isConfirmed: doc.is_confirmed,
         createdAt: doc.created_at,
@@ -34,6 +41,8 @@ export function useActivities(tripId: number) {
       })) as Activity[];
     },
     enabled: !!user && !!tripId,
+    retry: 3,
+    refetchOnMount: "always",
   });
 
   const addActivityMutation = useMutation({
@@ -49,10 +58,10 @@ export function useActivities(tripId: number) {
       const dbActivity = {
         user_id: user.id,
         trip_id: activity.tripId,
+        trip_country_id: activity.tripCountryId,
         destination_id: activity.destinationId,
         name: activity.name,
         date: activity.date,
-        country: activity.country,
         type: activity.type,
         link: activity.link,
         notes: activity.notes,
@@ -89,10 +98,10 @@ export function useActivities(tripId: number) {
       }
 
       if (changes.tripId !== undefined) updateData.trip_id = changes.tripId;
+      if (changes.tripCountryId !== undefined) updateData.trip_country_id = changes.tripCountryId;
       if (changes.destinationId !== undefined) updateData.destination_id = changes.destinationId;
       if (changes.name !== undefined) updateData.name = changes.name;
       if (changes.date !== undefined) updateData.date = changes.date;
-      if (changes.country !== undefined) updateData.country = changes.country;
       if (changes.type !== undefined) updateData.type = changes.type;
       if (changes.link !== undefined) updateData.link = changes.link;
       if (changes.notes !== undefined) updateData.notes = changes.notes;
@@ -144,6 +153,9 @@ export function useActivities(tripId: number) {
   return {
     activities: activities ?? [],
     loading: isLoading,
+    isRefetching,
+    isError,
+    refetch,
     addActivity: async (activity: Omit<Activity, "id" | "createdAt">) =>
       addActivityMutation.mutateAsync(activity),
     updateActivity: async (id: number, changes: Partial<Activity>) =>

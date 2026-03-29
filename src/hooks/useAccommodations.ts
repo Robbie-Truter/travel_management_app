@@ -8,7 +8,13 @@ export function useAccommodations(tripId: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: accommodations, isLoading } = useQuery({
+  const {
+    data: accommodations,
+    isLoading,
+    isRefetching,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["accommodations", tripId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -22,6 +28,7 @@ export function useAccommodations(tripId: number) {
       return data.map((doc) => ({
         ...doc,
         tripId: doc.trip_id,
+        tripCountryId: doc.trip_country_id,
         checkIn: doc.check_in,
         checkOut: doc.check_out,
         checkInAfter: doc.check_in_after,
@@ -37,6 +44,8 @@ export function useAccommodations(tripId: number) {
       })) as Accommodation[];
     },
     enabled: !!user && !!tripId,
+    retry: 3,
+    refetchOnMount: "always",
   });
 
   const addAccommodationMutation = useMutation({
@@ -52,8 +61,8 @@ export function useAccommodations(tripId: number) {
       const dbAcc = {
         user_id: user.id,
         trip_id: acc.tripId,
+        trip_country_id: acc.tripCountryId,
         name: acc.name,
-        country: acc.country,
         type: acc.type,
         platform: acc.platform,
         location: acc.location,
@@ -98,7 +107,7 @@ export function useAccommodations(tripId: number) {
       }
 
       if (changes.name !== undefined) updateData.name = changes.name;
-      if (changes.country !== undefined) updateData.country = changes.country;
+      if (changes.tripCountryId !== undefined) updateData.trip_country_id = changes.tripCountryId;
       if (changes.type !== undefined) updateData.type = changes.type;
       if (changes.platform !== undefined) updateData.platform = changes.platform;
       if (changes.location !== undefined) updateData.location = changes.location;
@@ -159,6 +168,9 @@ export function useAccommodations(tripId: number) {
   return {
     accommodations: accommodations ?? [],
     loading: isLoading,
+    isRefetching,
+    isError,
+    refetch,
     addAccommodation: async (acc: Omit<Accommodation, "id" | "createdAt">) =>
       addAccommodationMutation.mutateAsync(acc),
     updateAccommodation: async (id: number, changes: Partial<Accommodation>) =>

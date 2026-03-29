@@ -12,7 +12,6 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Modal, ConfirmDialog } from "@/components/ui/Modal";
 import { Input, Textarea } from "@/components/ui/Input";
@@ -27,7 +26,7 @@ import {
   getCountryFlag,
 } from "@/lib/utils";
 import { format } from "date-fns";
-import type { Flight, Currency } from "@/db/types";
+import type { Flight, Currency, TripCountry } from "@/db/types";
 
 interface Airport {
   iata: string;
@@ -95,11 +94,6 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
                   {airlines.length > 1 ? "Multiple Airlines" : firstSeg.airline}
                 </h3>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  {flight.country && (
-                    <Badge variant="default" className="text-[9px] h-4 py-0 px-1.5 opacity-70">
-                      {flight.country}
-                    </Badge>
-                  )}
                   <span className="text-xs text-text-muted">
                     {airlines.length > 1 ? `${flight.segments.length} legs` : firstSeg.flightNumber}
                   </span>
@@ -279,7 +273,7 @@ interface FlightFormProps {
   initial?: Flight;
   tripId: number;
   lastFlight?: Flight;
-  destinations?: string[];
+  tripCountries?: TripCountry[];
 }
 
 export function FlightForm({
@@ -289,7 +283,7 @@ export function FlightForm({
   initial,
   tripId,
   lastFlight,
-  destinations = [],
+  tripCountries = [],
 }: FlightFormProps) {
   const [form, setForm] = useState({
     segments: initial?.segments?.map((s) => ({
@@ -305,7 +299,7 @@ export function FlightForm({
       },
     ],
     description: initial?.description ?? "",
-    country: initial?.country ?? destinations[0] ?? "",
+    tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
     price: initial?.price?.toString() ?? "",
     currency: initial?.currency ?? (lastFlight?.currency || "USD"),
     bookingLink: initial?.bookingLink ?? "",
@@ -366,7 +360,7 @@ export function FlightForm({
     }));
   };
 
-  const set = (k: string, v: string | boolean) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: string, v: string | boolean | number) => setForm((f) => ({ ...f, [k]: v }));
 
   const airportOptions = React.useMemo(() => {
     return airports.map((ap) => ({
@@ -430,7 +424,7 @@ export function FlightForm({
     await onSave({
       tripId,
       description: form.description || undefined,
-      country: form.country,
+      tripCountryId: form.tripCountryId,
       segments: form.segments,
       price: Number(form.price),
       currency: form.currency as Currency,
@@ -471,13 +465,13 @@ export function FlightForm({
           id="fl-country"
           label="Country"
           placeholder="Select country..."
-          value={form.country}
-          options={destinations.map((d) => ({
-            value: d,
-            label: d,
-            icon: <span>{getCountryFlag(d)}</span>,
+          value={form.tripCountryId?.toString() || ""}
+          options={tripCountries.map((tc) => ({
+            value: tc.id!.toString(),
+            label: tc.countryName,
+            icon: <span>{getCountryFlag(tc.countryName)}</span>,
           }))}
-          onChange={(val: string) => set("country", val)}
+          onChange={(val: string) => set("tripCountryId", Number(val))}
           includeSearch={false}
         />
 

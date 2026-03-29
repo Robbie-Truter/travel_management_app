@@ -1,12 +1,26 @@
-import type { Flight, Accommodation, Activity, Trip } from "@/db/types";
+import React, { useMemo } from "react";
+import type { Trip, TripCountry } from "@/db/types";
 import { useNotes } from "@/hooks/useNotes";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Plane, Hotel, Compass, Calendar, StickyNote, Plus, PiggyBank, MapPin } from "lucide-react";
-import { formatDate, formatCurrency, formatDuration, cn, getCountryFlag } from "@/lib/utils";
-import { useMemo } from "react";
+import {
+  Plane,
+  Hotel,
+  Compass,
+  Calendar,
+  StickyNote,
+  Plus,
+  PiggyBank,
+  MapPin,
+  RefreshCw,
+} from "lucide-react";
+import { formatDate, formatCurrency, formatDuration, getCountryFlag } from "@/lib/utils";
 import { useExchangeRates } from "@/hooks/useExchangeRates";
 import { Badge } from "@/components/ui/Badge";
+import { useFlights } from "@/hooks/useFlights";
+import { useAccommodations } from "@/hooks/useAccommodations";
+import { useActivities } from "@/hooks/useActivities";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ACTIVITY_TAGS = [
   { value: "sightseeing", label: "Sightseeing", icon: "🏛️" },
@@ -23,9 +37,7 @@ const ACTIVITY_TAGS = [
 
 interface TripOverviewProps {
   trip: Trip;
-  flights: Flight[];
-  accommodations: Accommodation[];
-  activities: Activity[];
+  tripCountries: TripCountry[];
 }
 
 function EmptyState({
@@ -53,9 +65,50 @@ function EmptyState({
   );
 }
 
-export function TripOverview({ trip, flights, accommodations, activities }: TripOverviewProps) {
+function OverviewSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <Card key={i} className="h-110 overflow-hidden relative">
+          <div className="h-16 bg-slate-50 dark:bg-slate-900/20 border-b border-border p-5 flex items-center justify-between">
+            <div className="h-6 w-32 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+          </div>
+          <div className="p-5 space-y-4">
+            <div className="h-10 w-20 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+            <div className="h-4 w-32 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+            <div className="space-y-2 pt-4">
+              <div className="h-20 w-full bg-slate-50 dark:bg-slate-900/30 rounded-lg animate-pulse" />
+              <div className="h-20 w-full bg-slate-50 dark:bg-slate-900/30 rounded-lg animate-pulse" />
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
+  const {
+    flights,
+    loading: flightsLoading,
+    isRefetching: flightsRefetching,
+  } = useFlights(trip.id!);
+  const {
+    accommodations,
+    loading: accsLoading,
+    isRefetching: accsRefetching,
+  } = useAccommodations(trip.id!);
+  const {
+    activities,
+    loading: actsLoading,
+    isRefetching: actsRefetching,
+  } = useActivities(trip.id!);
+
   const { note } = useNotes(trip.id!);
   const { data: currencyRates } = useExchangeRates();
+
+  const isInitialLoading = flightsLoading || accsLoading || actsLoading;
+  const isAnyRefetching = flightsRefetching || accsRefetching || actsRefetching;
 
   const confirmedFlights = flights.filter((f) => f.isConfirmed);
   const unconfirmedFlights = flights.filter((f) => !f.isConfirmed);
@@ -63,7 +116,16 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
 
   const confirmedStays = accommodations.filter((a) => a.isConfirmed);
   const unconfirmedStays = accommodations.filter((a) => !a.isConfirmed);
-  const upcomingStays = accommodations.filter((a) => new Date(a.checkOut) > new Date());
+
+  const countryMap = useMemo(() => {
+    const map: Record<number, string> = {};
+    tripCountries.forEach((tc) => {
+      if (tc.id) map[tc.id] = tc.countryName;
+    });
+    return map;
+  }, [tripCountries]);
+
+  const upcomingStays = accommodations.filter((a) => new Date(a.checkIn) >= new Date());
 
   const confirmedActivities = activities.filter((a) => a.isConfirmed);
   const unconfirmedActivities = activities.filter((a) => !a.isConfirmed);
@@ -112,7 +174,6 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
       to: "USD" | "EUR" | "ZAR",
     ) => {
       if (!currencyRates) return 0;
-
       const rates = currencyRates;
       return amount * (rates[from] / rates[to]);
     };
@@ -169,8 +230,43 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
 
   const currencies = Object.keys(budgetBreakdown);
 
+  if (isInitialLoading) {
+    return <OverviewSkeleton />;
+  }
+
   return (
-    <>
+    <div className="relative">
+      <AnimatePresence>
+        {isAnyRefetching && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-2xl overflow-hidden group"
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+            >
+              <RefreshCw size={14} />
+            </motion.div>
+            <span className="text-xs font-bold uppercase tracking-widest whitespace-nowrap">
+              Updating Trip Data
+            </span>
+            <div
+              className="absolute inset-x-0 bottom-0 h-0.5 bg-sky-500 origin-left"
+              style={{ animation: "progress 2s linear infinite" }}
+            />
+            <style>{`
+              @keyframes progress {
+                from { transform: scaleX(0); }
+                to { transform: scaleX(1); }
+              }
+            `}</style>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="flex flex-col p-0 h-110 overflow-hidden group hover:shadow-card-hover transition-shadow text-center sm:text-left">
           <div className="bg-lavender-50 dark:bg-lavender-900/10 p-5 border-b border-lavender-100 dark:border-lavender-900/20 text-left shrink-0">
@@ -183,30 +279,28 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
           </div>
           <div className="p-5 flex flex-col h-full overflow-y-auto">
             <div className="grow">
-              <p className="text-3xl font-bold text-text-primary">
-                {trip.destinations?.length ?? 0}
-              </p>
+              <p className="text-3xl font-bold text-text-primary">{tripCountries?.length ?? 0}</p>
               <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">
                 Countries Visited
               </p>
 
-              {trip.destinations?.length > 0 && (
+              {(tripCountries?.length ?? 0) > 0 && (
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {trip.destinations.map((country) => (
+                  {tripCountries?.map((tc) => (
                     <span
-                      key={country}
+                      key={tc.id}
                       className="px-2 py-1 bg-surface-3 rounded-md text-[11px] font-medium text-text-primary border border-border flex items-center gap-1.5"
                     >
-                      <span className="text-[14px]">{getCountryFlag(country)}</span>
-                      {country}
+                      <span className="text-[14px]">{getCountryFlag(tc.countryName)}</span>
+                      {tc.countryName}
                     </span>
                   ))}
                 </div>
               )}
             </div>
 
-            {trip.destinations?.length === 0 && (
-              <p className="text-xs text-text-muted italic mt-2">No destinations added yet.</p>
+            {(tripCountries?.length ?? 0) === 0 && (
+              <p className="text-xs text-text-muted italic mt-2">No countries added yet.</p>
             )}
           </div>
         </Card>
@@ -327,7 +421,11 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
                           <li key={a.id} className="group/item">
                             <div className="flex justify-between items-start mb-0.5">
                               <div className="text-sm font-semibold text-text-primary group-hover/item:text-lavender-600 transition-colors">
-                                {a.country && <span className="font-semibold">{a.country}, </span>}
+                                {a.tripCountryId && (
+                                  <span className="font-semibold">
+                                    {countryMap[a.tripCountryId]},{" "}
+                                  </span>
+                                )}
                                 {a.name}
                               </div>
                               {!a.isConfirmed && (
@@ -409,9 +507,9 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
                               )}
                             </div>
                             <div className="flex flex-wrap items-center gap-2 my-1">
-                              {a.country && (
+                              {a.tripCountryId && (
                                 <span className="text-[9px] text-text-muted px-1.5 py-0.5 bg-surface-3 rounded border border-border">
-                                  {a.country}
+                                  {countryMap[a.tripCountryId]}
                                 </span>
                               )}
                               {a.type && (
@@ -503,13 +601,29 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
         </Card>
       </div>
       <Card className="mt-10 p-0 overflow-hidden shadow-md">
-        <div className="bg-rose-pastel-50 dark:bg-rose-pastel-900/10 p-6 border-b border-rose-pastel-100 dark:border-rose-pastel-900/20">
+        <div className="bg-rose-pastel-50 dark:bg-rose-pastel-900/10 p-6 border-b border-rose-pastel-100 dark:border-rose-pastel-900/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h3 className="font-bold text-xl flex items-center gap-2 text-rose-pastel-700 dark:text-rose-pastel-400">
             <div className="p-2 bg-white dark:bg-surface-2 rounded-xl shadow-sm">
               <PiggyBank size={22} className="text-rose-pastel-500" />
             </div>
             Budget Breakdown
           </h3>
+
+          {totalInBase > 0 && (
+            <div className="flex flex-col items-end">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">
+                  Total Trip Value
+                </span>
+                <span className="text-xl font-black text-text-primary">
+                  {formatCurrency(totalInBase, "ZAR")}
+                </span>
+              </div>
+              <div className="text-[10px] font-bold text-sage-600 uppercase mt-0.5">
+                Confirmed: {formatCurrency(confirmedTotalInBase, "ZAR")}
+              </div>
+            </div>
+          )}
         </div>
         <div className="p-6">
           {currencies.length > 0 ? (
@@ -587,78 +701,15 @@ export function TripOverview({ trip, flights, accommodations, activities }: Trip
                   </div>
                 );
               })}
-
-              {currencies.length > 0 && (
-                <div className="mt-8 p-6 bg-surface-2 rounded-2xl border border-border shadow-sm relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-4">
-                    <span className="px-2 py-0.5 bg-lavender-100 text-lavender-700 rounded-full text-[10px] font-black uppercase tracking-wider">
-                      ZAR BASE
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                      <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">
-                        Confirmed Expenses
-                      </p>
-                      <p className="text-3xl font-black text-sage-600">
-                        {formatCurrency(confirmedTotalInBase, "ZAR")}
-                      </p>
-                      <p className="text-[11px] text-text-secondary mt-1 font-medium">
-                        Actual bookings and confirmed items
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">
-                        Estimated Grand Total
-                      </p>
-                      <p className="text-3xl font-black text-lavender-600">
-                        {formatCurrency(totalInBase, "ZAR")}
-                      </p>
-                      <p className="text-[11px] text-text-secondary mt-1 font-medium">
-                        Total including all planned items
-                      </p>
-                    </div>
-                  </div>
-
-                  <p className="text-[10px] text-text-muted mt-6 italic border-t border-border pt-4">
-                    * Exchange rates are approximate and for planning purposes only.
-                  </p>
-                </div>
-              )}
-
-              {trip.budget && (
-                <div className="mt-6 pt-6 border-t border-dashed border-border">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1">
-                        Target Budget
-                      </p>
-                      <p className="text-lg font-bold text-text-secondary">{trip.budget}</p>
-                    </div>
-                    {currencies.length > 0 && (
-                      <div
-                        className={cn(
-                          "px-4 py-2 rounded-lg font-bold text-sm shadow-sm",
-                          parseFloat(trip.budget.replace(/[^0-9.]/g, "")) < totalInBase
-                            ? "bg-rose-50 text-rose-600 border border-rose-100"
-                            : "bg-emerald-50 text-emerald-600 border border-emerald-100",
-                        )}
-                      >
-                        {parseFloat(trip.budget.replace(/[^0-9.]/g, "")) < totalInBase
-                          ? "Over Budget"
-                          : "Under Budget"}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
           ) : (
-            <EmptyState icon={PiggyBank} label="No costs added yet" />
+            <div className="flex flex-col items-center justify-center py-10">
+              <PiggyBank size={40} className="text-text-muted mb-2 opacity-20" />
+              <p className="text-sm text-text-muted italic">No items with costs added yet.</p>
+            </div>
           )}
         </div>
       </Card>
-    </>
+    </div>
   );
 }

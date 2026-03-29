@@ -7,7 +7,13 @@ export function useFlights(tripId?: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: flights, isLoading } = useQuery({
+  const {
+    data: flights,
+    isLoading,
+    isRefetching,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["flights", tripId],
     queryFn: async () => {
       let query = supabase.from("flights").select("*").order("created_at", { ascending: true });
@@ -21,17 +27,20 @@ export function useFlights(tripId?: number) {
         .map((doc) => ({
           ...doc,
           tripId: doc.trip_id,
+          tripCountryId: doc.trip_country_id,
           isConfirmed: doc.is_confirmed,
           bookingLink: doc.booking_link,
           createdAt: doc.created_at,
         }))
         .sort((a, b) => {
-          const timeA = (a.segments?.[0]?.departureTime) || "";
-          const timeB = (b.segments?.[0]?.departureTime) || "";
+          const timeA = a.segments?.[0]?.departureTime || "";
+          const timeB = b.segments?.[0]?.departureTime || "";
           return timeA.localeCompare(timeB);
         }) as Flight[];
     },
     enabled: !!user && (tripId === undefined || !!tripId),
+    retry: 3,
+    refetchOnMount: "always",
   });
 
   const addFlightMutation = useMutation({
@@ -40,8 +49,8 @@ export function useFlights(tripId?: number) {
       const dbFlight = {
         user_id: user.id,
         trip_id: flight.tripId,
+        trip_country_id: flight.tripCountryId,
         description: flight.description,
-        country: flight.country,
         segments: flight.segments,
         price: flight.price,
         currency: flight.currency,
@@ -61,8 +70,8 @@ export function useFlights(tripId?: number) {
     mutationFn: async ({ id, changes }: { id: number; changes: Partial<Flight> }) => {
       const updateData: Record<string, unknown> = {};
       if (changes.tripId !== undefined) updateData.trip_id = changes.tripId;
+      if (changes.tripCountryId !== undefined) updateData.trip_country_id = changes.tripCountryId;
       if (changes.description !== undefined) updateData.description = changes.description;
-      if (changes.country !== undefined) updateData.country = changes.country;
       if (changes.segments !== undefined) updateData.segments = changes.segments;
       if (changes.price !== undefined) updateData.price = changes.price;
       if (changes.currency !== undefined) updateData.currency = changes.currency;
@@ -101,6 +110,9 @@ export function useFlights(tripId?: number) {
   return {
     flights: flights ?? [],
     loading: isLoading,
+    isRefetching,
+    isError,
+    refetch,
     addFlight: async (flight: Omit<Flight, "id" | "createdAt">) =>
       addFlightMutation.mutateAsync(flight),
     updateFlight: async (id: number, changes: Partial<Flight>) =>

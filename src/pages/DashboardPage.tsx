@@ -4,6 +4,7 @@ import { Plus, Search, Map, Upload } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { TripCard } from "@/components/trips/TripCard";
 import { TripForm } from "@/components/trips/TripForm";
+import { TripSkeleton, RefetchingIndicator } from "@/components/trips/TripLoadingStates";
 import { useTrips } from "@/hooks/useTrips";
 import { importTripFromJSON } from "@/lib/export";
 import type { Trip } from "@/db/types";
@@ -13,14 +14,14 @@ export function DashboardPage() {
   const [editingTrip, setEditingTrip] = useState<Trip | undefined>();
   const [search, setSearch] = useState("");
 
-  const { trips, addTrip, updateTrip, deleteTrip } = useTrips();
+  const { trips, addTrip, updateTrip, deleteTrip, loading, isRefetching } = useTrips();
 
   const importRef = useRef<HTMLInputElement>(null);
 
   const filtered = trips.filter(
     (t) =>
       t.name.toLowerCase().includes(search.toLowerCase()) ||
-      t.destinations?.some((d) => d.toLowerCase().includes(search.toLowerCase())),
+      t.tripCountries?.some((tc) => tc.countryName.toLowerCase().includes(search.toLowerCase())),
   );
 
   const handleSave = async (data: Omit<Trip, "id" | "createdAt" | "updatedAt">) => {
@@ -53,8 +54,11 @@ export function DashboardPage() {
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary tracking-tight">My Trips</h1>
+        <div className="flex flex-col">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-text-primary tracking-tight">My Trips</h1>
+            <AnimatePresence>{isRefetching && <RefetchingIndicator />}</AnimatePresence>
+          </div>
           <p className="text-sm text-text-secondary mt-0.5">
             {trips.length} trip{trips.length !== 1 ? "s" : ""} planned
           </p>
@@ -96,44 +100,66 @@ export function DashboardPage() {
       </div>
 
       {/* Trip grid */}
-      {filtered.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col items-center justify-center py-24 text-center"
-        >
-          <div className="w-20 h-20 rounded-2xl bg-slate-100 dark:bg-slate-900/30 flex items-center justify-center mb-4">
-            <Map size={36} className="text-slate-400" />
-          </div>
-          <h2 className="text-lg font-semibold text-text-primary mb-2">
-            {search ? "No trips found" : "No trips yet"}
-          </h2>
-          <p className="text-sm text-text-secondary max-w-xs mb-6">
-            {search
-              ? "Try a different search term"
-              : "Start planning your next adventure by creating your first trip."}
-          </p>
-          {!search && (
-            <Button variant="primary" onClick={() => setFormOpen(true)}>
-              <Plus size={15} />
-              Create Your First Trip
-            </Button>
-          )}
-        </motion.div>
-      ) : (
-        <AnimatePresence mode="popLayout">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filtered.map((trip) => (
-              <TripCard
-                key={trip.id}
-                trip={trip}
-                onEdit={handleEdit}
-                onDelete={(id) => deleteTrip(id)}
-              />
+      <AnimatePresence mode="wait">
+        {loading ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+          >
+            {[...Array(4)].map((_, i) => (
+              <TripSkeleton key={i} />
             ))}
-          </div>
-        </AnimatePresence>
-      )}
+          </motion.div>
+        ) : filtered.length === 0 ? (
+          <motion.div
+            key="empty"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center justify-center py-24 text-center"
+          >
+            <div className="w-20 h-20 rounded-2xl bg-slate-100 dark:bg-slate-900/30 flex items-center justify-center mb-4">
+              <Map size={36} className="text-slate-400" />
+            </div>
+            <h2 className="text-lg font-semibold text-text-primary mb-2">
+              {search ? "No trips found" : "No trips yet"}
+            </h2>
+            <p className="text-sm text-text-secondary max-w-xs mb-6">
+              {search
+                ? "Try a different search term"
+                : "Start planning your next adventure by creating your first trip."}
+            </p>
+            {!search && (
+              <Button variant="primary" onClick={() => setFormOpen(true)}>
+                <Plus size={15} />
+                Create Your First Trip
+              </Button>
+            )}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+          >
+            <AnimatePresence mode="popLayout">
+              {filtered.map((trip) => (
+                <TripCard
+                  key={trip.id}
+                  trip={trip}
+                  onEdit={handleEdit}
+                  onDelete={(id) => deleteTrip(id)}
+                />
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <TripForm
         key={editingTrip?.id ?? "new"}
