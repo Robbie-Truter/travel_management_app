@@ -29,7 +29,7 @@ import { ActivitiesTab } from "@/components/activities/ActivitiesTab";
 import { PlannerTimeline } from "@/components/planner/PlannerTimeline";
 import { NoteEditor } from "@/components/notes/NoteEditor";
 import { TripOverview } from "@/components/overview/TripOverview";
-import { TripDestinations } from "@/components/trips/TripDestinations";
+import { TripCountries } from "@/components/countries/TripCountries";
 import { formatDate, tripDuration, cn } from "@/lib/utils";
 import type { Trip, TripStatus } from "@/db/types";
 import { DocumentUpload } from "@/components/documents/DocumentsPage";
@@ -205,25 +205,7 @@ export function TripPage() {
             )}
 
             {/* COUNTRIES */}
-            {activeTab === "countries" && (
-              <div className="p-4 bg-surface border border-border rounded-xl">
-                <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
-                  <MapPin size={20} className="text-lavender-500" />
-                  Trip Countries
-                </h2>
-                <p className="text-sm text-text-secondary mb-6">
-                  Manage the countries you'll be visiting during this trip.
-                </p>
-                <TripDestinations
-                  trip={trip as Trip}
-                  tripCountries={tripCountries}
-                  destinations={destinations}
-                  flights={flights}
-                  accommodations={accommodations}
-                  activities={activities}
-                />
-              </div>
-            )}
+            {activeTab === "countries" && <TripCountries trip={trip as Trip} />}
 
             {/* DESTINATIONS (CITIES/TOWNS) */}
             {activeTab === "destinations" && (
