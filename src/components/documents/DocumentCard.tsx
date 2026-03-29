@@ -21,7 +21,7 @@ interface DocumentsCardProps {
   onEdit?: (document: Documents) => void;
 }
 
-export function DocumentsCard({ document, onDelete, onEdit }: DocumentsCardProps) {
+export function DocumentCard({ document, onDelete, onEdit }: DocumentsCardProps) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 

@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 
-export function DestSkeleton() {
+export function DestinationSkeleton() {
   return (
     <Card className="overflow-hidden border-border/50 bg-white dark:bg-slate-900/50">
       <div className="flex flex-col sm:flex-row h-full">
@@ -47,7 +47,7 @@ export function DestSkeleton() {
   );
 }
 
-export function DestRefetchingIndicator() {
+export function DestinationRefetchingIndicator() {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}

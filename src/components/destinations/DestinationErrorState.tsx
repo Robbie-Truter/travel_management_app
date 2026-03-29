@@ -2,15 +2,15 @@ import { AlertCircle, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 
-interface DestErrorStateProps {
+interface DestinationErrorStateProps {
   message?: string;
   onRetry: () => void;
 }
 
-export function DestErrorState({
+export function DestinationErrorState({
   message = "Failed to load destination data",
   onRetry,
-}: DestErrorStateProps) {
+}: DestinationErrorStateProps) {
   return (
     <Card className="border-rose-200 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/10">
       <CardContent className="p-8 flex flex-col items-center text-center">

@@ -57,7 +57,7 @@ function EmptyState({
   );
 }
 
-export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
+export function OverviewTab({ trip, tripCountries }: TripOverviewProps) {
   const {
     flights,
     loading: flightsLoading,

@@ -8,14 +8,14 @@ import { fileToBase64 } from "@/lib/utils";
 import { DOCUMENT_TYPES } from "./document-types";
 import type { Document } from "@/db/types";
 
-interface DocumentModalProps {
+interface DocumentFormProps {
   open: boolean;
   onClose: () => void;
   onSave: (data: Omit<Document, "id" | "createdAt" | "tripId">) => Promise<void>;
   initial?: Document;
 }
 
-export function DocumentModal({ open, onClose, onSave, initial }: DocumentModalProps) {
+export function DocumentForm({ open, onClose, onSave, initial }: DocumentFormProps) {
   const getMimeFromBase64 = (b64?: string) => {
     if (!b64 || !b64.startsWith("data:")) return undefined;
     return b64.split(";")[0].split(":")[1];

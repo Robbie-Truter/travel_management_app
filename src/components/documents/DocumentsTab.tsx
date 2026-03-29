@@ -2,13 +2,13 @@ import { Button } from "@/components/ui/Button";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus, Search, Upload } from "lucide-react";
 import { useState } from "react";
-import { DocumentsCard } from "./DocumentsCard";
+import { DocumentCard } from "./DocumentCard";
 import { useDocuments } from "@/hooks/useDocuments";
-import { DocumentModal } from "./DocumentModal";
+import { DocumentForm } from "./DocumentForm";
 import { DOCUMENT_TYPES } from "./document-types";
 import type { Document } from "@/db/types";
 
-export function DocumentUpload({ tripId }: { tripId: number }) {
+export function DocumentsTab({ tripId }: { tripId: number }) {
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingDocument, setEditingDocument] = useState<Document | undefined>();
@@ -207,7 +207,7 @@ export function DocumentUpload({ tripId }: { tripId: number }) {
                 <AnimatePresence mode="popLayout">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {docs.map((doc) => (
-                      <DocumentsCard
+                      <DocumentCard
                         key={doc.id}
                         document={doc}
                         onDelete={(id) => deleteDocument(id)}
@@ -222,7 +222,7 @@ export function DocumentUpload({ tripId }: { tripId: number }) {
         </div>
       )}
 
-      <DocumentModal
+      <DocumentForm
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSave={handleSave}

@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { RefreshCw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 
-export function CountrySkeleton() {
+export function CountriesSkeleton() {
   return (
     <Card className="overflow-hidden h-64 border-border/50 bg-white dark:bg-slate-900/50">
       <div className="h-14 bg-slate-50 dark:bg-slate-800/50 border-b border-border flex items-center px-4">
@@ -39,7 +39,7 @@ export function CountrySkeleton() {
   );
 }
 
-export function CountryRefetchingIndicator() {
+export function CountriesRefetchingIndicator() {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}

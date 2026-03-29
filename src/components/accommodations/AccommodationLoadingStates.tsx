@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { RefreshCw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 
-export function AccSkeleton() {
+export function AccommodationSkeleton() {
   return (
     <Card className="overflow-hidden border-border/50 bg-white dark:bg-slate-900/50 min-h-[400px]">
       <div className="flex flex-col sm:flex-row h-full">
@@ -63,7 +63,7 @@ export function AccSkeleton() {
   );
 }
 
-export function AccRefetchingIndicator() {
+export function AccommodationRefetchingIndicator() {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}

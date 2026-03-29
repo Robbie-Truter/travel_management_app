@@ -21,6 +21,7 @@ interface SearchableSelectProps {
   className?: string;
   displayLimit?: number;
   includeSearch?: boolean;
+  disabled?: boolean;
 }
 
 export function SearchableSelect({
@@ -34,6 +35,7 @@ export function SearchableSelect({
   className,
   displayLimit = 100,
   includeSearch = true,
+  disabled = false,
 }: SearchableSelectProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -70,8 +72,8 @@ export function SearchableSelect({
           {label}
         </label>
       )}
-      <Popover.Root open={open} onOpenChange={setOpen}>
-        <Popover.Trigger asChild>
+      <Popover.Root open={disabled ? false : open} onOpenChange={setOpen}>
+        <Popover.Trigger asChild disabled={disabled}>
           <button
             id={id}
             type="button"

@@ -3,9 +3,10 @@ import { Plus, MapPin } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { useDestinations } from "@/hooks/useDestinations";
-import { DestinationCard, DestinationForm } from "./DestinationComponents";
-import { DestSkeleton, DestRefetchingIndicator } from "./DestLoadingStates";
-import { DestErrorState } from "./DestErrorState";
+import { DestinationCard } from "./DestinationCard";
+import { DestinationForm } from "./DestinationForm";
+import { DestinationSkeleton, DestinationRefetchingIndicator } from "./DestinationLoadingStates";
+import { DestinationErrorState } from "./DestinationErrorState";
 import type { Destination, TripCountry } from "@/db/types";
 
 interface DestinationsTabProps {
@@ -36,14 +37,14 @@ export function DestinationsTab({ tripId, tripCountries }: DestinationsTabProps)
           <div className="h-9 w-28 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
         </div>
         {[1, 2, 3].map((i) => (
-          <DestSkeleton key={i} />
+          <DestinationSkeleton key={i} />
         ))}
       </div>
     );
   }
 
   if (isError) {
-    return <DestErrorState onRetry={refetch} />;
+    return <DestinationErrorState onRetry={refetch} />;
   }
 
   return (
@@ -55,7 +56,7 @@ export function DestinationsTab({ tripId, tripCountries }: DestinationsTabProps)
             Destinations{" "}
             <span className="text-text-muted font-normal text-sm">({destinations.length})</span>
           </h2>
-          <AnimatePresence>{isRefetching && <DestRefetchingIndicator />}</AnimatePresence>
+          <AnimatePresence>{isRefetching && <DestinationRefetchingIndicator />}</AnimatePresence>
         </div>
         <Button
           variant="primary"
@@ -90,13 +91,12 @@ export function DestinationsTab({ tripId, tripCountries }: DestinationsTabProps)
             {destinations.map((d) => (
               <DestinationCard
                 key={d.id}
-                destination={d}
+                dest={d}
                 onEdit={(dest) => {
                   setEditingDest(dest);
                   setDestFormOpen(true);
                 }}
                 onDelete={deleteDestination}
-                tripCountries={tripCountries}
               />
             ))}
           </AnimatePresence>

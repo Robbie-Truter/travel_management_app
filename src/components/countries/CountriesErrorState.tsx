@@ -1,10 +1,10 @@
 import { RefreshCw } from "lucide-react";
 
-interface CountryErrorStateProps {
+interface CountriesErrorStateProps {
   onRetry: () => void;
 }
 
-export function CountryErrorState({ onRetry }: CountryErrorStateProps) {
+export function CountriesErrorState({ onRetry }: CountriesErrorStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-20 bg-surface-2 border border-border rounded-2xl">
       <div className="w-16 h-16 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center mb-4">

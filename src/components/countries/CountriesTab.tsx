@@ -7,15 +7,15 @@ import { useAccommodations } from "@/hooks/useAccommodations";
 import { useActivities } from "@/hooks/useActivities";
 import { TripDestinations } from "./TripDestinations";
 import { UnassignedItems } from "./UnassignedItems";
-import { CountrySkeleton, CountryRefetchingIndicator } from "./CountryLoadingStates";
-import { CountryErrorState } from "./CountryErrorState";
+import { CountriesSkeleton, CountriesRefetchingIndicator } from "./CountriesLoadingStates";
+import { CountriesErrorState } from "./CountriesErrorState";
 import type { Trip } from "@/db/types";
 
-interface TripCountriesProps {
+interface CountriesTabProps {
   trip: Trip;
 }
 
-export function TripCountries({ trip }: TripCountriesProps) {
+export function CountriesTab({ trip }: CountriesTabProps) {
   const {
     tripCountries,
     loading: countriesLoading,
@@ -74,7 +74,7 @@ export function TripCountries({ trip }: TripCountriesProps) {
       <div className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {[1, 2].map((i) => (
-            <CountrySkeleton key={i} />
+            <CountriesSkeleton key={i} />
           ))}
         </div>
       </div>
@@ -82,7 +82,7 @@ export function TripCountries({ trip }: TripCountriesProps) {
   }
 
   if (isAnyError) {
-    return <CountryErrorState onRetry={handleRetry} />;
+    return <CountriesErrorState onRetry={handleRetry} />;
   }
 
   return (
@@ -93,7 +93,7 @@ export function TripCountries({ trip }: TripCountriesProps) {
             <MapPin size={20} className="text-lavender-500" />
             Trip Countries
           </h2>
-          <AnimatePresence>{isAnyRefetching && <CountryRefetchingIndicator />}</AnimatePresence>
+          <AnimatePresence>{isAnyRefetching && <CountriesRefetchingIndicator />}</AnimatePresence>
         </div>
       </div>
       <p className="text-sm text-text-secondary mb-6">

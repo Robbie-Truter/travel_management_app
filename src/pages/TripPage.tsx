@@ -26,13 +26,14 @@ import { FlightsTab } from "@/components/flights/FlightsTab";
 import { AccommodationsTab } from "@/components/accommodations/AccommodationsTab";
 import { DestinationsTab } from "@/components/destinations/DestinationsTab";
 import { ActivitiesTab } from "@/components/activities/ActivitiesTab";
-import { PlannerTimeline } from "@/components/planner/PlannerTimeline";
-import { NoteEditor } from "@/components/notes/NoteEditor";
-import { TripOverview } from "@/components/overview/TripOverview";
-import { TripCountries } from "@/components/countries/TripCountries";
+import { PlannerTab } from "@/components/planner/PlannerTab";
+import { NotesTab } from "@/components/notes/NotesTab";
+import { OverviewTab } from "@/components/overview/OverviewTab";
+import { CountriesTab } from "@/components/countries/CountriesTab";
+import { DocumentsTab } from "@/components/documents/DocumentsTab";
 import { formatDate, tripDuration, cn } from "@/lib/utils";
 import type { Trip, TripStatus } from "@/db/types";
-import { DocumentUpload } from "@/components/documents/DocumentsPage";
+/* Removed redundant DocumentUpload import */
 
 type Tab =
   | "overview"
@@ -201,11 +202,11 @@ export function TripPage() {
           >
             {/* OVERVIEW */}
             {activeTab === "overview" && (
-              <TripOverview trip={trip as Trip} tripCountries={tripCountries} />
+              <OverviewTab trip={trip as Trip} tripCountries={tripCountries} />
             )}
 
             {/* COUNTRIES */}
-            {activeTab === "countries" && <TripCountries trip={trip as Trip} />}
+            {activeTab === "countries" && <CountriesTab trip={trip as Trip} />}
 
             {/* DESTINATIONS (CITIES/TOWNS) */}
             {activeTab === "destinations" && (
@@ -238,7 +239,7 @@ export function TripPage() {
                     Drag activities between days to reorganize your itinerary.
                   </p>
                 </div>
-                <PlannerTimeline
+                <PlannerTab
                   flights={flights}
                   accommodations={accommodations}
                   activities={activities}
@@ -254,7 +255,7 @@ export function TripPage() {
                 <div className="mb-4">
                   <h2 className="font-semibold text-text-primary">Notes & Tips</h2>
                 </div>
-                <NoteEditor tripId={id} />
+                <NotesTab tripId={id} />
               </div>
             )}
 
@@ -264,7 +265,7 @@ export function TripPage() {
                 <div className="mb-4">
                   <h2 className="font-semibold text-text-primary">Documents</h2>
                 </div>
-                <DocumentUpload tripId={id} />
+                <DocumentsTab tripId={id} />
               </div>
             )}
           </motion.div>

@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { useActivities } from "@/hooks/useActivities";
-import { ActivityCard, ActivityForm } from "./ActivityComponents";
+import { ActivityCard } from "./ActivityCard";
+import { ActivityForm } from "./ActivityForm";
 import { ACTIVITY_TAGS } from "./activity-types";
 import { ActivitySkeleton, ActivityRefetchingIndicator } from "./ActivityLoadingStates";
 import { ActivityErrorState } from "./ActivityErrorState";
@@ -287,7 +288,7 @@ export function ActivitiesTab({ tripId, tripCountries, destinations }: Activitie
         initial={editingAct}
         tripId={tripId}
         tripCountries={tripCountries}
-        allDestinations={destinations}
+        destinations={destinations}
       />
     </div>
   );

@@ -3,13 +3,11 @@ import { Plus, BarChart2, Hotel } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { useAccommodations } from "@/hooks/useAccommodations";
-import {
-  AccommodationCard,
-  AccommodationForm,
-  AccommodationComparison,
-} from "./AccommodationComponents";
-import { AccSkeleton, AccRefetchingIndicator } from "./AccLoadingStates";
-import { AccErrorState } from "./AccErrorState";
+import { AccommodationCard } from "./AccommodationCard";
+import { AccommodationForm } from "./AccommodationForm";
+import { AccommodationComparison } from "./AccommodationComparison";
+import { AccommodationSkeleton, AccommodationRefetchingIndicator } from "./AccommodationLoadingStates";
+import { AccommodationErrorState } from "./AccommodationErrorState";
 import { getCountryFlag } from "@/lib/utils";
 import type { Accommodation, TripCountry } from "@/db/types";
 
@@ -43,14 +41,14 @@ export function AccommodationsTab({ tripId, tripCountries }: AccommodationsTabPr
           <div className="h-9 w-28 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
         </div>
         {[1, 2].map((i) => (
-          <AccSkeleton key={i} />
+          <AccommodationSkeleton key={i} />
         ))}
       </div>
     );
   }
 
   if (isError) {
-    return <AccErrorState onRetry={refetch} />;
+    return <AccommodationErrorState onRetry={refetch} />;
   }
 
   return (
@@ -63,7 +61,7 @@ export function AccommodationsTab({ tripId, tripCountries }: AccommodationsTabPr
               ({accommodations.length} total)
             </span>
           </h2>
-          <AnimatePresence>{isRefetching && <AccRefetchingIndicator />}</AnimatePresence>
+          <AnimatePresence>{isRefetching && <AccommodationRefetchingIndicator />}</AnimatePresence>
         </div>
         <div className="flex gap-2">
           {accommodations.length >= 2 && (

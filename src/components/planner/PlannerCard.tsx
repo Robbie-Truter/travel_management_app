@@ -1,11 +1,9 @@
-import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Plane, Hotel, Compass, Clock, MapPin, ExternalLink } from "lucide-react";
-import { formatDate, formatCurrency } from "@/lib/utils";
+import { formatCurrency, cn } from "@/lib/utils";
 import type { Flight, Accommodation, Activity } from "@/db/types";
-import { cn } from "@/lib/utils";
 
-interface PlannerItem {
+export interface PlannerItem {
   id: string;
   type: "flight" | "accommodation" | "activity";
   time?: string;
@@ -13,161 +11,11 @@ interface PlannerItem {
   subType?: string;
 }
 
-interface PlannerTimelineProps {
-  flights: Flight[];
-  accommodations: Accommodation[];
-  activities: Activity[];
-  tripStartDate: string;
-  tripEndDate: string;
+interface PlannerCardProps {
+  item: PlannerItem;
 }
 
-function getDatesInRange(start: string, end: string): string[] {
-  const dates: string[] = [];
-  const current = new Date(start);
-  const endDate = new Date(end);
-  while (current <= endDate) {
-    dates.push(current.toISOString().split("T")[0]);
-    current.setDate(current.getDate() + 1);
-  }
-  return dates;
-}
-
-export function PlannerTimeline({
-  flights,
-  accommodations,
-  activities,
-  tripStartDate,
-  tripEndDate,
-}: PlannerTimelineProps) {
-  const dates = useMemo(
-    () => getDatesInRange(tripStartDate, tripEndDate),
-    [tripStartDate, tripEndDate],
-  );
-
-  const itemsByDate = useMemo(() => {
-    const map: Record<string, PlannerItem[]> = {};
-    dates.forEach((date) => (map[date] = []));
-
-    // Process Flights
-    flights.forEach((f) => {
-      f.segments.forEach((seg, idx) => {
-        const depDate = seg.departureTime.split("T")[0];
-        const arrDate = seg.arrivalTime.split("T")[0];
-
-        if (map[depDate]) {
-          map[depDate].push({
-            id: `flight-${f.id}-dep-${idx}`,
-            type: "flight",
-            subType: "departure",
-            time: seg.departureTime.split("T")[1],
-            data: f,
-          });
-        }
-
-        if (arrDate !== depDate && map[arrDate]) {
-          map[arrDate].push({
-            id: `flight-${f.id}-arr-${idx}`,
-            type: "flight",
-            subType: "arrival",
-            time: seg.arrivalTime.split("T")[1],
-            data: f,
-          });
-        }
-      });
-    });
-
-    // Process Accommodations
-    accommodations.forEach((a) => {
-      dates.forEach((date) => {
-        if (date === a.checkIn) {
-          map[date].push({
-            id: `acc-${a.id}-in`,
-            type: "accommodation",
-            subType: "check-in",
-            time: "15:00:00", // Default check-in time
-            data: a,
-          });
-        } else if (date === a.checkOut) {
-          map[date].push({
-            id: `acc-${a.id}-out`,
-            type: "accommodation",
-            subType: "check-out",
-            time: "11:00:00", // Default check-out time
-            data: a,
-          });
-        } else if (date > a.checkIn && date < a.checkOut) {
-          map[date].push({
-            id: `acc-${a.id}-stay`,
-            type: "accommodation",
-            subType: "stay",
-            data: a,
-          });
-        }
-      });
-    });
-
-    // Process Activities
-    activities.forEach((a) => {
-      const date = a.date.split("T")[0];
-      if (map[date]) {
-        map[date].push({
-          id: `activity-${a.id}`,
-          type: "activity",
-          time: a.date.includes("T") ? a.date.split("T")[1] : undefined,
-          data: a,
-        });
-      }
-    });
-
-    // Sort items for each day
-    Object.keys(map).forEach((date) => {
-      map[date].sort((a, b) => {
-        if (!a.time && !b.time) return 0;
-        if (!a.time) return 1;
-        if (!b.time) return -1;
-        return a.time.localeCompare(b.time);
-      });
-    });
-
-    return map;
-  }, [flights, accommodations, activities, dates]);
-
-  return (
-    <div className="flex gap-6 overflow-x-auto pb-8 pt-2 scroll-smooth">
-      {dates.map((date) => (
-        <DayColumn key={date} date={date} items={itemsByDate[date]} />
-      ))}
-    </div>
-  );
-}
-
-function DayColumn({ date, items }: { date: string; items: PlannerItem[] }) {
-  return (
-    <div className="shrink-0 w-80 group">
-      <div className="mb-4 sticky top-0 bg-surface/80 backdrop-blur-sm z-10 p-2 flex rounded items-baseline gap-2">
-        <h3 className="text-xl font-bold text-text-primary">{formatDate(date, "d")}</h3>
-        <span className="text-sm font-medium text-text-secondary">
-          {formatDate(date, "EEEE, MMM")}
-        </span>
-      </div>
-
-      <div className="relative space-y-4 min-h-[400px]">
-        {/* Timeline line */}
-        <div className="absolute left-5.5 top-2 bottom-0 w-0.5 bg-border group-hover:bg-lavender-200 transition-colors" />
-
-        {items.length === 0 ? (
-          <div className="pl-12 py-8">
-            <p className="text-sm text-text-muted italic">No plans for today</p>
-          </div>
-        ) : (
-          items.map((item) => <PlannerCard key={item.id} item={item} />)
-        )}
-      </div>
-    </div>
-  );
-}
-
-function PlannerCard({ item }: { item: PlannerItem }) {
+export function PlannerCard({ item }: PlannerCardProps) {
   const getStyles = () => {
     switch (item.type) {
       case "flight":
@@ -242,7 +90,6 @@ function PlannerCard({ item }: { item: PlannerItem }) {
       animate={{ opacity: 1, x: 0 }}
       className="relative pl-12"
     >
-      {/* Timeline dot */}
       <div
         className={cn(
           "absolute left-5.5 top-4 w-3 h-3 -translate-x-1.5 rounded-full border-2 border-surface bg-white shadow-sm z-10 transition-transform group-hover:scale-125",

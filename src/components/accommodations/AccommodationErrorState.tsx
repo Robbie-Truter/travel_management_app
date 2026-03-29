@@ -2,12 +2,12 @@ import { AlertCircle, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 
-interface AccErrorStateProps {
+interface AccommodationErrorStateProps {
   message?: string;
   onRetry: () => void;
 }
 
-export function AccErrorState({ message = "Failed to load accommodation data", onRetry }: AccErrorStateProps) {
+export function AccommodationErrorState({ message = "Failed to load accommodation data", onRetry }: AccommodationErrorStateProps) {
   return (
     <Card className="border-rose-200 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/10">
       <CardContent className="p-8 flex flex-col items-center text-center">

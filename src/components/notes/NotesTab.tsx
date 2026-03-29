@@ -19,11 +19,11 @@ const TRAVEL_TIPS = [
   "🍽️ Try local street food — it's often the most authentic experience.",
 ];
 
-interface NoteEditorProps {
+interface NotesTabProps {
   tripId: number;
 }
 
-export function NoteEditor({ tripId }: NoteEditorProps) {
+export function NotesTab({ tripId }: NotesTabProps) {
   const { note, saveNote } = useNotes(tripId);
 
   const [content, setContent] = useState("");
