@@ -3,17 +3,17 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { uploadFile, getFileUrl, deleteFile } from "@/lib/storage";
-import type {
-  Trip,
-  TripRow,
-  TripCountryRow,
-} from "@/db/types";
+import type { Trip, TripRow, TripCountryRow } from "@/db/types";
 
 export function useTrips() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: trips, isLoading } = useQuery({
+  const {
+    data: trips,
+    isLoading,
+    isRefetching,
+  } = useQuery({
     queryKey: ["trips", user?.id],
     queryFn: async (): Promise<Trip[]> => {
       const { data, error } = await supabase
@@ -50,6 +50,7 @@ export function useTrips() {
       );
     },
     enabled: !!user,
+    refetchOnMount: "always",
   });
 
   const addTripMutation = useMutation({
@@ -176,6 +177,7 @@ export function useTrips() {
   return {
     trips: trips ?? [],
     loading: isLoading,
+    isRefetching,
     addTrip: async (trip: Omit<Trip, "id" | "createdAt" | "updatedAt">) =>
       addTripMutation.mutateAsync(trip),
     updateTrip: async (id: number, changes: Partial<Trip>) =>
