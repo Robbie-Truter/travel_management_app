@@ -8,7 +8,13 @@ export function useActivities(tripId: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: activities, isLoading } = useQuery({
+  const {
+    data: activities,
+    isLoading,
+    isRefetching,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["activities", tripId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -35,6 +41,8 @@ export function useActivities(tripId: number) {
       })) as Activity[];
     },
     enabled: !!user && !!tripId,
+    retry: 3,
+    refetchOnMount: "always",
   });
 
   const addActivityMutation = useMutation({
@@ -145,6 +153,9 @@ export function useActivities(tripId: number) {
   return {
     activities: activities ?? [],
     loading: isLoading,
+    isRefetching,
+    isError,
+    refetch,
     addActivity: async (activity: Omit<Activity, "id" | "createdAt">) =>
       addActivityMutation.mutateAsync(activity),
     updateActivity: async (id: number, changes: Partial<Activity>) =>

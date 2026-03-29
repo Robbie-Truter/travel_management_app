@@ -7,7 +7,13 @@ export function useTripCountries(tripId: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: tripCountries, isLoading } = useQuery({
+  const {
+    data: tripCountries,
+    isLoading,
+    isRefetching,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["tripCountries", tripId],
     queryFn: async (): Promise<TripCountry[]> => {
       const { data, error } = await supabase
@@ -30,6 +36,8 @@ export function useTripCountries(tripId: number) {
       })) as TripCountry[];
     },
     enabled: !!user && !!tripId,
+    retry: 3,
+    refetchOnMount: "always",
   });
 
   const addTripCountryMutation = useMutation({
@@ -83,6 +91,9 @@ export function useTripCountries(tripId: number) {
   return {
     tripCountries: tripCountries ?? [],
     loading: isLoading,
+    isRefetching,
+    isError,
+    refetch,
     addTripCountry: async (country: Omit<TripCountry, "id" | "createdAt">) =>
       addTripCountryMutation.mutateAsync(country),
     updateTripCountry: async (id: number, updates: Partial<TripCountry>) =>

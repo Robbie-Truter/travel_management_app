@@ -8,7 +8,13 @@ export function useAccommodations(tripId: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: accommodations, isLoading } = useQuery({
+  const {
+    data: accommodations,
+    isLoading,
+    isRefetching,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["accommodations", tripId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -38,6 +44,8 @@ export function useAccommodations(tripId: number) {
       })) as Accommodation[];
     },
     enabled: !!user && !!tripId,
+    retry: 3,
+    refetchOnMount: "always",
   });
 
   const addAccommodationMutation = useMutation({
@@ -160,6 +168,9 @@ export function useAccommodations(tripId: number) {
   return {
     accommodations: accommodations ?? [],
     loading: isLoading,
+    isRefetching,
+    isError,
+    refetch,
     addAccommodation: async (acc: Omit<Accommodation, "id" | "createdAt">) =>
       addAccommodationMutation.mutateAsync(acc),
     updateAccommodation: async (id: number, changes: Partial<Accommodation>) =>

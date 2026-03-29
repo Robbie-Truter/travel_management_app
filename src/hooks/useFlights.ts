@@ -7,7 +7,13 @@ export function useFlights(tripId?: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: flights, isLoading } = useQuery({
+  const {
+    data: flights,
+    isLoading,
+    isRefetching,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["flights", tripId],
     queryFn: async () => {
       let query = supabase.from("flights").select("*").order("created_at", { ascending: true });
@@ -27,12 +33,14 @@ export function useFlights(tripId?: number) {
           createdAt: doc.created_at,
         }))
         .sort((a, b) => {
-          const timeA = (a.segments?.[0]?.departureTime) || "";
-          const timeB = (b.segments?.[0]?.departureTime) || "";
+          const timeA = a.segments?.[0]?.departureTime || "";
+          const timeB = b.segments?.[0]?.departureTime || "";
           return timeA.localeCompare(timeB);
         }) as Flight[];
     },
     enabled: !!user && (tripId === undefined || !!tripId),
+    retry: 3,
+    refetchOnMount: "always",
   });
 
   const addFlightMutation = useMutation({
@@ -102,6 +110,9 @@ export function useFlights(tripId?: number) {
   return {
     flights: flights ?? [],
     loading: isLoading,
+    isRefetching,
+    isError,
+    refetch,
     addFlight: async (flight: Omit<Flight, "id" | "createdAt">) =>
       addFlightMutation.mutateAsync(flight),
     updateFlight: async (id: number, changes: Partial<Flight>) =>
