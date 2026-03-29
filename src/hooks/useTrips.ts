@@ -190,7 +190,13 @@ export function useTrips() {
 export function useTrip(id: number | undefined) {
   const { user } = useAuth();
 
-  const { data: trip } = useQuery({
+  const {
+    data: trip,
+    isLoading: loading,
+    isRefetching,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["trip", id],
     queryFn: async (): Promise<Trip | undefined> => {
       if (!id) return undefined;
@@ -202,7 +208,7 @@ export function useTrip(id: number | undefined) {
       if (error) throw error;
       if (!data) return undefined;
 
-      const tripRow = data as TripRow;
+      const tripRow = (data as unknown) as TripRow;
       return {
         ...tripRow,
         startDate: tripRow.start_date,
@@ -227,7 +233,7 @@ export function useTrip(id: number | undefined) {
     enabled: !!id && !!user,
   });
 
-  return trip;
+  return { trip, loading, isError, isRefetching, refetch };
 }
 
 export function useSettings() {

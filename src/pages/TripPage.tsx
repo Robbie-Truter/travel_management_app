@@ -11,6 +11,7 @@ import {
   File,
   MapPin,
   LayoutGrid,
+  Loader2,
 } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
@@ -61,18 +62,33 @@ export function TripPage() {
   const navigate = useNavigate();
 
   const id = Number(tripId);
-  const trip = useTrip(id);
+  const { trip, loading } = useTrip(id);
 
   // Still needed for Hero Header and some tab passing
   const { tripCountries } = useTripCountries(id);
   const { destinations } = useDestinations(id);
-  
+
   // These are still needed for Planner & TripDestinations (until refactored)
   const { flights } = useFlights(id);
   const { accommodations } = useAccommodations(id);
   const { activities } = useActivities(id);
 
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full min-h-[400px]">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+          className="text-lavender-500 mb-4"
+        >
+          <Loader2 size={40} />
+        </motion.div>
+        <p className="text-text-secondary font-medium animate-pulse">Loading your trip...</p>
+      </div>
+    );
+  }
 
   if (!trip) {
     return (
@@ -185,10 +201,7 @@ export function TripPage() {
           >
             {/* OVERVIEW */}
             {activeTab === "overview" && (
-              <TripOverview
-                trip={trip as Trip}
-                tripCountries={tripCountries}
-              />
+              <TripOverview trip={trip as Trip} tripCountries={tripCountries} />
             )}
 
             {/* COUNTRIES */}
@@ -218,9 +231,7 @@ export function TripPage() {
             )}
 
             {/* FLIGHTS */}
-            {activeTab === "flights" && (
-              <FlightsTab tripId={id} tripCountries={tripCountries} />
-            )}
+            {activeTab === "flights" && <FlightsTab tripId={id} tripCountries={tripCountries} />}
 
             {/* ACCOMMODATIONS */}
             {activeTab === "accommodations" && (
@@ -229,10 +240,10 @@ export function TripPage() {
 
             {/* ACTIVITIES */}
             {activeTab === "activities" && (
-              <ActivitiesTab 
-                tripId={id} 
-                tripCountries={tripCountries} 
-                destinations={destinations} 
+              <ActivitiesTab
+                tripId={id}
+                tripCountries={tripCountries}
+                destinations={destinations}
               />
             )}
 

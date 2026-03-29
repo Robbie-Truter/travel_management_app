@@ -3,24 +3,16 @@ import type { Trip, TripCountry } from "@/db/types";
 import { useNotes } from "@/hooks/useNotes";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import {
-  Plane,
-  Hotel,
-  Compass,
-  Calendar,
-  StickyNote,
-  Plus,
-  PiggyBank,
-  MapPin,
-  RefreshCw,
-} from "lucide-react";
+import { Plane, Hotel, Compass, Calendar, StickyNote, Plus, PiggyBank, MapPin } from "lucide-react";
 import { formatDate, formatCurrency, formatDuration, getCountryFlag } from "@/lib/utils";
 import { useExchangeRates } from "@/hooks/useExchangeRates";
 import { Badge } from "@/components/ui/Badge";
 import { useFlights } from "@/hooks/useFlights";
 import { useAccommodations } from "@/hooks/useAccommodations";
 import { useActivities } from "@/hooks/useActivities";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
+import { OverviewSkeleton, OverviewRefetchingIndicator } from "./OverviewLoadingStates";
+import { OverviewErrorState } from "./OverviewErrorState";
 
 const ACTIVITY_TAGS = [
   { value: "sightseeing", label: "Sightseeing", icon: "🏛️" },
@@ -65,43 +57,27 @@ function EmptyState({
   );
 }
 
-function OverviewSkeleton() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {[1, 2, 3, 4, 5, 6].map((i) => (
-        <Card key={i} className="h-110 overflow-hidden relative">
-          <div className="h-16 bg-slate-50 dark:bg-slate-900/20 border-b border-border p-5 flex items-center justify-between">
-            <div className="h-6 w-32 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
-          </div>
-          <div className="p-5 space-y-4">
-            <div className="h-10 w-20 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
-            <div className="h-4 w-32 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
-            <div className="space-y-2 pt-4">
-              <div className="h-20 w-full bg-slate-50 dark:bg-slate-900/30 rounded-lg animate-pulse" />
-              <div className="h-20 w-full bg-slate-50 dark:bg-slate-900/30 rounded-lg animate-pulse" />
-            </div>
-          </div>
-        </Card>
-      ))}
-    </div>
-  );
-}
-
 export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
   const {
     flights,
     loading: flightsLoading,
     isRefetching: flightsRefetching,
+    isError: flightsError,
+    refetch: refetchFlights,
   } = useFlights(trip.id!);
   const {
     accommodations,
     loading: accsLoading,
     isRefetching: accsRefetching,
+    isError: accsError,
+    refetch: refetchAccs,
   } = useAccommodations(trip.id!);
   const {
     activities,
     loading: actsLoading,
     isRefetching: actsRefetching,
+    isError: actsError,
+    refetch: refetchActs,
   } = useActivities(trip.id!);
 
   const { note } = useNotes(trip.id!);
@@ -109,13 +85,13 @@ export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
 
   const isInitialLoading = flightsLoading || accsLoading || actsLoading;
   const isAnyRefetching = flightsRefetching || accsRefetching || actsRefetching;
+  const isAnyError = flightsError || accsError || actsError;
 
-  const confirmedFlights = flights.filter((f) => f.isConfirmed);
-  const unconfirmedFlights = flights.filter((f) => !f.isConfirmed);
-  const upcomingFlights = flights.filter((f) => new Date(f.segments[0].departureTime) > new Date());
-
-  const confirmedStays = accommodations.filter((a) => a.isConfirmed);
-  const unconfirmedStays = accommodations.filter((a) => !a.isConfirmed);
+  const handleRetry = () => {
+    refetchFlights();
+    refetchAccs();
+    refetchActs();
+  };
 
   const countryMap = useMemo(() => {
     const map: Record<number, string> = {};
@@ -125,13 +101,37 @@ export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
     return map;
   }, [tripCountries]);
 
-  const upcomingStays = accommodations.filter((a) => new Date(a.checkIn) >= new Date());
+  // Derived data
+  const {
+    confirmedFlights,
+    unconfirmedFlights,
+    upcomingFlights,
+    confirmedStays,
+    unconfirmedStays,
+    upcomingStays,
+    confirmedActivities,
+    unconfirmedActivities,
+    upcomingActivities,
+  } = useMemo(() => {
+    const now = new Date();
+    return {
+      confirmedFlights: flights.filter((f) => f.isConfirmed),
+      unconfirmedFlights: flights.filter((f) => !f.isConfirmed),
+      upcomingFlights: flights.filter((f) => new Date(f.segments[0].departureTime) > now),
+      confirmedStays: accommodations.filter((a) => a.isConfirmed),
+      unconfirmedStays: accommodations.filter((a) => !a.isConfirmed),
+      upcomingStays: accommodations
+        .filter((a) => new Date(a.checkIn) >= now)
+        .sort((a, b) => new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime()),
+      confirmedActivities: activities.filter((a) => a.isConfirmed),
+      unconfirmedActivities: activities.filter((a) => !a.isConfirmed),
+      upcomingActivities: activities
+        .filter((a) => new Date(a.date) > now)
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+    };
+  }, [flights, accommodations, activities]);
 
-  const confirmedActivities = activities.filter((a) => a.isConfirmed);
-  const unconfirmedActivities = activities.filter((a) => !a.isConfirmed);
-  const upcomingActivities = activities.filter((a) => new Date(a.date) > new Date());
-
-  // Calculate totals by currency and total in base currency (ZAR)
+  // Budget calculations
   const { budgetBreakdown, totalInBase, confirmedTotalInBase } = useMemo(() => {
     const breakdown: Record<
       string,
@@ -168,14 +168,15 @@ export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
       return c;
     };
 
-    const convertCurrency = (
-      amount: number,
-      from: "USD" | "EUR" | "ZAR",
-      to: "USD" | "EUR" | "ZAR",
-    ) => {
+    const convertCurrency = (amount: number, from: string, to: "USD" | "EUR" | "ZAR") => {
       if (!currencyRates) return 0;
-      const rates = currencyRates;
-      return amount * (rates[from] / rates[to]);
+      const rates = currencyRates as unknown as Record<string, number>;
+      const fromRate = rates[from.toUpperCase()] || 1;
+      const toRate = rates[to] || 1;
+      // Convert to a baseline then to target
+      // If rates are relative to base, then amount * (fromRate/toRate) might be wrong depending on how rates are defined.
+      // Usually rates are "1 base = X currency". So baselineValue = amount / fromRate. targetValue = baselineValue * toRate.
+      return (amount / fromRate) * toRate;
     };
 
     flights.forEach((f) => {
@@ -185,11 +186,11 @@ export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
       if (f.isConfirmed) {
         breakdown[c].confirmedFlights += f.price;
         breakdown[c].confirmedTotal += f.price;
-        confirmedTotalCost += convertCurrency(f.price, f.currency as "USD" | "EUR" | "ZAR", "ZAR");
+        confirmedTotalCost += convertCurrency(f.price, f.currency, "ZAR");
       } else {
         breakdown[c].unconfirmedTotal += f.price;
       }
-      totalCost += convertCurrency(f.price, f.currency as "USD" | "EUR" | "ZAR", "ZAR");
+      totalCost += convertCurrency(f.price, f.currency, "ZAR");
     });
 
     accommodations.forEach((a) => {
@@ -199,11 +200,11 @@ export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
       if (a.isConfirmed) {
         breakdown[c].confirmedStays += a.price;
         breakdown[c].confirmedTotal += a.price;
-        confirmedTotalCost += convertCurrency(a.price, a.currency as "USD" | "EUR" | "ZAR", "ZAR");
+        confirmedTotalCost += convertCurrency(a.price, a.currency, "ZAR");
       } else {
         breakdown[c].unconfirmedTotal += a.price;
       }
-      totalCost += convertCurrency(a.price, a.currency as "USD" | "EUR" | "ZAR", "ZAR");
+      totalCost += convertCurrency(a.price, a.currency, "ZAR");
     });
 
     activities.forEach((a) => {
@@ -214,11 +215,11 @@ export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
       if (a.isConfirmed) {
         breakdown[c].confirmedActivities += cost;
         breakdown[c].confirmedTotal += cost;
-        confirmedTotalCost += convertCurrency(cost, a.currency as "USD" | "EUR" | "ZAR", "ZAR");
+        confirmedTotalCost += convertCurrency(cost, a.currency, "ZAR");
       } else {
         breakdown[c].unconfirmedTotal += cost;
       }
-      totalCost += convertCurrency(cost, a.currency as "USD" | "EUR" | "ZAR", "ZAR");
+      totalCost += convertCurrency(cost, a.currency, "ZAR");
     });
 
     return {
@@ -228,46 +229,23 @@ export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
     };
   }, [flights, accommodations, activities, currencyRates]);
 
-  const currencies = Object.keys(budgetBreakdown);
+  const currencies = useMemo(() => Object.keys(budgetBreakdown), [budgetBreakdown]);
 
+  // Early returns for loading and error states
   if (isInitialLoading) {
     return <OverviewSkeleton />;
   }
 
+  if (isAnyError) {
+    return <OverviewErrorState onRetry={handleRetry} />;
+  }
+
   return (
     <div className="relative">
-      <AnimatePresence>
-        {isAnyRefetching && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-2xl overflow-hidden group"
-          >
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-            >
-              <RefreshCw size={14} />
-            </motion.div>
-            <span className="text-xs font-bold uppercase tracking-widest whitespace-nowrap">
-              Updating Trip Data
-            </span>
-            <div
-              className="absolute inset-x-0 bottom-0 h-0.5 bg-sky-500 origin-left"
-              style={{ animation: "progress 2s linear infinite" }}
-            />
-            <style>{`
-              @keyframes progress {
-                from { transform: scaleX(0); }
-                to { transform: scaleX(1); }
-              }
-            `}</style>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <AnimatePresence>{isAnyRefetching && <OverviewRefetchingIndicator />}</AnimatePresence>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Countries Card */}
         <Card className="flex flex-col p-0 h-110 overflow-hidden group hover:shadow-card-hover transition-shadow text-center sm:text-left">
           <div className="bg-lavender-50 dark:bg-lavender-900/10 p-5 border-b border-lavender-100 dark:border-lavender-900/20 text-left shrink-0">
             <h3 className="font-bold text-lg flex items-center gap-2 text-lavender-700 dark:text-lavender-400">
@@ -305,6 +283,7 @@ export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
           </div>
         </Card>
 
+        {/* Flights Card */}
         <Card className="flex flex-col p-0 h-110 overflow-hidden group hover:shadow-card-hover transition-shadow">
           <div className="bg-sky-pastel-50 dark:bg-sky-pastel-900/10 p-5 border-b border-sky-pastel-100 dark:border-sky-pastel-900/20 shrink-0">
             <h3 className="font-bold text-lg flex items-center gap-2 text-sky-pastel-700 dark:text-sky-pastel-400">
@@ -378,6 +357,7 @@ export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
           </div>
         </Card>
 
+        {/* Accommodations Card */}
         <Card className="flex flex-col p-0 h-110 overflow-hidden group hover:shadow-card-hover transition-shadow">
           <div className="bg-lavender-50 dark:bg-lavender-900/10 p-5 border-b border-lavender-100 dark:border-lavender-900/20 shrink-0">
             <h3 className="font-bold text-lg flex items-center gap-2 text-lavender-700 dark:text-lavender-400">
@@ -412,43 +392,38 @@ export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
                       Upcoming
                     </h4>
                     <ul className="space-y-3">
-                      {upcomingStays
-                        .sort(
-                          (a, b) => new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime(),
-                        )
-                        .slice(0, 2)
-                        .map((a) => (
-                          <li key={a.id} className="group/item">
-                            <div className="flex justify-between items-start mb-0.5">
-                              <div className="text-sm font-semibold text-text-primary group-hover/item:text-lavender-600 transition-colors">
-                                {a.tripCountryId && (
-                                  <span className="font-semibold">
-                                    {countryMap[a.tripCountryId]},{" "}
-                                  </span>
-                                )}
-                                {a.name}
-                              </div>
-                              {!a.isConfirmed && (
-                                <span className="text-[9px] px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded-full font-bold uppercase tracking-tighter border border-amber-100">
-                                  Planning
+                      {upcomingStays.slice(0, 2).map((a) => (
+                        <li key={a.id} className="group/item">
+                          <div className="flex justify-between items-start mb-0.5">
+                            <div className="text-sm font-semibold text-text-primary group-hover/item:text-lavender-600 transition-colors">
+                              {a.tripCountryId && (
+                                <span className="font-semibold">
+                                  {countryMap[a.tripCountryId]},{" "}
                                 </span>
                               )}
+                              {a.name}
                             </div>
-                            <p className="text-[11px] text-text-secondary flex items-center gap-1">
-                              {a.location}
-                            </p>
-                            <p className="text-[10px] text-text-muted mt-0.5">
-                              {formatDate(a.checkIn, "MMM d")} - {formatDate(a.checkOut, "MMM d")}
-                            </p>
-                          </li>
-                        ))}
+                            {!a.isConfirmed && (
+                              <span className="text-[9px] px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded-full font-bold uppercase tracking-tighter border border-amber-100">
+                                Planning
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-text-secondary flex items-center gap-1">
+                            {a.location}
+                          </p>
+                          <p className="text-[10px] text-text-muted mt-0.5">
+                            {formatDate(a.checkIn, "MMM d")} - {formatDate(a.checkOut, "MMM d")}
+                          </p>
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 )}
 
                 <div className="mt-auto">
                   <p className="text-[11px] text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg font-medium border border-amber-100/50">
-                    {`${unconfirmedStays?.length > 0 ? unconfirmedStays?.length : "No"} stay${unconfirmedStays.length > 1 ? "s" : ""} in planning phase`}
+                    {`${unconfirmedStays?.length > 0 ? unconfirmedStays?.length : "No"} stay${unconfirmedStays.length !== 1 ? "s" : ""} in planning phase`}
                   </p>
                 </div>
               </div>
@@ -458,6 +433,7 @@ export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
           </div>
         </Card>
 
+        {/* Activities Card */}
         <Card className="flex flex-col p-0 h-110 overflow-hidden group hover:shadow-card-hover transition-shadow">
           <div className="bg-teal-pastel-50 dark:bg-teal-pastel-900/10 p-5 border-b border-teal-pastel-100 dark:border-teal-pastel-900/20 shrink-0">
             <h3 className="font-bold text-lg flex items-center gap-2 text-teal-pastel-700 dark:text-teal-pastel-400">
@@ -491,59 +467,56 @@ export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
                       Upcoming
                     </h4>
                     <ul className="space-y-3">
-                      {upcomingActivities
-                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                        .slice(0, 3)
-                        .map((a) => (
-                          <li key={a.id} className="group/item">
-                            <div className="flex justify-between items-start mb-0.5">
-                              <span className="text-sm font-semibold text-text-primary group-hover/item:text-lavender-600 transition-colors">
-                                {a.name}
+                      {upcomingActivities.slice(0, 3).map((a) => (
+                        <li key={a.id} className="group/item">
+                          <div className="flex justify-between items-start mb-0.5">
+                            <span className="text-sm font-semibold text-text-primary group-hover/item:text-lavender-600 transition-colors">
+                              {a.name}
+                            </span>
+                            {!a.isConfirmed && (
+                              <span className="text-[9px] px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded-full font-bold uppercase tracking-tighter border border-amber-100">
+                                Planning
                               </span>
-                              {!a.isConfirmed && (
-                                <span className="text-[9px] px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded-full font-bold uppercase tracking-tighter border border-amber-100">
-                                  Planning
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2 my-1">
-                              {a.tripCountryId && (
-                                <span className="text-[9px] text-text-muted px-1.5 py-0.5 bg-surface-3 rounded border border-border">
-                                  {countryMap[a.tripCountryId]}
-                                </span>
-                              )}
-                              {a.type && (
-                                <Badge
-                                  variant="default"
-                                  className="text-[9px] h-4 py-0 px-1.5 opacity-80"
-                                >
-                                  {ACTIVITY_TAGS.find((t) => t.value === a.type)?.icon}{" "}
-                                  {ACTIVITY_TAGS.find((t) => t.value === a.type)?.label}
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 text-[11px] text-text-secondary">
-                              <span>{formatDate(a.date)}</span>
-                              {a.cost !== undefined && a.cost > 0 && (
-                                <span className="flex items-center gap-0.5 text-sage-600 font-medium">
-                                  • {formatCurrency(a.cost, a.currency)}
-                                </span>
-                              )}
-                              {a.duration && (
-                                <span className="text-text-muted">
-                                  • {formatDuration(a.duration)}
-                                </span>
-                              )}
-                            </div>
-                          </li>
-                        ))}
+                            )}
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 my-1">
+                            {a.tripCountryId && (
+                              <span className="text-[9px] text-text-muted px-1.5 py-0.5 bg-surface-3 rounded border border-border">
+                                {countryMap[a.tripCountryId]}
+                              </span>
+                            )}
+                            {a.type && (
+                              <Badge
+                                variant="default"
+                                className="text-[9px] h-4 py-0 px-1.5 opacity-80"
+                              >
+                                {ACTIVITY_TAGS.find((t) => t.value === a.type)?.icon}{" "}
+                                {ACTIVITY_TAGS.find((t) => t.value === a.type)?.label}
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 text-[11px] text-text-secondary">
+                            <span>{formatDate(a.date)}</span>
+                            {a.cost !== undefined && a.cost > 0 && (
+                              <span className="flex items-center gap-0.5 text-sage-600 font-medium">
+                                • {formatCurrency(a.cost, a.currency)}
+                              </span>
+                            )}
+                            {a.duration && (
+                              <span className="text-text-muted">
+                                • {formatDuration(a.duration)}
+                              </span>
+                            )}
+                          </div>
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 )}
 
                 <div className="mt-auto">
                   <p className="text-[11px] text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg font-medium border border-amber-100/50">
-                    {`${unconfirmedActivities?.length > 0 ? unconfirmedActivities?.length : "No"} activit${unconfirmedActivities.length > 1 ? "ies" : "y"} in planning phase`}
+                    {`${unconfirmedActivities?.length > 0 ? unconfirmedActivities?.length : "No"} activit${unconfirmedActivities.length !== 1 ? "ies" : "y"} in planning phase`}
                   </p>
                 </div>
               </div>
@@ -553,6 +526,7 @@ export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
           </div>
         </Card>
 
+        {/* Planner Card */}
         <Card className="p-0 overflow-hidden group hover:shadow-card-hover transition-shadow text-center sm:text-left">
           <div className="bg-indigo-pastel-50 dark:bg-indigo-pastel-900/10 p-5 border-b border-indigo-pastel-100 dark:border-indigo-pastel-900/20 text-left">
             <h3 className="font-bold text-lg flex items-center gap-2 text-indigo-pastel-700 dark:text-indigo-pastel-400">
@@ -572,6 +546,7 @@ export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
           </div>
         </Card>
 
+        {/* Notes Card */}
         <Card className="p-0 overflow-hidden group hover:shadow-card-hover transition-shadow h-full">
           <div className="bg-fuchsia-pastel-50 dark:bg-fuchsia-pastel-900/10 p-5">
             <h3 className="font-bold text-lg flex items-center gap-2 text-fuchsia-pastel-700 dark:text-fuchsia-pastel-400">
@@ -600,6 +575,8 @@ export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
           </div>
         </Card>
       </div>
+
+      {/* Budget Breakdown Summary */}
       <Card className="mt-10 p-0 overflow-hidden shadow-md">
         <div className="bg-rose-pastel-50 dark:bg-rose-pastel-900/10 p-6 border-b border-rose-pastel-100 dark:border-rose-pastel-900/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h3 className="font-bold text-xl flex items-center gap-2 text-rose-pastel-700 dark:text-rose-pastel-400">
@@ -641,16 +618,16 @@ export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
                       </div>
                       <div className="flex flex-col items-end">
                         <span className="font-black text-3xl text-text-primary">
-                          {formatCurrency(data.total, curr as "USD" | "EUR" | "ZAR")}
+                          {formatCurrency(data.total, curr as "USD" | "ZAR" | "EUR")}
                         </span>
                         <div className="flex items-center gap-3 mt-1">
                           <span className="text-[10px] font-bold text-sage-600 uppercase">
                             Confirmed:{" "}
-                            {formatCurrency(data.confirmedTotal, curr as "USD" | "EUR" | "ZAR")}
+                            {formatCurrency(data.confirmedTotal, curr as "USD" | "ZAR" | "EUR")}
                           </span>
                           <span className="text-[10px] font-bold text-amber-600 uppercase">
                             Planned:{" "}
-                            {formatCurrency(data.unconfirmedTotal, curr as "USD" | "EUR" | "ZAR")}
+                            {formatCurrency(data.unconfirmedTotal, curr as "USD" | "ZAR" | "EUR")}
                           </span>
                         </div>
                       </div>
@@ -658,42 +635,36 @@ export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div className="p-3 rounded-lg bg-sky-pastel-50/50 dark:bg-sky-pastel-900/5 border border-sky-pastel-100/50 dark:border-sky-pastel-900/10">
-                        <div className="flex justify-between items-start mb-1">
-                          <p className="text-[10px] font-bold text-sky-pastel-600 uppercase">
-                            Flights
-                          </p>
-                        </div>
+                        <p className="text-[10px] font-bold text-sky-pastel-600 uppercase mb-1">
+                          Flights
+                        </p>
                         <p className="text-base font-bold text-text-primary">
-                          {formatCurrency(data.flights, curr as "USD" | "EUR" | "ZAR")}
+                          {formatCurrency(data.flights, curr as "USD" | "ZAR" | "EUR")}
                         </p>
                         <p className="text-[9px] text-text-muted mt-1 font-medium">
-                          {formatCurrency(data.confirmedFlights, curr as "USD" | "EUR" | "ZAR")}{" "}
+                          {formatCurrency(data.confirmedFlights, curr as "USD" | "ZAR" | "EUR")}{" "}
                           Confirmed
                         </p>
                       </div>
                       <div className="p-3 rounded-lg bg-slate-50/50 dark:bg-slate-900/5 border border-slate-100/50 dark:border-slate-900/10">
-                        <div className="flex justify-between items-start mb-1">
-                          <p className="text-[10px] font-bold text-slate-600 uppercase">Stays</p>
-                        </div>
+                        <p className="text-[10px] font-bold text-slate-600 uppercase mb-1">Stays</p>
                         <p className="text-base font-bold text-text-primary">
-                          {formatCurrency(data.stays, curr as "USD" | "EUR" | "ZAR")}
+                          {formatCurrency(data.stays, curr as "USD" | "ZAR" | "EUR")}
                         </p>
                         <p className="text-[9px] text-text-muted mt-1 font-medium">
-                          {formatCurrency(data.confirmedStays, curr as "USD" | "EUR" | "ZAR")}{" "}
+                          {formatCurrency(data.confirmedStays, curr as "USD" | "ZAR" | "EUR")}{" "}
                           Confirmed
                         </p>
                       </div>
-                      <div className="p-3 rounded-lg bg-lavender-50/50 dark:bg-lavender-900/5 border border-lavender-100/50 dark:border-lavender-900/10">
-                        <div className="flex justify-between items-start mb-1">
-                          <p className="text-[10px] font-bold text-lavender-600 uppercase">
-                            Activities
-                          </p>
-                        </div>
+                      <div className="p-3 rounded-lg bg-teal-pastel-50/50 dark:bg-teal-pastel-900/5 border border-teal-pastel-100/50 dark:border-teal-pastel-900/10">
+                        <p className="text-[10px] font-bold text-teal-pastel-600 uppercase mb-1">
+                          Activities
+                        </p>
                         <p className="text-base font-bold text-text-primary">
-                          {formatCurrency(data.activities, curr as "USD" | "EUR" | "ZAR")}
+                          {formatCurrency(data.activities, curr as "USD" | "ZAR" | "EUR")}
                         </p>
                         <p className="text-[9px] text-text-muted mt-1 font-medium">
-                          {formatCurrency(data.confirmedActivities, curr as "USD" | "EUR" | "ZAR")}{" "}
+                          {formatCurrency(data.confirmedActivities, curr as "USD" | "ZAR" | "EUR")}{" "}
                           Confirmed
                         </p>
                       </div>
@@ -704,8 +675,8 @@ export function TripOverview({ trip, tripCountries }: TripOverviewProps) {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-10">
-              <PiggyBank size={40} className="text-text-muted mb-2 opacity-20" />
-              <p className="text-sm text-text-muted italic">No items with costs added yet.</p>
+              <PiggyBank size={40} className="text-slate-200 mb-2" />
+              <p className="text-sm text-text-muted">No expenses recorded yet.</p>
             </div>
           )}
         </div>
