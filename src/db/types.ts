@@ -60,6 +60,7 @@ export interface DestinationRow {
   id: number;
   trip_id: number;
   trip_country_id: number;
+  city_lookup_id?: number;
   name: string;
   image?: string;
   notes?: string;
@@ -71,6 +72,7 @@ export interface Destination {
   id?: number;
   tripId: number;
   tripCountryId: number;
+  cityLookupId?: number;
   name: string;
   image?: string;
   notes?: string;

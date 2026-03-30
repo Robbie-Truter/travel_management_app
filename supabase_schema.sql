@@ -46,15 +46,16 @@ create policy "Users can manage their own trip_countries" on public.trip_countri
 
 -- DESTINATIONS (Linked to Trip Country)
 create table public.destinations (
-  id              bigserial primary key,
-  user_id         uuid references auth.users(id) on delete cascade not null,
-  trip_id         bigint references public.trips(id) on delete cascade not null,
-  trip_country_id bigint references public.trip_countries(id) on delete cascade not null,
-  name            text not null,
-  image           text,
-  notes           text,
-  "order"         integer,
-  created_at      text not null
+  id               bigserial primary key,
+  user_id          uuid references auth.users(id) on delete cascade not null,
+  trip_id          bigint references public.trips(id) on delete cascade not null,
+  trip_country_id  bigint references public.trip_countries(id) on delete cascade not null,
+  city_lookup_id   numeric references public.city_lookup(id) on delete set null,
+  name             text not null,
+  image            text,
+  notes            text,
+  "order"          integer,
+  created_at       text not null
 );
 alter table public.destinations enable row level security;
 create policy "Users can manage their own destinations" on public.destinations for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
@@ -149,3 +150,22 @@ create table public.documents (
 );
 alter table public.documents enable row level security;
 create policy "Users can manage their own documents" on public.documents for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- STATIC REFERENCE TABLES (Run only once, do not reset)
+-- ============================================================
+-- CITY LOOKUP (World Cities Database)
+-- create table public.city_lookup (
+--   id          numeric primary key,
+--   city        text,
+--   city_ascii  text,
+--   lat         numeric,
+--   lng         numeric,
+--   country     text,
+--   iso2        text,
+--   iso3        text,
+--   admin_name  text,
+--   capital     text,
+--   population  numeric
+-- );
+-- alter table public.city_lookup enable row level security;
+-- create policy "Anyone can read city_lookup" on public.city_lookup for select using (true);
