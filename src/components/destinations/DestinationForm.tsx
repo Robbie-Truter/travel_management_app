@@ -1,17 +1,13 @@
 import { useState, useRef } from "react";
-import {
-  Image as ImageIcon,
-  X,
-} from "lucide-react";
+import { Image as ImageIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
-import { Input, Textarea } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Input";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
-import {
-  fileToBase64,
-  getCountryFlag,
-} from "@/lib/utils";
+import { fileToBase64, getCountryFlag } from "@/lib/utils";
 import type { Destination, TripCountry } from "@/db/types";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useCitySearch } from "@/hooks/useCitySearch";
 
 interface DestinationFormProps {
   open: boolean;
@@ -33,12 +29,42 @@ export function DestinationForm({
   const [form, setForm] = useState({
     name: initial?.name ?? "",
     tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
+    cityLookupId: initial?.cityLookupId ?? (undefined as number | undefined),
     notes: initial?.notes ?? "",
     image: initial?.image ?? "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+
+  // City search state — raw input value for the search box
+  const [citySearchRaw, setCitySearchRaw] = useState("");
+  const debounced = useDebounce(citySearchRaw, 300);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Resolve iso2 from the selected trip country
+  const selectedCountry = tripCountries.find((tc) => tc.id === form.tripCountryId);
+  const iso2 = selectedCountry?.countryCode ?? "";
+
+  const { cities, isLoading: isCityLoading } = useCitySearch(debounced, iso2);
+
+  // Build dropdown options from server results
+  const cityOptions = cities.map((city) => ({
+    value: String(city.id),
+    label: city.city,
+  }));
+
+  // Add "Add manually" option when user has typed something
+  const showManualOption = debounced.trim().length >= 2;
+  if (showManualOption) {
+    const exactMatch = cities.some((c) => c.city.toLowerCase() === debounced.trim().toLowerCase());
+    if (!exactMatch) {
+      cityOptions.push({
+        value: `__manual__${debounced.trim()}`,
+        label: `Add manually: "${debounced.trim()}"`,
+      });
+    }
+  }
 
   const set = (k: string, v: string | boolean | number | undefined) =>
     setForm((prev) => ({ ...prev, [k]: v }));
@@ -57,6 +83,22 @@ export function DestinationForm({
     return e;
   };
 
+  const handleCitySelect = (val: string) => {
+    if (val.startsWith("__manual__")) {
+      // User chose to add manually — extract typed text as name, no DB link
+      const manualName = val.replace("__manual__", "");
+      set("name", manualName);
+      set("cityLookupId", undefined);
+    } else {
+      // User picked a city from the lookup table
+      const city = cities.find((c) => String(c.id) === val);
+      if (city) {
+        set("name", city.city);
+        set("cityLookupId", city.id);
+      }
+    }
+  };
+
   const handleSave = async () => {
     const e = validate();
     if (Object.keys(e).length > 0) {
@@ -68,6 +110,7 @@ export function DestinationForm({
       tripId,
       name: form.name,
       tripCountryId: form.tripCountryId!,
+      cityLookupId: form.cityLookupId,
       notes: form.notes || undefined,
       image: form.image || undefined,
       order: initial?.order ?? 0,
@@ -75,6 +118,13 @@ export function DestinationForm({
     setSaving(false);
     onClose();
   };
+
+  // Derive the displayed city value — match by cityLookupId or fall back to name
+  const citySelectValue = form.cityLookupId
+    ? String(form.cityLookupId)
+    : form.name
+      ? `__manual__${form.name}`
+      : "";
 
   return (
     <Modal
@@ -136,14 +186,7 @@ export function DestinationForm({
           />
         </div>
 
-        <Input
-          id="dest-name"
-          label="Name"
-          placeholder="e.g. Kyoto, Japan"
-          value={form.name}
-          onChange={(e) => set("name", e.target.value)}
-          error={errors.name}
-        />
+        {/* Country must be selected first */}
         <SearchableSelect
           id="dest-country"
           label="Country"
@@ -154,10 +197,35 @@ export function DestinationForm({
             label: tc.countryName,
             icon: <span>{getCountryFlag(tc.countryName)}</span>,
           }))}
-          onChange={(val: string) => set("tripCountryId", Number(val))}
+          onChange={(val: string) => {
+            set("tripCountryId", Number(val));
+            // Reset city when country changes
+            set("name", "");
+            set("cityLookupId", undefined);
+            setCitySearchRaw("");
+          }}
           error={errors.country}
           includeSearch={false}
         />
+
+        {/* City / Town search — disabled until country is selected */}
+        <SearchableSelect
+          id="dest-city"
+          label="City / Town"
+          placeholder={iso2 ? "Search for a city..." : "Select a country first"}
+          value={citySelectValue}
+          options={cityOptions}
+          onChange={handleCitySelect}
+          onSearchChange={setCitySearchRaw}
+          isSearchLoading={isCityLoading}
+          searchHint={
+            debounced.trim().length < 2 ? "Type at least 2 characters to search" : "No cities found"
+          }
+          error={errors.name}
+          disabled={!iso2}
+          includeSearch
+        />
+
         <Textarea
           id="dest-notes"
           label="Notes (optional)"

@@ -22,6 +22,12 @@ interface SearchableSelectProps {
   displayLimit?: number;
   includeSearch?: boolean;
   disabled?: boolean;
+  /** When provided, search input changes are forwarded to the parent instead of filtering internally. Use for async/server-driven searches. */
+  onSearchChange?: (query: string) => void;
+  /** Shows a loading spinner in the dropdown list when true */
+  isSearchLoading?: boolean;
+  /** Text shown as a hint inside the trigger button when no country/context is selected yet */
+  searchHint?: string;
 }
 
 export function SearchableSelect({
@@ -36,6 +42,9 @@ export function SearchableSelect({
   displayLimit = 100,
   includeSearch = true,
   disabled = false,
+  onSearchChange,
+  isSearchLoading = false,
+  searchHint,
 }: SearchableSelectProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -49,7 +58,9 @@ export function SearchableSelect({
     });
   }, [options]);
 
+  // When onSearchChange is provided, options are already server-filtered — skip internal filtering
   const filteredOptions = React.useMemo(() => {
+    if (onSearchChange) return normalizedOptions;
     const query = searchQuery.toLowerCase();
     return normalizedOptions.filter(
       (opt) =>
@@ -57,7 +68,7 @@ export function SearchableSelect({
         opt.value.toLowerCase().includes(query) ||
         opt.sublabel?.toLowerCase().includes(query),
     );
-  }, [normalizedOptions, searchQuery]);
+  }, [normalizedOptions, searchQuery, onSearchChange]);
 
   const displayedOptions = React.useMemo(() => {
     return filteredOptions.slice(0, displayLimit);
@@ -102,14 +113,19 @@ export function SearchableSelect({
                 className="flex h-8 w-full rounded-md bg-transparent px-3 py-2 text-sm outline-none placeholder:text-text-muted focus:ring-2 focus:ring-lavender-400 focus:border-transparent transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="Search..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  onSearchChange?.(e.target.value);
+                }}
                 autoFocus
               />
             </div>
           )}
           <div className="space-y-1 max-h-60 overflow-y-auto pt-1">
-            {filteredOptions.length === 0 ? (
-              <div className="text-center py-4 text-sm text-text-muted">No options found.</div>
+            {isSearchLoading ? (
+              <div className="text-center py-4 text-sm text-text-muted">Searching...</div>
+            ) : filteredOptions.length === 0 ? (
+              <div className="text-center py-4 text-sm text-text-muted">{searchHint ?? "No options found."}</div>
             ) : (
               <>
                 {displayedOptions.map((option) => (

@@ -30,6 +30,7 @@ export function useDestinations(tripId: number) {
         ...doc,
         tripId: doc.trip_id,
         tripCountryId: doc.trip_country_id,
+        cityLookupId: doc.city_lookup_id ?? undefined,
         createdAt: doc.created_at,
         image: doc.image
           ? doc.image.startsWith("data:") || doc.image.startsWith("http")
@@ -61,6 +62,7 @@ export function useDestinations(tripId: number) {
         user_id: user.id,
         trip_id: destination.tripId,
         trip_country_id: destination.tripCountryId,
+        city_lookup_id: destination.cityLookupId ?? null,
         name: destination.name,
         image: imagePath,
         notes: destination.notes,
@@ -98,6 +100,7 @@ export function useDestinations(tripId: number) {
 
       if (changes.name !== undefined) dbUpdates.name = changes.name;
       if (changes.tripCountryId !== undefined) dbUpdates.trip_country_id = changes.tripCountryId;
+      if (changes.cityLookupId !== undefined) dbUpdates.city_lookup_id = changes.cityLookupId ?? null;
       if (changes.notes !== undefined) dbUpdates.notes = changes.notes;
       if (changes.order !== undefined) dbUpdates.order = changes.order;
 
