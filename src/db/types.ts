@@ -144,6 +144,7 @@ export interface AccommodationRow {
   user_id: string;
   trip_id: number;
   trip_country_id?: number;
+  destination_id?: number;
   name: string;
   type: "hotel" | "airbnb" | "hostel" | "resort" | "other";
   platform?: string;
@@ -165,6 +166,7 @@ export interface Accommodation {
   id?: number;
   tripId: number;
   tripCountryId?: number;
+  destinationId?: number;
   name: string;
   type: "hotel" | "airbnb" | "hostel" | "resort" | "other";
   platform?: string;

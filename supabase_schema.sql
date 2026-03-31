@@ -84,6 +84,7 @@ create table public.accommodations (
   user_id          uuid references auth.users(id) on delete cascade not null,
   trip_id          bigint references public.trips(id) on delete cascade not null,
   trip_country_id  bigint references public.trip_countries(id) on delete set null,
+  destination_id   bigint references public.destinations(id) on delete set null,
   name             text not null,
   type             text not null default 'hotel',
   platform         text,

@@ -8,6 +8,7 @@ import type { Accommodation, Currency, TripCountry } from "@/db/types";
 import { SearchableSelect } from "../ui/SearchableSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { TYPE_OPTIONS, PLATFORM_OPTIONS } from "./AccommodationConstants";
+import { useDestinations } from "@/hooks/useDestinations";
 
 interface AccommodationFormProps {
   open: boolean;
@@ -29,6 +30,7 @@ export function AccommodationForm({
   const [form, setForm] = useState({
     name: initial?.name ?? "",
     tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
+    destinationId: initial?.destinationId ?? undefined,
     type: initial?.type ?? "hotel",
     platform: initial?.platform ?? "booking",
     location: initial?.location ?? "",
@@ -47,13 +49,16 @@ export function AccommodationForm({
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { destinations } = useDestinations(tripId);
+
   const CURRENCIES = [
     { value: "USD", label: "USD" },
     { value: "EUR", label: "EUR" },
     { value: "ZAR", label: "ZAR" },
   ];
 
-  const set = (k: string, v: string | boolean | number) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: string, v: string | boolean | number | undefined) =>
+    setForm((f) => ({ ...f, [k]: v }));
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -65,7 +70,7 @@ export function AccommodationForm({
   const validate = () => {
     const e: Record<string, string> = {};
     if (!form.name.trim()) e.name = "Required";
-    if (!form.location.trim()) e.location = "Required";
+    if (!form.destinationId) e.destinationId = "Required";
     if (!form.checkIn) e.checkIn = "Required";
     if (!form.checkOut) e.checkOut = "Required";
     if (!form.price || isNaN(Number(form.price))) e.price = "Valid price required";
@@ -78,14 +83,19 @@ export function AccommodationForm({
       setErrors(e);
       return;
     }
+
+    const selectedDest = destinations.find((d) => d.id === form.destinationId);
+
     setSaving(true);
+
     await onSave({
       tripId,
       name: form.name,
       tripCountryId: form.tripCountryId,
+      destinationId: form.destinationId,
       type: form.type as Accommodation["type"],
       platform: form.platform,
-      location: form.location,
+      location: form.location.trim() || selectedDest?.name || "Unknown",
       checkIn: form.checkIn,
       checkOut: form.checkOut,
       price: Number(form.price),
@@ -179,7 +189,19 @@ export function AccommodationForm({
             label: tc.countryName,
             icon: <span>{getCountryFlag(tc.countryName)}</span>,
           }))}
-          onChange={(val: string) => set("tripCountryId", Number(val))}
+          onChange={(val: string) => {
+            const newCountryId = Number(val);
+            set("tripCountryId", newCountryId);
+
+            // Reset destination if it doesn't belong to the new country
+            if (form.destinationId) {
+              const dest = destinations.find((d) => d.id === form.destinationId);
+              if (dest && dest.tripCountryId !== newCountryId) {
+                set("destinationId", undefined);
+                set("location", "");
+              }
+            }
+          }}
           includeSearch={false}
         />
         <div className="grid grid-cols-2 gap-3">
@@ -200,13 +222,34 @@ export function AccommodationForm({
             onChange={(val: string) => set("platform", val)}
           />
         </div>
+        <SearchableSelect
+          id="acc-location"
+          label="City / Town (Destination)"
+          placeholder="Select a destination..."
+          value={form.destinationId?.toString() || ""}
+          options={destinations
+            .filter((d) => d.tripCountryId === form.tripCountryId)
+            .map((dest) => ({
+              value: dest.id!.toString(),
+              label: dest.name,
+            }))}
+          onChange={(val: string) => {
+            const dest = destinations.find((d) => d.id === Number(val));
+            set("destinationId", Number(val));
+            // Auto-fill location if it's empty
+            if (!form.location && dest) {
+              set("location", dest.name);
+            }
+          }}
+          error={errors.destinationId}
+          includeSearch={false}
+        />
         <Input
-          id="acc-loc"
-          label="Location"
-          placeholder="e.g. Shinjuku, Tokyo"
+          id="acc-address"
+          label="Address / Specific Area (optional)"
+          placeholder="e.g. 123 Main St, Shinjuku"
           value={form.location}
           onChange={(e) => set("location", e.target.value)}
-          error={errors.location}
         />
         <div className="grid grid-cols-2 gap-3">
           <DatePicker
