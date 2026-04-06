@@ -30,6 +30,7 @@ export function useDestinations(tripId: number) {
         ...doc,
         tripId: doc.trip_id,
         tripCountryId: doc.trip_country_id,
+        countryId: doc.country_id,
         cityLookupId: doc.city_lookup_id ?? undefined,
         createdAt: doc.created_at,
         image: doc.image
@@ -62,6 +63,7 @@ export function useDestinations(tripId: number) {
         user_id: user.id,
         trip_id: destination.tripId,
         trip_country_id: destination.tripCountryId,
+        country_id: destination.countryId,
         city_lookup_id: destination.cityLookupId ?? null,
         name: destination.name,
         image: imagePath,
@@ -100,6 +102,7 @@ export function useDestinations(tripId: number) {
 
       if (changes.name !== undefined) dbUpdates.name = changes.name;
       if (changes.tripCountryId !== undefined) dbUpdates.trip_country_id = changes.tripCountryId;
+      if (changes.countryId !== undefined) dbUpdates.country_id = changes.countryId;
       if (changes.cityLookupId !== undefined) dbUpdates.city_lookup_id = changes.cityLookupId ?? null;
       if (changes.notes !== undefined) dbUpdates.notes = changes.notes;
       if (changes.order !== undefined) dbUpdates.order = changes.order;

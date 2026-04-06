@@ -5,7 +5,7 @@ import { useDestinations } from "@/hooks/useDestinations";
 import { useFlights } from "@/hooks/useFlights";
 import { useAccommodations } from "@/hooks/useAccommodations";
 import { useActivities } from "@/hooks/useActivities";
-import { TripDestinations } from "./TripDestinations";
+import { TripCountries } from "./TripCountries";
 import { UnassignedItems } from "./UnassignedItems";
 import { CountriesSkeleton, CountriesRefetchingIndicator } from "./CountriesLoadingStates";
 import { CountriesErrorState } from "./CountriesErrorState";
@@ -100,7 +100,7 @@ export function CountriesTab({ trip }: CountriesTabProps) {
         Manage the countries you'll be visiting during this trip.
       </p>
 
-      <TripDestinations
+      <TripCountries
         trip={trip}
         tripCountries={tripCountries}
         destinations={destinations}

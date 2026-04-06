@@ -6,9 +6,12 @@ import { useAccommodations } from "@/hooks/useAccommodations";
 import { AccommodationCard } from "./AccommodationCard";
 import { AccommodationForm } from "./AccommodationForm";
 import { AccommodationComparison } from "./AccommodationComparison";
-import { AccommodationSkeleton, AccommodationRefetchingIndicator } from "./AccommodationLoadingStates";
+import {
+  AccommodationSkeleton,
+  AccommodationRefetchingIndicator,
+} from "./AccommodationLoadingStates";
 import { AccommodationErrorState } from "./AccommodationErrorState";
-import { getCountryFlag } from "@/lib/utils";
+import { getFlagEmoji } from "@/lib/utils";
 import type { Accommodation, TripCountry } from "@/db/types";
 
 interface AccommodationsTabProps {
@@ -105,7 +108,7 @@ export function AccommodationsTab({ tripId, tripCountries }: AccommodationsTabPr
               <div key={tc.id} className="space-y-6">
                 <div className="flex items-center gap-3 pb-3 border-b border-border/50">
                   <span className="text-2xl" role="img" aria-label={tc.countryName}>
-                    {getCountryFlag(tc.countryName)}
+                    {getFlagEmoji(tc.countryCode)}
                   </span>
                   <div>
                     <h3 className="font-bold text-lg text-text-primary">{tc.countryName}</h3>

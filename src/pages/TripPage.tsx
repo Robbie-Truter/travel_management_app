@@ -33,7 +33,6 @@ import { CountriesTab } from "@/components/countries/CountriesTab";
 import { DocumentsTab } from "@/components/documents/DocumentsTab";
 import { formatDate, tripDuration, cn } from "@/lib/utils";
 import type { Trip, TripStatus } from "@/db/types";
-/* Removed redundant DocumentUpload import */
 
 type Tab =
   | "overview"
@@ -69,7 +68,7 @@ export function TripPage() {
   const { tripCountries } = useTripCountries(id);
   const { destinations } = useDestinations(id);
 
-  // These are still needed for Planner & TripDestinations (until refactored)
+  // These are still needed for Planner & TripCountries (until refactored)
   const { flights } = useFlights(id);
   const { accommodations } = useAccommodations(id);
   const { activities } = useActivities(id);

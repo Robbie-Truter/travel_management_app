@@ -8,7 +8,7 @@ import { FlightForm } from "./FlightForm";
 import { FlightComparison } from "./FlightComparison";
 import { FlightSkeleton, FlightRefetchingIndicator } from "./FlightLoadingStates";
 import { FlightErrorState } from "./FlightErrorState";
-import { getCountryFlag } from "@/lib/utils";
+import { getFlagEmoji } from "@/lib/utils";
 import type { Flight, TripCountry } from "@/db/types";
 
 interface FlightsTabProps {
@@ -105,7 +105,7 @@ export function FlightsTab({ tripId, tripCountries }: FlightsTabProps) {
               <div key={tc.id} className="space-y-6">
                 <div className="flex items-center gap-3 pb-3 border-b border-border/50">
                   <span className="text-2xl" role="img" aria-label={tc.countryName}>
-                    {getCountryFlag(tc.countryName)}
+                    {getFlagEmoji(tc.countryCode)}
                   </span>
                   <div>
                     <h3 className="font-bold text-lg text-text-primary">{tc.countryName}</h3>

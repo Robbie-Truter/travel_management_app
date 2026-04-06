@@ -104,8 +104,6 @@ export function base64ToFile(base64: string, filename: string): File {
   return new File([blob], filename, { type: "application/octet-stream" });
 }
 
-import { COUNTRIES } from "./countries";
-
 // Helper to get flag emoji from country code
 export function getFlagEmoji(countryCode: string) {
   if (!countryCode) return "🌍";
@@ -114,11 +112,4 @@ export function getFlagEmoji(countryCode: string) {
     .split("")
     .map((char) => 127397 + char.charCodeAt(0));
   return String.fromCodePoint(...codePoints);
-}
-
-// Helper to get flag emoji from country name
-export function getCountryFlag(countryName: string) {
-  if (!countryName) return "🌍";
-  const country = COUNTRIES.find((c) => c.name.toLowerCase() === countryName.toLowerCase());
-  return country ? getFlagEmoji(country.code) : "🌍";
 }

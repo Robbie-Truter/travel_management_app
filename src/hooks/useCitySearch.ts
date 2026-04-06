@@ -17,10 +17,10 @@ export function useCitySearch(searchTerm: string, iso2: string) {
     queryFn: async (): Promise<CityLookupRow[]> => {
       const { data, error } = await supabase
         .from("city_lookup")
-        .select("id, city, city_ascii, lat, lng, country, iso2, iso3, admin_name, capital, population")
+        .select("id, city, city_ascii, lat, lng, country, iso2, iso3, admin_name, capital")
         .eq("iso2", iso2)
         .ilike("city_ascii", `%${searchTerm.trim()}%`)
-        .order("population", { ascending: false })
+        .order("city", { ascending: true })
         .limit(20);
 
       if (error) throw error;

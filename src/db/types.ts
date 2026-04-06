@@ -14,7 +14,21 @@ export interface CityLookupRow {
   iso3: string;
   admin_name?: string;
   capital?: string;
-  population?: number;
+}
+
+// --- Country Lookup ---
+export interface CountryLookupRow {
+  id: number;
+  name: string;
+  demonym?: string;
+  iso2: string;
+  iso3?: string;
+  tld?: string;
+  currency?: string;
+  calling_code?: string;
+  language?: string;
+  website?: string;
+  continent?: string;
 }
 
 // --- Trips ---
@@ -51,6 +65,7 @@ export interface Trip {
 export interface TripCountryRow {
   id: number;
   trip_id: number;
+  country_id: number;
   country_name: string;
   country_code: string;
   budget_limit?: number;
@@ -62,6 +77,7 @@ export interface TripCountryRow {
 export interface TripCountry {
   id?: number;
   tripId: number;
+  countryId: number;
   countryName: string;
   countryCode: string;
   budgetLimit?: number;
@@ -75,6 +91,7 @@ export interface DestinationRow {
   id: number;
   trip_id: number;
   trip_country_id: number;
+  country_id: number;
   city_lookup_id?: number;
   name: string;
   image?: string;
@@ -87,6 +104,7 @@ export interface Destination {
   id?: number;
   tripId: number;
   tripCountryId: number;
+  countryId: number;
   cityLookupId?: number;
   name: string;
   image?: string;

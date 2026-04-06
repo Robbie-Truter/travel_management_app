@@ -3,7 +3,7 @@ import { Image as ImageIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Input, Textarea } from "@/components/ui/Input";
-import { fileToBase64, getCountryFlag } from "@/lib/utils";
+import { fileToBase64, getFlagEmoji } from "@/lib/utils";
 import type { Accommodation, Currency, TripCountry } from "@/db/types";
 import { SearchableSelect } from "../ui/SearchableSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
@@ -187,7 +187,7 @@ export function AccommodationForm({
           options={tripCountries.map((tc) => ({
             value: tc.id!.toString(),
             label: tc.countryName,
-            icon: <span>{getCountryFlag(tc.countryName)}</span>,
+            icon: <span>{getFlagEmoji(tc.countryCode)}</span>,
           }))}
           onChange={(val: string) => {
             const newCountryId = Number(val);

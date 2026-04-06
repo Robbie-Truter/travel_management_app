@@ -36,6 +36,7 @@ export function useTrips() {
             tripCountries: (d.trip_countries || []).map((tc: TripCountryRow) => ({
               ...tc,
               tripId: tc.trip_id,
+              countryId: tc.country_id,
               countryName: tc.country_name,
               countryCode: tc.country_code,
               budgetLimit: tc.budget_limit,
@@ -161,6 +162,7 @@ export function useTrips() {
       tripCountries: (tripRow.trip_countries || []).map((tc: TripCountryRow) => ({
         ...tc,
         tripId: tc.trip_id,
+        countryId: tc.country_id,
         countryName: tc.country_name,
         countryCode: tc.country_code,
         budgetLimit: tc.budget_limit,
@@ -218,6 +220,7 @@ export function useTrip(id: number | undefined) {
         tripCountries: (tripRow.trip_countries || []).map((tc: TripCountryRow) => ({
           ...tc,
           tripId: tc.trip_id,
+          countryId: tc.country_id,
           countryName: tc.country_name,
           countryCode: tc.country_code,
           budgetLimit: tc.budget_limit,

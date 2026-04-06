@@ -11,7 +11,7 @@ import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
 import {
   fileToBase64,
-  getCountryFlag,
+  getFlagEmoji,
 } from "@/lib/utils";
 import type { Activity, Currency, TripCountry, Destination } from "@/db/types";
 import { ACTIVITY_TAGS } from "./activity-types";
@@ -189,7 +189,7 @@ export function ActivityForm({
             options={tripCountries.map((tc) => ({
               value: tc.id!.toString(),
               label: tc.countryName,
-              icon: <span>{getCountryFlag(tc.countryName)}</span>,
+              icon: <span>{getFlagEmoji(tc.countryCode)}</span>,
             }))}
             onChange={(val: string) => {
               set("tripCountryId", Number(val));

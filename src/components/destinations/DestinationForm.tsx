@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Textarea } from "@/components/ui/Input";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
-import { fileToBase64, getCountryFlag } from "@/lib/utils";
+import { fileToBase64, getFlagEmoji } from "@/lib/utils";
 import type { Destination, TripCountry } from "@/db/types";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useCitySearch } from "@/hooks/useCitySearch";
@@ -110,6 +110,7 @@ export function DestinationForm({
       tripId,
       name: form.name,
       tripCountryId: form.tripCountryId!,
+      countryId: selectedCountry!.countryId,
       cityLookupId: form.cityLookupId,
       notes: form.notes || undefined,
       image: form.image || undefined,
@@ -195,7 +196,7 @@ export function DestinationForm({
           options={tripCountries.map((tc) => ({
             value: tc.id!.toString(),
             label: tc.countryName,
-            icon: <span>{getCountryFlag(tc.countryName)}</span>,
+            icon: <span>{getFlagEmoji(tc.countryCode)}</span>,
           }))}
           onChange={(val: string) => {
             set("tripCountryId", Number(val));

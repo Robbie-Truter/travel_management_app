@@ -4,7 +4,7 @@ import { useNotes } from "@/hooks/useNotes";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Plane, Hotel, Compass, Calendar, StickyNote, Plus, PiggyBank, MapPin } from "lucide-react";
-import { formatDate, formatCurrency, formatDuration, getCountryFlag } from "@/lib/utils";
+import { formatDate, formatCurrency, formatDuration, getFlagEmoji } from "@/lib/utils";
 import { useExchangeRates } from "@/hooks/useExchangeRates";
 import { Badge } from "@/components/ui/Badge";
 import { useFlights } from "@/hooks/useFlights";
@@ -269,7 +269,7 @@ export function OverviewTab({ trip, tripCountries }: TripOverviewProps) {
                       key={tc.id}
                       className="px-2 py-1 bg-surface-3 rounded-md text-[11px] font-medium text-text-primary border border-border flex items-center gap-1.5"
                     >
-                      <span className="text-[14px]">{getCountryFlag(tc.countryName)}</span>
+                      <span className="text-[14px]">{getFlagEmoji(tc.countryCode)}</span>
                       {tc.countryName}
                     </span>
                   ))}

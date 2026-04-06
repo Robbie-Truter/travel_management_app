@@ -10,7 +10,7 @@ import { ActivityForm } from "./ActivityForm";
 import { ACTIVITY_TAGS } from "./activity-types";
 import { ActivitySkeleton, ActivityRefetchingIndicator } from "./ActivityLoadingStates";
 import { ActivityErrorState } from "./ActivityErrorState";
-import { getCountryFlag } from "@/lib/utils";
+import { getFlagEmoji } from "@/lib/utils";
 import type { Activity, TripCountry, Destination } from "@/db/types";
 
 interface ActivitiesTabProps {
@@ -111,7 +111,7 @@ export function ActivitiesTab({ tripId, tripCountries, destinations }: Activitie
                     return {
                       value: d.id!.toString(),
                       label: `${d.name}`,
-                      icon: <span>{getCountryFlag(tc?.countryName || "")}</span>,
+                      icon: <span>{getFlagEmoji(tc?.countryCode || "")}</span>,
                     };
                   }),
                 ]}
@@ -197,7 +197,7 @@ export function ActivitiesTab({ tripId, tripCountries, destinations }: Activitie
               <div key={tc.id} className="space-y-6">
                 <div className="flex items-center gap-3 pb-3 border-b border-border/50">
                   <span className="text-2xl" role="img" aria-label={tc.countryName}>
-                    {getCountryFlag(tc.countryName)}
+                    {getFlagEmoji(tc.countryCode)}
                   </span>
                   <div>
                     <h3 className="font-bold text-lg text-text-primary">{tc.countryName}</h3>

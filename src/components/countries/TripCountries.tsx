@@ -3,14 +3,16 @@ import { MapPin, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
-import { COUNTRIES } from "@/lib/countries";
+import { useCountrySearch } from "@/hooks/useCountrySearch";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useTripCountries } from "@/hooks/useTripCountries";
 import type { Trip, Flight, Accommodation, Activity, Destination, TripCountry } from "@/db/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plane, Hotel, Compass, ChevronRight } from "lucide-react";
-import { getCountryFlag } from "@/lib/utils";
+import { getFlagEmoji } from "@/lib/utils";
+import { DeleteCountryModal } from "./DeleteCountryModal";
 
-interface TripDestinationsProps {
+interface TripCountriesProps {
   trip: Trip;
   tripCountries: TripCountry[];
   destinations: Destination[];
@@ -19,42 +21,57 @@ interface TripDestinationsProps {
   activities: Activity[];
 }
 
-export function TripDestinations({
+export function TripCountries({
   trip,
   tripCountries,
   destinations,
   flights,
   accommodations,
   activities,
-}: TripDestinationsProps) {
+}: TripCountriesProps) {
   const { addTripCountry, deleteTripCountry } = useTripCountries(trip.id!);
   const [isAdding, setIsAdding] = useState(false);
-  const [selectedCountryName, setSelectedCountryName] = useState("");
+  const [countryToDelete, setCountryToDelete] = useState<TripCountry | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedCountryId, setSelectedCountryId] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebounce(searchQuery, 300);
+  const { countries, isLoading } = useCountrySearch(debouncedSearch);
 
   const handleAdd = async () => {
-    if (!selectedCountryName) return;
-    const countryData = COUNTRIES.find((c) => c.name === selectedCountryName);
+    if (!selectedCountryId) return;
+    const countryData = countries.find((c) => c.id.toString() === selectedCountryId);
     if (!countryData) return;
 
-    if (tripCountries.some((tc) => tc.countryName === selectedCountryName)) {
+    if (tripCountries.some((tc) => tc.countryId === countryData.id)) {
       setIsAdding(false);
-      setSelectedCountryName("");
+      setSelectedCountryId("");
+      setSearchQuery("");
       return;
     }
 
     await addTripCountry({
       tripId: trip.id!,
+      countryId: countryData.id,
       countryName: countryData.name,
-      countryCode: countryData.code,
+      countryCode: countryData.iso2,
       order: tripCountries.length,
     });
 
     setIsAdding(false);
-    setSelectedCountryName("");
+    setSelectedCountryId("");
+    setSearchQuery("");
   };
 
-  const handleRemove = async (id: number) => {
-    await deleteTripCountry(id);
+  const handleRemove = async () => {
+    if (!countryToDelete) return;
+    setIsDeleting(true);
+    try {
+      await deleteTripCountry(countryToDelete.id!);
+      setCountryToDelete(null);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -82,13 +99,16 @@ export function TripDestinations({
               id="country-select"
               label="Select Country"
               placeholder="e.g. Japan"
-              options={COUNTRIES.map((c) => ({
-                value: c.name,
+              options={countries.map((c) => ({
+                value: c.id.toString(),
                 label: c.name,
-                icon: <span>{getCountryFlag(c.name)}</span>,
+                icon: <span>{getFlagEmoji(c.iso2)}</span>,
               }))}
-              value={selectedCountryName}
-              onChange={(val) => setSelectedCountryName(val)}
+              value={selectedCountryId}
+              onChange={(val) => setSelectedCountryId(val)}
+              onSearchChange={setSearchQuery}
+              isSearchLoading={isLoading}
+              searchHint="Type at least 3 characters to search countries..."
             />
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
@@ -97,7 +117,8 @@ export function TripDestinations({
               className="flex-1 sm:flex-none"
               onClick={() => {
                 setIsAdding(false);
-                setSelectedCountryName("");
+                setSelectedCountryId("");
+                setSearchQuery("");
               }}
             >
               Cancel
@@ -106,7 +127,7 @@ export function TripDestinations({
               variant="primary"
               className="flex-1 sm:flex-none"
               onClick={handleAdd}
-              disabled={!selectedCountryName}
+              disabled={!selectedCountryId}
             >
               Add
             </Button>
@@ -158,7 +179,7 @@ export function TripDestinations({
                         </div>
                       </div>
                       <button
-                        onClick={() => handleRemove(tc.id!)}
+                        onClick={() => setCountryToDelete(tc)}
                         className="opacity-0 group-hover:opacity-100 p-2 text-text-muted hover:text-rose-pastel-500 transition-all shrink-0"
                         title={`Remove ${tc.countryName}`}
                       >
@@ -287,6 +308,19 @@ export function TripDestinations({
         )}
       </div>
 
+      <DeleteCountryModal
+        isOpen={!!countryToDelete}
+        onClose={() => setCountryToDelete(null)}
+        onConfirm={handleRemove}
+        countryName={countryToDelete?.countryName || ""}
+        isDeleting={isDeleting}
+        counts={{
+          cities: destinations.filter((d) => d.tripCountryId === countryToDelete?.id).length,
+          flights: flights.filter((f) => f.tripCountryId === countryToDelete?.id).length,
+          stays: accommodations.filter((a) => a.tripCountryId === countryToDelete?.id).length,
+          activities: activities.filter((act) => act.tripCountryId === countryToDelete?.id).length,
+        }}
+      />
     </div>
   );
 }

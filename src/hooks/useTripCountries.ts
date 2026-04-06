@@ -29,6 +29,7 @@ export function useTripCountries(tripId: number) {
       return (data as TripCountryRow[]).map((doc) => ({
         ...doc,
         tripId: doc.trip_id,
+        countryId: doc.country_id,
         countryName: doc.country_name,
         countryCode: doc.country_code,
         budgetLimit: doc.budget_limit,
@@ -46,6 +47,7 @@ export function useTripCountries(tripId: number) {
       const dbCountry = {
         user_id: user.id,
         trip_id: country.tripId,
+        country_id: country.countryId,
         country_name: country.countryName,
         country_code: country.countryCode,
         budget_limit: country.budgetLimit || 0,
@@ -68,6 +70,7 @@ export function useTripCountries(tripId: number) {
   const updateTripCountryMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: number; updates: Partial<TripCountry> }) => {
       const dbUpdates: Record<string, unknown> = {};
+      if (updates.countryId !== undefined) dbUpdates.country_id = updates.countryId;
       if (updates.countryName !== undefined) dbUpdates.country_name = updates.countryName;
       if (updates.countryCode !== undefined) dbUpdates.country_code = updates.countryCode;
       if (updates.budgetLimit !== undefined) dbUpdates.budget_limit = updates.budgetLimit;

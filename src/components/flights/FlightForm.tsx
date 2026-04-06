@@ -5,7 +5,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Input, Textarea } from "@/components/ui/Input";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
-import { getCountryFlag } from "@/lib/utils";
+import { getFlagEmoji } from "@/lib/utils";
 import { format } from "date-fns";
 import type { Flight, Currency, TripCountry } from "@/db/types";
 
@@ -15,16 +15,6 @@ interface Airport {
   city: string;
   country: string;
 }
-
-const getFlagEmoji = (countryCode: string) => {
-  if (!countryCode) return "✈️";
-  const code = countryCode.length === 3 ? countryCode.substring(0, 2) : countryCode;
-  const codePoints = code
-    .toUpperCase()
-    .split("")
-    .map((char) => 127397 + char.charCodeAt(0));
-  return String.fromCodePoint(...codePoints);
-};
 
 interface FlightFormProps {
   open: boolean;
@@ -225,7 +215,7 @@ export function FlightForm({
           options={tripCountries.map((tc) => ({
             value: tc.id!.toString(),
             label: tc.countryName,
-            icon: <span>{getCountryFlag(tc.countryName)}</span>,
+            icon: <span>{getFlagEmoji(tc.countryCode)}</span>,
           }))}
           onChange={(val: string) => set("tripCountryId", Number(val))}
           includeSearch={false}
