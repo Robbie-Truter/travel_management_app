@@ -24,6 +24,8 @@ interface FlightFormProps {
   tripId: number;
   lastFlight?: Flight;
   tripCountries?: TripCountry[];
+  tripStartDate: string;
+  tripEndDate: string;
 }
 
 export function FlightForm({
@@ -34,6 +36,8 @@ export function FlightForm({
   tripId,
   lastFlight,
   tripCountries = [],
+  tripStartDate,
+  tripEndDate,
 }: FlightFormProps) {
   const [form, setForm] = useState({
     segments: initial?.segments?.map((s) => ({
@@ -44,8 +48,8 @@ export function FlightForm({
         flightNumber: lastFlight?.segments[0]?.flightNumber ?? "",
         departureAirport: "",
         arrivalAirport: "",
-        departureTime: "",
-        arrivalTime: "",
+        departureTime: tripStartDate,
+        arrivalTime: tripStartDate,
       },
     ],
     description: initial?.description ?? "",
@@ -78,8 +82,8 @@ export function FlightForm({
           flightNumber: lastSegment?.flightNumber ?? "",
           departureAirport: lastSegment?.arrivalAirport ?? "",
           arrivalAirport: "",
-          departureTime: "",
-          arrivalTime: "",
+          departureTime: lastSegment?.arrivalTime ?? tripStartDate,
+          arrivalTime: lastSegment?.arrivalTime ?? tripStartDate,
         },
       ],
     }));
@@ -314,6 +318,7 @@ export function FlightForm({
                   if (date)
                     updateSegment(index, "departureTime", format(date, "yyyy-MM-dd'T'HH:mm"));
                 }}
+                disabled={{ before: new Date(tripStartDate), after: new Date(tripEndDate) }}
                 error={errors[`seg-dep-t-${index}`]}
               />
               <DatePicker
@@ -324,11 +329,12 @@ export function FlightForm({
                 onChange={(date) => {
                   if (date) updateSegment(index, "arrivalTime", format(date, "yyyy-MM-dd'T'HH:mm"));
                 }}
-                disabled={
-                  seg.departureTime
-                    ? { before: new Date(new Date(seg.departureTime).setHours(0, 0, 0, 0)) }
-                    : undefined
-                }
+                disabled={[
+                  { before: new Date(tripStartDate), after: new Date(tripEndDate) },
+                  ...(seg.departureTime
+                    ? [{ before: new Date(new Date(seg.departureTime).setHours(0, 0, 0, 0)) }]
+                    : []),
+                ]}
                 error={errors[`seg-arr-t-${index}`]}
               />
             </div>

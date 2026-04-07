@@ -17,6 +17,8 @@ interface AccommodationFormProps {
   initial?: Accommodation;
   tripId: number;
   tripCountries?: TripCountry[];
+  tripStartDate: string;
+  tripEndDate: string;
 }
 
 export function AccommodationForm({
@@ -26,6 +28,8 @@ export function AccommodationForm({
   initial,
   tripId,
   tripCountries = [],
+  tripStartDate,
+  tripEndDate,
 }: AccommodationFormProps) {
   const [form, setForm] = useState({
     name: initial?.name ?? "",
@@ -34,8 +38,8 @@ export function AccommodationForm({
     type: initial?.type ?? "hotel",
     platform: initial?.platform ?? "booking",
     location: initial?.location ?? "",
-    checkIn: initial?.checkIn ?? "",
-    checkOut: initial?.checkOut ?? "",
+    checkIn: initial?.checkIn ?? tripStartDate,
+    checkOut: initial?.checkOut ?? tripStartDate,
     price: initial?.price?.toString() ?? "",
     currency: initial?.currency ?? "USD",
     bookingLink: initial?.bookingLink ?? "",
@@ -257,6 +261,7 @@ export function AccommodationForm({
             showTime
             value={form.checkIn}
             onChange={(date) => set("checkIn", date ? date.toISOString() : "")}
+            disabled={{ before: new Date(tripStartDate), after: new Date(tripEndDate) }}
             error={errors.checkIn}
           />
           <DatePicker
@@ -264,6 +269,7 @@ export function AccommodationForm({
             showTime
             value={form.checkOut}
             onChange={(date) => set("checkOut", date ? date.toISOString() : "")}
+            disabled={{ before: new Date(tripStartDate), after: new Date(tripEndDate) }}
             error={errors.checkOut}
           />
         </div>

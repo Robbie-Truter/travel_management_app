@@ -17,9 +17,16 @@ import type { Accommodation, TripCountry } from "@/db/types";
 interface AccommodationsTabProps {
   tripId: number;
   tripCountries: TripCountry[];
+  tripStartDate: string;
+  tripEndDate: string;
 }
 
-export function AccommodationsTab({ tripId, tripCountries }: AccommodationsTabProps) {
+export function AccommodationsTab({
+  tripId,
+  tripCountries,
+  tripStartDate,
+  tripEndDate,
+}: AccommodationsTabProps) {
   const {
     accommodations,
     loading,
@@ -202,6 +209,8 @@ export function AccommodationsTab({ tripId, tripCountries }: AccommodationsTabPr
         initial={editingAcc}
         tripId={tripId}
         tripCountries={tripCountries}
+        tripStartDate={tripStartDate}
+        tripEndDate={tripEndDate}
       />
 
       <AccommodationComparison

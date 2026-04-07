@@ -24,6 +24,8 @@ interface ActivityFormProps {
   tripId: number;
   tripCountries?: TripCountry[];
   destinations?: Destination[];
+  tripStartDate: string;
+  tripEndDate: string;
 }
 
 export function ActivityForm({
@@ -34,13 +36,15 @@ export function ActivityForm({
   tripId,
   tripCountries = [],
   destinations = [],
+  tripStartDate,
+  tripEndDate,
 }: ActivityFormProps) {
   const [form, setForm] = useState({
     name: initial?.name ?? "",
     tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
     destinationId: initial?.destinationId ?? undefined,
     type: initial?.type ?? "other",
-    date: initial?.date ?? "",
+    date: initial?.date ?? tripStartDate,
     duration: initial?.duration?.toString() ?? "",
     cost: initial?.cost?.toString() ?? "",
     currency: initial?.currency ?? "USD",
@@ -222,6 +226,7 @@ export function ActivityForm({
             showTime
             value={form.date}
             onChange={(date) => set("date", date ? date.toISOString() : "")}
+            disabled={{ before: new Date(tripStartDate), after: new Date(tripEndDate) }}
             error={errors.date}
           />
         </div>

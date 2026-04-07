@@ -213,11 +213,23 @@ export function TripPage() {
             )}
 
             {/* FLIGHTS */}
-            {activeTab === "flights" && <FlightsTab tripId={id} tripCountries={tripCountries} />}
+            {activeTab === "flights" && (
+              <FlightsTab
+                tripId={id}
+                tripCountries={tripCountries}
+                tripStartDate={trip.startDate}
+                tripEndDate={trip.endDate}
+              />
+            )}
 
             {/* ACCOMMODATIONS */}
             {activeTab === "accommodations" && (
-              <AccommodationsTab tripId={id} tripCountries={tripCountries} />
+              <AccommodationsTab
+                tripId={id}
+                tripCountries={tripCountries}
+                tripStartDate={trip.startDate}
+                tripEndDate={trip.endDate}
+              />
             )}
 
             {/* ACTIVITIES */}
@@ -226,6 +238,8 @@ export function TripPage() {
                 tripId={id}
                 tripCountries={tripCountries}
                 destinations={destinations}
+                tripStartDate={trip.startDate}
+                tripEndDate={trip.endDate}
               />
             )}
 

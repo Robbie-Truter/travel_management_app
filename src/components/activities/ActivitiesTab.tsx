@@ -17,9 +17,17 @@ interface ActivitiesTabProps {
   tripId: number;
   tripCountries: TripCountry[];
   destinations: Destination[];
+  tripStartDate: string;
+  tripEndDate: string;
 }
 
-export function ActivitiesTab({ tripId, tripCountries, destinations }: ActivitiesTabProps) {
+export function ActivitiesTab({
+  tripId,
+  tripCountries,
+  destinations,
+  tripStartDate,
+  tripEndDate,
+}: ActivitiesTabProps) {
   const {
     activities,
     loading,
@@ -296,6 +304,8 @@ export function ActivitiesTab({ tripId, tripCountries, destinations }: Activitie
         tripId={tripId}
         tripCountries={tripCountries}
         destinations={destinations}
+        tripStartDate={tripStartDate}
+        tripEndDate={tripEndDate}
       />
     </div>
   );

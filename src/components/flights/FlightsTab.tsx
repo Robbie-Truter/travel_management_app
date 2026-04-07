@@ -14,9 +14,16 @@ import type { Flight, TripCountry } from "@/db/types";
 interface FlightsTabProps {
   tripId: number;
   tripCountries: TripCountry[];
+  tripStartDate: string;
+  tripEndDate: string;
 }
 
-export function FlightsTab({ tripId, tripCountries }: FlightsTabProps) {
+export function FlightsTab({
+  tripId,
+  tripCountries,
+  tripStartDate,
+  tripEndDate,
+}: FlightsTabProps) {
   const {
     flights,
     loading,
@@ -193,6 +200,8 @@ export function FlightsTab({ tripId, tripCountries }: FlightsTabProps) {
         tripId={tripId}
         tripCountries={tripCountries}
         lastFlight={flights[flights.length - 1]}
+        tripStartDate={tripStartDate}
+        tripEndDate={tripEndDate}
       />
 
       <FlightComparison
