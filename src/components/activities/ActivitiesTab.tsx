@@ -10,7 +10,7 @@ import { ActivityForm } from "./ActivityForm";
 import { ACTIVITY_TAGS } from "./activity-types";
 import { ActivitySkeleton, ActivityRefetchingIndicator } from "./ActivityLoadingStates";
 import { ActivityErrorState } from "./ActivityErrorState";
-import { getFlagEmoji } from "@/lib/utils";
+import { cn, getFlagEmoji } from "@/lib/utils";
 import type { Activity, TripCountry, Destination } from "@/db/types";
 
 interface ActivitiesTabProps {
@@ -207,20 +207,26 @@ export function ActivitiesTab({ tripId, tripCountries, destinations }: Activitie
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-col gap-6">
+                <div
+                  className={cn(
+                    "flex flex-wrap gap-2 ml-10",
+                    countryActivities.length > 1 ? "justify-start" : "justify-center",
+                  )}
+                >
                   <AnimatePresence mode="popLayout">
                     {countryActivities.map((a) => (
-                      <ActivityCard
-                        key={a.id}
-                        activity={a}
-                        destinationName={destinations.find((d) => d.id === a.destinationId)?.name}
-                        onEdit={(act: Activity) => {
-                          setEditingAct(act);
-                          setFormOpen(true);
-                        }}
-                        onDelete={deleteActivity}
-                        onConfirm={(id) => updateActivity(id, { isConfirmed: true })}
-                      />
+                      <div key={a.id} className="w-full md:w-[calc(50%-12px)] flex">
+                        <ActivityCard
+                          activity={a}
+                          destinationName={destinations.find((d) => d.id === a.destinationId)?.name}
+                          onEdit={(act: Activity) => {
+                            setEditingAct(act);
+                            setFormOpen(true);
+                          }}
+                          onDelete={deleteActivity}
+                          onConfirm={(id) => updateActivity(id, { isConfirmed: true })}
+                        />
+                      </div>
                     ))}
                   </AnimatePresence>
                 </div>
@@ -248,20 +254,21 @@ export function ActivitiesTab({ tripId, tripCountries, destinations }: Activitie
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-wrap justify-center gap-6">
                   <AnimatePresence mode="popLayout">
                     {otherActivities.map((a) => (
-                      <ActivityCard
-                        key={a.id}
-                        activity={a}
-                        destinationName={destinations.find((d) => d.id === a.destinationId)?.name}
-                        onEdit={(act: Activity) => {
-                          setEditingAct(act);
-                          setFormOpen(true);
-                        }}
-                        onDelete={deleteActivity}
-                        onConfirm={(id) => updateActivity(id, { isConfirmed: true })}
-                      />
+                      <div key={a.id} className="w-full md:w-[calc(50%-12px)] flex">
+                        <ActivityCard
+                          activity={a}
+                          destinationName={destinations.find((d) => d.id === a.destinationId)?.name}
+                          onEdit={(act: Activity) => {
+                            setEditingAct(act);
+                            setFormOpen(true);
+                          }}
+                          onDelete={deleteActivity}
+                          onConfirm={(id) => updateActivity(id, { isConfirmed: true })}
+                        />
+                      </div>
                     ))}
                   </AnimatePresence>
                 </div>

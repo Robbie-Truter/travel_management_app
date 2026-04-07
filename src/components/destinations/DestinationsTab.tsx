@@ -8,6 +8,7 @@ import { DestinationForm } from "./DestinationForm";
 import { DestinationSkeleton, DestinationRefetchingIndicator } from "./DestinationLoadingStates";
 import { DestinationErrorState } from "./DestinationErrorState";
 import type { Destination, TripCountry } from "@/db/types";
+import { cn } from "@/lib/utils";
 
 interface DestinationsTabProps {
   tripId: number;
@@ -86,7 +87,7 @@ export function DestinationsTab({ tripId, tripCountries }: DestinationsTabProps)
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className={cn("flex flex-wrap gap-5 justify-center")}>
           <AnimatePresence mode="popLayout">
             {destinations.map((d) => (
               <DestinationCard

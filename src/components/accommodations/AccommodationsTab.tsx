@@ -11,7 +11,7 @@ import {
   AccommodationRefetchingIndicator,
 } from "./AccommodationLoadingStates";
 import { AccommodationErrorState } from "./AccommodationErrorState";
-import { getFlagEmoji } from "@/lib/utils";
+import { cn, getFlagEmoji } from "@/lib/utils";
 import type { Accommodation, TripCountry } from "@/db/types";
 
 interface AccommodationsTabProps {
@@ -117,19 +117,25 @@ export function AccommodationsTab({ tripId, tripCountries }: AccommodationsTabPr
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-col gap-6">
+                <div
+                  className={cn(
+                    "flex flex-wrap gap-5",
+                    countryAccs.length > 1 ? "justify-start" : "justify-center",
+                  )}
+                >
                   <AnimatePresence mode="popLayout">
                     {countryAccs.map((a) => (
-                      <AccommodationCard
-                        key={a.id}
-                        acc={a}
-                        onEdit={(ac: Accommodation) => {
-                          setEditingAcc(ac);
-                          setFormOpen(true);
-                        }}
-                        onDelete={deleteAccommodation}
-                        onConfirm={confirmAccommodation}
-                      />
+                      <div key={a.id} className="w-full md:w-[calc(50%-12px)] flex">
+                        <AccommodationCard
+                          acc={a}
+                          onEdit={(ac: Accommodation) => {
+                            setEditingAcc(ac);
+                            setFormOpen(true);
+                          }}
+                          onDelete={deleteAccommodation}
+                          onConfirm={confirmAccommodation}
+                        />
+                      </div>
                     ))}
                   </AnimatePresence>
                 </div>
@@ -156,19 +162,20 @@ export function AccommodationsTab({ tripId, tripCountries }: AccommodationsTabPr
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-wrap justify-center gap-6">
                   <AnimatePresence mode="popLayout">
                     {otherAccs.map((a) => (
-                      <AccommodationCard
-                        key={a.id}
-                        acc={a}
-                        onEdit={(ac: Accommodation) => {
-                          setEditingAcc(ac);
-                          setFormOpen(true);
-                        }}
-                        onDelete={deleteAccommodation}
-                        onConfirm={confirmAccommodation}
-                      />
+                      <div key={a.id} className="w-full md:w-[calc(50%-12px)] flex">
+                        <AccommodationCard
+                          acc={a}
+                          onEdit={(ac: Accommodation) => {
+                            setEditingAcc(ac);
+                            setFormOpen(true);
+                          }}
+                          onDelete={deleteAccommodation}
+                          onConfirm={confirmAccommodation}
+                        />
+                      </div>
                     ))}
                   </AnimatePresence>
                 </div>
