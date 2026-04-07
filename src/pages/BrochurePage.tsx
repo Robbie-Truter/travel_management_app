@@ -14,6 +14,12 @@ import type {
   AccommodationRow,
   Activity,
   ActivityRow,
+  Destination,
+  DestinationRow,
+  Document,
+  DocumentRow,
+  Note,
+  NoteRow,
 } from "@/db/types";
 
 export function BrochurePage() {
@@ -24,7 +30,9 @@ export function BrochurePage() {
     flights: Flight[];
     accommodations: Accommodation[];
     activities: Activity[];
-    note?: string;
+    destinations: Destination[];
+    documents: Document[];
+    notes: Note[];
   } | null>(null);
   const [loadingPdf, setLoadingPdf] = useState(false);
 
@@ -72,7 +80,7 @@ export function BrochurePage() {
       setLoadingPdf(true);
 
       try {
-        const [tripRes, flightsRes, accRes, actRes, notesRes] = await Promise.all([
+        const [tripRes, flightsRes, accRes, actRes, destRes, docRes, notesRes] = await Promise.all([
           supabase.from("trips").select("*, trip_countries(*)").eq("id", selectedTripId).single(),
           supabase
             .from("flights")
@@ -89,7 +97,17 @@ export function BrochurePage() {
             .select("*")
             .eq("trip_id", selectedTripId)
             .order("date", { ascending: true }),
-          supabase.from("notes").select("*").eq("trip_id", selectedTripId).maybeSingle(),
+          supabase
+            .from("destinations")
+            .select("*")
+            .eq("trip_id", selectedTripId)
+            .order("order", { ascending: true }),
+          supabase
+            .from("documents")
+            .select("*")
+            .eq("trip_id", selectedTripId)
+            .order("created_at", { ascending: true }),
+          supabase.from("notes").select("*").eq("trip_id", selectedTripId).order("updated_at", { ascending: false }),
         ]);
 
         if (tripRes.data) {
@@ -123,6 +141,7 @@ export function BrochurePage() {
             ...a,
             tripId: a.trip_id,
             tripCountryId: a.trip_country_id,
+            destinationId: a.destination_id,
             checkIn: a.check_in,
             checkOut: a.check_out,
             checkInAfter: a.check_in_after,
@@ -141,12 +160,34 @@ export function BrochurePage() {
             createdAt: a.created_at,
           })) as Activity[];
 
+          const destinations = (destRes.data as DestinationRow[] || []).map((d) => ({
+            ...d,
+            tripId: d.trip_id,
+            tripCountryId: d.trip_country_id,
+            cityLookupId: d.city_lookup_id,
+            createdAt: d.created_at,
+          })) as Destination[];
+
+          const documents = (docRes.data as DocumentRow[] || []).map((d) => ({
+            ...d,
+            tripId: d.trip_id,
+            createdAt: d.created_at,
+          })) as Document[];
+
+          const notes = (notesRes.data as NoteRow[] || []).map((n) => ({
+            ...n,
+            tripId: n.trip_id,
+            updatedAt: n.updated_at,
+          })) as Note[];
+
           setTripData({
             trip,
             flights,
             accommodations,
             activities,
-            note: notesRes.data?.content,
+            destinations,
+            documents,
+            notes,
           });
         }
       } catch (err) {

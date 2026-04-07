@@ -1,7 +1,7 @@
 import { Document, Page, Text, View, StyleSheet, Font, Image, Link } from "@react-pdf/renderer";
-import type { Trip, Flight, Accommodation, Activity } from "@/db/types";
+import type { Trip, Flight, Accommodation, Activity, Destination, Document as Doc, Note } from "@/db/types";
 
-// Register a font for a cleaner look
+// Register fonts
 Font.register({
   family: "Inter",
   fonts: [
@@ -16,185 +16,246 @@ Font.register({
   ],
 });
 
-// Pastel colors to match the app
+// Vibrant and professional palette
 const colors = {
-  primary: "#8b5cf6", // lavender-500
-  secondary: "#36aaf6", // sky-pastel-400
-  textPrimary: "#1e293b", // slate-800
-  textSecondary: "#64748b", // slate-500
+  primary: "#6366f1", // indigo-500
+  secondary: "#0ea5e9", // sky-500
+  accent: "#f43f5e", // rose-500
+  success: "#10b981", // emerald-500
+  warning: "#f59e0b", // amber-500
+  textPrimary: "#0f172a", // slate-900
+  textSecondary: "#475569", // slate-600
+  textMuted: "#94a3b8", // slate-400
   surface: "#f8fafc", // slate-50
+  surfaceDark: "#f1f5f9", // slate-100
   border: "#e2e8f0", // slate-200
-  sage: "#7da47d", // sage-400
-  rose: "#fb7185", // rose-pastel-400
-  amber: "#fbbf24", // amber-pastel-400
-  confirmed: "#059669", // emerald-600
-  planning: "#d97706", // amber-600
+  white: "#ffffff",
 };
 
 const styles = StyleSheet.create({
   page: {
     fontFamily: "Inter",
     padding: 40,
-    backgroundColor: "#ffffff",
+    backgroundColor: colors.white,
     color: colors.textPrimary,
   },
+  // Cover Page
   coverPage: {
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    flex: 1,
-    padding: 60,
+    height: "100%",
+    padding: 40,
   },
   coverImage: {
     width: "100%",
-    height: 300,
+    height: 350,
     objectFit: "cover",
-    borderRadius: 12,
-    marginBottom: 32,
+    borderRadius: 20,
+    marginBottom: 40,
   },
   coverTitle: {
-    fontSize: 42,
+    fontSize: 48,
     fontWeight: "bold",
     color: colors.primary,
     marginBottom: 16,
     textAlign: "center",
+    letterSpacing: -1,
   },
-  coverDestinations: {
-    fontSize: 24,
-    color: colors.textSecondary,
-    marginBottom: 24,
-    textAlign: "center",
-  },
-  coverDates: {
-    fontSize: 16,
-    color: colors.secondary,
-    fontWeight: "bold",
-  },
-  section: {
-    // Removed marginBottom to prevent extra blank pages at the end of the PDF
-  },
-  sectionHeader: {
+  coverSubtitle: {
     fontSize: 20,
-    fontWeight: "bold",
-    color: colors.primary,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    paddingBottom: 8,
-    marginBottom: 16,
+    color: colors.textSecondary,
+    marginBottom: 32,
+    textAlign: "center",
+    maxWidth: "80%",
   },
-  countryHeader: {
+  coverInfo: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: "#f1f5f9",
-    padding: 8,
-    borderRadius: 6,
-    marginBottom: 12,
-    marginTop: 8,
+    gap: 20,
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
-  countryLabel: {
+  coverInfoItem: {
+    alignItems: "center",
+  },
+  coverInfoLabel: {
+    fontSize: 10,
+    color: colors.textMuted,
+    textTransform: "uppercase",
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  coverInfoValue: {
     fontSize: 14,
     fontWeight: "bold",
     color: colors.textPrimary,
   },
-  itemCount: {
+
+  // Layout Elements
+  section: {
+    marginBottom: 30,
+  },
+  sectionHeader: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: colors.primary,
+    marginBottom: 20,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary,
+    paddingBottom: 8,
+  },
+  subSectionHeader: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: colors.textPrimary,
+    marginTop: 20,
+    marginBottom: 12,
+  },
+  countryBanner: {
+    backgroundColor: colors.surfaceDark,
+    padding: 12,
+    borderRadius: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  countryName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.primary,
+  },
+  countryMeta: {
     fontSize: 10,
     color: colors.textSecondary,
     fontWeight: "bold",
   },
+
+  // Cards
   card: {
     backgroundColor: colors.surface,
-    padding: 16,
-    borderRadius: 8,
-    // No marginBottom — use marginTop on non-first cards to avoid blank trailing pages
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
+    padding: 15,
+    marginBottom: 12,
   },
-  row: {
-    display: "flex",
+  cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 4,
+    marginBottom: 8,
   },
   cardTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    maxWidth: "70%",
-  },
-  cardSubtitle: {
-    fontSize: 12,
-    color: colors.textSecondary,
+    color: colors.textPrimary,
+    maxWidth: "75%",
   },
   badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: "bold",
-    color: "#ffffff",
-  },
-  statusBadge: {
-    fontSize: 9,
     paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 10,
-    marginLeft: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+    textTransform: "uppercase",
   },
-  confirmedBadge: {
-    backgroundColor: "#ecfdf5",
-    color: colors.confirmed,
-    borderWidth: 1,
-    borderColor: "#d1fae5",
+  statusBadgeConfirmed: {
+    backgroundColor: "#dcfce7",
+    color: colors.success,
   },
-  planningBadge: {
-    backgroundColor: "#fffbeb",
-    color: colors.planning,
-    borderWidth: 1,
-    borderColor: "#fef3c7",
+  statusBadgePlanning: {
+    backgroundColor: "#fef3c7",
+    color: colors.warning,
   },
-  flightBadge: { backgroundColor: colors.secondary },
-  accBadge: { backgroundColor: colors.sage },
-  actBadge: { backgroundColor: colors.rose },
+
+  // Typography
   text: {
     fontSize: 11,
-    lineHeight: 1.4,
+    lineHeight: 1.5,
+    color: colors.textPrimary,
   },
-  label: {
-    fontWeight: "bold",
+  textSecondary: {
+    fontSize: 10,
     color: colors.textSecondary,
   },
-  priceText: {
-    fontSize: 11,
+  label: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.textMuted,
+    textTransform: "uppercase",
+  },
+  price: {
+    fontSize: 12,
     fontWeight: "bold",
     color: colors.primary,
-    marginTop: 4,
+    marginTop: 5,
   },
-  linkText: {
+  link: {
     fontSize: 10,
     color: colors.secondary,
     textDecoration: "underline",
-    marginTop: 4,
+    marginTop: 5,
   },
-  imageContainer: {
-    width: "100%",
-    height: 140,
-    marginTop: 12,
-    borderRadius: 6,
-    overflow: "hidden",
+
+  // Specific Components
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
   },
-  itemImage: {
+  gridItem: {
+    width: "48%",
+  },
+  image: {
     width: "100%",
-    height: "100%",
+    height: 120,
     objectFit: "cover",
+    borderRadius: 6,
+    marginTop: 10,
+  },
+  segment: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    borderTopStyle: "dashed",
+  },
+  timelineItem: {
+    marginLeft: 15,
+    paddingLeft: 15,
+    borderLeftWidth: 2,
+    borderLeftColor: colors.border,
+    paddingBottom: 20,
+  },
+  timelineDot: {
+    position: "absolute",
+    left: -6,
+    top: 0,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.primary,
   },
   noteBox: {
-    padding: 12,
     backgroundColor: "#fff7ed",
-    borderLeftWidth: 3,
-    borderLeftColor: "#fb923c",
-    marginTop: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.warning,
+    padding: 15,
+    borderRadius: 4,
+    marginTop: 10,
+  },
+  docIcon: {
+    width: 32,
+    height: 32,
+    backgroundColor: colors.surfaceDark,
+    borderRadius: 6,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
   },
 });
 
@@ -203,7 +264,9 @@ interface BrochureDocumentProps {
   flights: Flight[];
   accommodations: Accommodation[];
   activities: Activity[];
-  note?: string;
+  destinations: Destination[];
+  documents: Doc[];
+  notes: Note[];
 }
 
 export function BrochureDocument({
@@ -211,7 +274,9 @@ export function BrochureDocument({
   flights,
   accommodations,
   activities,
-  note,
+  destinations,
+  documents,
+  notes,
 }: BrochureDocumentProps) {
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("en-US", {
@@ -228,620 +293,292 @@ export function BrochureDocument({
     });
   };
 
-  const getStatusBadgeStyle = (isConfirmed: boolean) => {
-    return [styles.statusBadge, isConfirmed ? styles.confirmedBadge : styles.planningBadge];
-  };
-
-  const getStatusText = (isConfirmed: boolean) => (isConfirmed ? "CONFIRMED" : "PLANNING");
+  const getStatusBadge = (isConfirmed: boolean) => (
+    <View style={[styles.badge, isConfirmed ? styles.statusBadgeConfirmed : styles.statusBadgePlanning]}>
+      <Text>{isConfirmed ? "Confirmed" : "Planning"}</Text>
+    </View>
+  );
 
   return (
     <Document>
-      {/* Cover Page */}
+      {/* 1. Cover Page */}
       <Page size="A4" style={styles.page}>
         <View style={styles.coverPage}>
-          {trip.coverImage && <Image src={trip.coverImage} style={styles.coverImage} />}
+          {trip.coverImage ? (
+            <Image src={trip.coverImage} style={styles.coverImage} />
+          ) : (
+            <View style={[styles.coverImage, { backgroundColor: colors.surfaceDark, justifyContent: "center", alignItems: "center" }]}>
+               <Text style={{ color: colors.textMuted }}>Wanderplan</Text>
+            </View>
+          )}
           <Text style={styles.coverTitle}>{trip.name}</Text>
-          <Text style={styles.coverDestinations}>
-            {trip.tripCountries?.map((tc) => tc.countryName).join(" • ") || "No destinations"}
+          <Text style={styles.coverSubtitle}>
+            {trip.tripCountries?.map((tc) => tc.countryName).join(" • ") || "Exploring the World"}
           </Text>
-          <Text style={styles.coverDates}>
-            {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
-          </Text>
+          
+          <View style={styles.coverInfo}>
+            <View style={styles.coverInfoItem}>
+              <Text style={styles.coverInfoLabel}>Departure</Text>
+              <Text style={styles.coverInfoValue}>{formatDate(trip.startDate)}</Text>
+            </View>
+            <View style={styles.coverInfoItem}>
+              <Text style={styles.coverInfoLabel}>Return</Text>
+              <Text style={styles.coverInfoValue}>{formatDate(trip.endDate)}</Text>
+            </View>
+            {trip.budget && (
+              <View style={styles.coverInfoItem}>
+                <Text style={styles.coverInfoLabel}>Budget</Text>
+                <Text style={styles.coverInfoValue}>{trip.budget}</Text>
+              </View>
+            )}
+          </View>
         </View>
       </Page>
 
-      {/* Overview Page */}
+      {/* 2. Overview & Destinations */}
       <Page size="A4" style={styles.page}>
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Trip Overview</Text>
-          {trip.description && <Text style={styles.text}>{trip.description}</Text>}
-          {trip.budget && (
-            <View style={{ marginTop: 8, flexDirection: "row", alignItems: "center" }}>
-              <Text style={[styles.text, styles.label]}>Budget: </Text>
-              <Text style={styles.text}>{trip.budget}</Text>
-            </View>
-          )}
-
-          {note && (
-            <View style={styles.noteBox} wrap={false}>
-              <Text style={[styles.text, { color: "#9a3412" }]}>"{note}"</Text>
-            </View>
-          )}
-        </View>
-
-        {/* FLIGHTS SECTION (Grouped by Country) */}
-        {flights.length > 0 && (
-          <View style={[styles.section, { marginTop: 20 }]}>
-            <Text style={styles.sectionHeader}>Flights</Text>
+          {trip.description && <Text style={[styles.text, { marginBottom: 20 }]}>{trip.description}</Text>}
+          
+          <View style={styles.grid}>
             {trip.tripCountries?.map((tc) => {
-              const countryFlights = flights.filter((f) => f.tripCountryId === tc.id);
-              if (countryFlights.length === 0) return null;
-
+              const countryDestinations = destinations.filter(d => d.tripCountryId === tc.id);
               return (
-                <View key={tc.id}>
-                  <View style={styles.countryHeader} wrap={false}>
-                    <Text style={styles.countryLabel}>{tc.countryName}</Text>
-                    <Text style={styles.itemCount}>
-                      {countryFlights.length} {countryFlights.length === 1 ? "Flight" : "Flights"}
-                    </Text>
-                  </View>
-
-                  {countryFlights.map((flight, i) => (
-                    <View key={i} style={{ ...styles.card, ...(i > 0 ? { marginTop: 12 } : {}) }} wrap={false}>
-                      <View style={styles.row}>
-                        <Text style={styles.cardTitle}>
-                          {flight.description ||
-                            `${flight.segments[0].airline} ${flight.segments[0].flightNumber}`}
-                        </Text>
-                        <View style={getStatusBadgeStyle(flight.isConfirmed)}>
-                          <Text>{getStatusText(flight.isConfirmed)}</Text>
-                        </View>
-                      </View>
-
-                      {flight.segments.map((seg, j) => (
-                        <View
-                          key={j}
-                          style={{
-                            marginTop: 8,
-                            paddingTop: 8,
-                            borderTopWidth: j > 0 ? 1 : 0,
-                            borderTopColor: colors.border,
-                            borderTopStyle: "dashed",
-                          }}
-                        >
-                          <View style={styles.row}>
-                            <Text style={[styles.text, { fontWeight: "bold" }]}>
-                              {seg.departureAirport} → {seg.arrivalAirport}
-                            </Text>
-                            <View style={[styles.badge, styles.flightBadge]}>
-                              <Text>
-                                {seg.airline} {seg.flightNumber}
+                <View key={tc.id} style={styles.gridItem}>
+                  <View style={styles.card}>
+                    <Text style={[styles.countryName, { marginBottom: 8 }]}>{tc.countryName}</Text>
+                    {tc.budgetLimit ? (
+                      <Text style={[styles.textSecondary, { marginBottom: 8 }]}>Budget: {tc.budgetLimit}</Text>
+                    ) : null}
+                    
+                    <Text style={styles.label}>Destinations & Stays</Text>
+                    {countryDestinations.length > 0 ? (
+                      countryDestinations.map((d, i) => {
+                        const destAccs = accommodations.filter(a => a.destinationId === d.id);
+                        return (
+                          <View key={i} style={{ marginTop: 4 }}>
+                            <Text style={styles.text}>• {d.name}</Text>
+                            {destAccs.map((a, j) => (
+                              <Text key={j} style={[styles.textSecondary, { marginLeft: 12, color: colors.secondary }]}>
+                                🏠 {a.name}
                               </Text>
-                            </View>
+                            ))}
                           </View>
-                          <Text style={styles.cardSubtitle}>
-                            {formatDate(seg.departureTime)} | {formatTime(seg.departureTime)} -{" "}
-                            {formatTime(seg.arrivalTime)}
-                          </Text>
-                        </View>
-                      ))}
+                        );
+                      })
+                    ) : (
+                      <Text style={[styles.textSecondary, { fontStyle: "italic" }]}>No cities specified</Text>
+                    )}
 
-                      {(flight.price > 0 || flight.notes || flight.bookingLink) && (
-                        <View
-                          style={{
-                            marginTop: 8,
-                            paddingTop: 8,
-                            borderTopWidth: 1,
-                            borderTopColor: colors.border,
-                          }}
-                        >
-                          {flight.price > 0 && (
-                            <Text style={styles.priceText}>
-                              Price: {flight.price} {flight.currency}
-                            </Text>
-                          )}
-                          {flight.notes && (
-                            <Text
-                              style={[styles.text, { marginTop: 4, color: colors.textSecondary }]}
-                            >
-                              {flight.notes}
-                            </Text>
-                          )}
-                          {flight.bookingLink && (
-                            <Link src={flight.bookingLink} style={styles.linkText}>
-                              View Booking Details
-                            </Link>
-                          )}
-                        </View>
-                      )}
-                    </View>
-                  ))}
+                    {tc.notes && (
+                      <View style={[styles.noteBox, { marginTop: 10, padding: 8 }]}>
+                        <Text style={[styles.textSecondary, { fontSize: 9 }]}>{tc.notes}</Text>
+                      </View>
+                    )}
+                  </View>
                 </View>
               );
             })}
+          </View>
+        </View>
 
-            {/* Other Flights Fallback */}
-            {(() => {
-              const otherFlights = flights.filter(
-                (f) =>
-                  !f.tripCountryId ||
-                  !trip.tripCountries?.some((tc) => tc.id === f.tripCountryId),
-              );
-              if (otherFlights.length === 0) return null;
-
-              return (
-                <View>
-                  <View style={styles.countryHeader} wrap={false}>
-                    <Text style={styles.countryLabel}>Other Locations</Text>
-                    <Text style={styles.itemCount}>
-                      {otherFlights.length} {otherFlights.length === 1 ? "Flight" : "Flights"}
-                    </Text>
-                  </View>
-                  {otherFlights.map((flight, i) => (
-                    <View key={i} style={{ ...styles.card, ...(i > 0 ? { marginTop: 12 } : {}) }} wrap={false}>
-                      <View style={styles.row}>
-                        <Text style={styles.cardTitle}>
-                          {flight.description ||
-                            `${flight.segments[0].airline} ${flight.segments[0].flightNumber}`}
-                        </Text>
-                        <View style={getStatusBadgeStyle(flight.isConfirmed)}>
-                          <Text>{getStatusText(flight.isConfirmed)}</Text>
-                        </View>
-                      </View>
-                      {flight.segments.map((seg, j) => (
-                        <View
-                          key={j}
-                          style={{
-                            marginTop: 8,
-                            paddingTop: 8,
-                            borderTopWidth: j > 0 ? 1 : 0,
-                            borderTopColor: colors.border,
-                            borderTopStyle: "dashed",
-                          }}
-                        >
-                          <View style={styles.row}>
-                            <Text style={[styles.text, { fontWeight: "bold" }]}>
-                              {seg.departureAirport} → {seg.arrivalAirport}
-                            </Text>
-                            <View style={[styles.badge, styles.flightBadge]}>
-                              <Text>
-                                {seg.airline} {seg.flightNumber}
-                              </Text>
-                            </View>
-                          </View>
-                          <Text style={styles.cardSubtitle}>
-                            {formatDate(seg.departureTime)} | {formatTime(seg.departureTime)} -{" "}
-                            {formatTime(seg.arrivalTime)}
-                          </Text>
-                        </View>
-                      ))}
-                      {(flight.price > 0 || flight.notes || flight.bookingLink) && (
-                        <View
-                          style={{
-                            marginTop: 8,
-                            paddingTop: 8,
-                            borderTopWidth: 1,
-                            borderTopColor: colors.border,
-                          }}
-                        >
-                          {flight.price > 0 && (
-                            <Text style={styles.priceText}>
-                              Price: {flight.price} {flight.currency}
-                            </Text>
-                          )}
-                          {flight.notes && (
-                            <Text
-                              style={[styles.text, { marginTop: 4, color: colors.textSecondary }]}
-                            >
-                              {flight.notes}
-                            </Text>
-                          )}
-                          {flight.bookingLink && (
-                            <Link src={flight.bookingLink} style={styles.linkText}>
-                              View Booking Details
-                            </Link>
-                          )}
-                        </View>
-                      )}
-                    </View>
-                  ))}
-                </View>
-              );
-            })()}
+        {notes.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.subSectionHeader}>General Notes</Text>
+            {notes.map((note, i) => (
+              <View key={i} style={styles.noteBox}>
+                <Text style={styles.text}>{note.content}</Text>
+                <Text style={[styles.textSecondary, { marginTop: 5, fontSize: 8 }]}>
+                  Last updated: {formatDate(note.updatedAt)}
+                </Text>
+              </View>
+            ))}
           </View>
         )}
       </Page>
 
-      {/* ACCOMMODATIONS PAGE */}
-      {accommodations.length > 0 && (
+      {/* 3. Flights */}
+      {flights.length > 0 && (
         <Page size="A4" style={styles.page}>
           <View style={styles.section}>
-            <Text style={styles.sectionHeader}>Accommodations</Text>
-            {trip.tripCountries?.map((tc) => {
-              const countryAccs = accommodations.filter((a) => a.tripCountryId === tc.id);
-              if (countryAccs.length === 0) return null;
-
-              return (
-                <View key={tc.id}>
-                  <View style={styles.countryHeader} wrap={false}>
-                    <Text style={styles.countryLabel}>{tc.countryName}</Text>
-                    <Text style={styles.itemCount}>
-                      {countryAccs.length} {countryAccs.length === 1 ? "Stay" : "Stays"}
+            <Text style={styles.sectionHeader}>Flight Itinerary</Text>
+            {flights.map((flight, i) => (
+              <View key={i} style={styles.card} wrap={false}>
+                <View style={styles.cardHeader}>
+                  <View>
+                    <Text style={styles.cardTitle}>
+                      {flight.description || `${flight.segments[0].airline} ${flight.segments[0].flightNumber}`}
+                    </Text>
+                    <Text style={styles.textSecondary}>
+                      {formatDate(flight.segments[0].departureTime)}
                     </Text>
                   </View>
-
-                  {countryAccs.map((acc, i) => (
-                    <View key={i} style={{ ...styles.card, ...(i > 0 ? { marginTop: 12 } : {}) }} wrap={false}>
-                      <View style={styles.row}>
-                        <Text style={styles.cardTitle}>{acc.name}</Text>
-                        <View style={getStatusBadgeStyle(acc.isConfirmed)}>
-                          <Text>{getStatusText(acc.isConfirmed)}</Text>
-                        </View>
-                      </View>
-
-                      <View style={styles.row}>
-                        <Text style={styles.cardSubtitle}>{acc.location}</Text>
-                        <View style={[styles.badge, styles.accBadge]}>
-                          <Text>{acc.type.toUpperCase()}</Text>
-                        </View>
-                      </View>
-
-                      {acc.platform && (
-                        <Text style={[styles.text, { marginTop: 4, color: colors.textSecondary }]}>
-                          Platform: <Text style={{ fontWeight: "bold" }}>{acc.platform}</Text>
-                        </Text>
-                      )}
-
-                      <View
-                        style={{
-                          marginTop: 6,
-                          flexDirection: "row",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <View>
-                          <Text style={[styles.text, styles.label]}>Check-in</Text>
-                          <Text style={styles.text}>{formatDate(acc.checkIn)}</Text>
-                          {acc.checkInAfter && (
-                            <Text style={[styles.text, { fontSize: 9 }]}>
-                              After {acc.checkInAfter}
-                            </Text>
-                          )}
-                        </View>
-                        <View>
-                          <Text style={[styles.text, styles.label]}>Check-out</Text>
-                          <Text style={styles.text}>{formatDate(acc.checkOut)}</Text>
-                          {acc.checkOutBefore && (
-                            <Text style={[styles.text, { fontSize: 9 }]}>
-                              Before {acc.checkOutBefore}
-                            </Text>
-                          )}
-                        </View>
-                      </View>
-
-                      {(acc.price > 0 || acc.notes || acc.image || acc.bookingLink) && (
-                        <View
-                          style={{
-                            marginTop: 10,
-                            paddingTop: 8,
-                            borderTopWidth: 1,
-                            borderTopColor: colors.border,
-                          }}
-                        >
-                          {acc.price > 0 && (
-                            <Text style={styles.priceText}>
-                              Total: {acc.price} {acc.currency}
-                            </Text>
-                          )}
-                          {acc.notes && (
-                            <Text
-                              style={[styles.text, { marginTop: 4, color: colors.textSecondary }]}
-                            >
-                              {acc.notes}
-                            </Text>
-                          )}
-                          {acc.bookingLink && (
-                            <Link src={acc.bookingLink} style={styles.linkText}>
-                              View Booking Confirmation
-                            </Link>
-                          )}
-                          {acc.image && (
-                            <View style={styles.imageContainer}>
-                              <Image src={acc.image} style={styles.itemImage} />
-                            </View>
-                          )}
-                        </View>
-                      )}
-                    </View>
-                  ))}
+                  {getStatusBadge(flight.isConfirmed)}
                 </View>
-              );
-            })}
 
-            {/* Other Stays Fallback */}
-            {(() => {
-              const otherAccs = accommodations.filter(
-                (a) =>
-                  !a.tripCountryId ||
-                  !trip.tripCountries?.some((tc) => tc.id === a.tripCountryId),
-              );
-              if (otherAccs.length === 0) return null;
-
-              return (
-                <View>
-                  <View style={styles.countryHeader} wrap={false}>
-                    <Text style={styles.countryLabel}>Other Locations</Text>
-                    <Text style={styles.itemCount}>
-                      {otherAccs.length} {otherAccs.length === 1 ? "Stay" : "Stays"}
+                {flight.segments.map((seg, j) => (
+                  <View key={j} style={styles.segment}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={[styles.text, { fontWeight: "bold" }]}>
+                        {seg.departureAirport} → {seg.arrivalAirport}
+                      </Text>
+                      <Text style={[styles.text, { color: colors.secondary, fontWeight: "bold" }]}>
+                        {seg.airline} {seg.flightNumber}
+                      </Text>
+                    </View>
+                    <Text style={styles.textSecondary}>
+                      {formatTime(seg.departureTime)} - {formatTime(seg.arrivalTime)}
                     </Text>
                   </View>
-                  {otherAccs.map((acc, i) => (
-                    <View key={i} style={{ ...styles.card, ...(i > 0 ? { marginTop: 12 } : {}) }} wrap={false}>
-                      <View style={styles.row}>
-                        <Text style={styles.cardTitle}>{acc.name}</Text>
-                        <View style={getStatusBadgeStyle(acc.isConfirmed)}>
-                          <Text>{getStatusText(acc.isConfirmed)}</Text>
-                        </View>
-                      </View>
-                      <View style={styles.row}>
-                        <Text style={styles.cardSubtitle}>{acc.location}</Text>
-                        <View style={[styles.badge, styles.accBadge]}>
-                          <Text>{acc.type.toUpperCase()}</Text>
-                        </View>
-                      </View>
-                      {acc.platform && (
-                        <Text style={[styles.text, { marginTop: 4, color: colors.textSecondary }]}>
-                          Platform: <Text style={{ fontWeight: "bold" }}>{acc.platform}</Text>
-                        </Text>
-                      )}
-                      <View
-                        style={{
-                          marginTop: 6,
-                          flexDirection: "row",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <View>
-                          <Text style={[styles.text, styles.label]}>Check-in</Text>
-                          <Text style={styles.text}>{formatDate(acc.checkIn)}</Text>
-                          {acc.checkInAfter && (
-                            <Text style={[styles.text, { fontSize: 9 }]}>
-                              After {acc.checkInAfter}
-                            </Text>
-                          )}
-                        </View>
-                        <View>
-                          <Text style={[styles.text, styles.label]}>Check-out</Text>
-                          <Text style={styles.text}>{formatDate(acc.checkOut)}</Text>
-                          {acc.checkOutBefore && (
-                            <Text style={[styles.text, { fontSize: 9 }]}>
-                              Before {acc.checkOutBefore}
-                            </Text>
-                          )}
-                        </View>
-                      </View>
-                      {(acc.price > 0 || acc.notes || acc.image || acc.bookingLink) && (
-                        <View
-                          style={{
-                            marginTop: 10,
-                            paddingTop: 8,
-                            borderTopWidth: 1,
-                            borderTopColor: colors.border,
-                          }}
-                        >
-                          {acc.price > 0 && (
-                            <Text style={styles.priceText}>
-                              Total: {acc.price} {acc.currency}
-                            </Text>
-                          )}
-                          {acc.notes && (
-                            <Text
-                              style={[styles.text, { marginTop: 4, color: colors.textSecondary }]}
-                            >
-                              {acc.notes}
-                            </Text>
-                          )}
-                          {acc.bookingLink && (
-                            <Link src={acc.bookingLink} style={styles.linkText}>
-                              View Booking Confirmation
-                            </Link>
-                          )}
-                          {acc.image && (
-                            <View style={styles.imageContainer}>
-                              <Image src={acc.image} style={styles.itemImage} />
-                            </View>
-                          )}
-                        </View>
-                      )}
-                    </View>
-                  ))}
-                </View>
-              );
-            })()}
+                ))}
+
+                {(flight.price > 0 || flight.notes || flight.bookingLink) && (
+                  <View style={{ marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.border }}>
+                    {flight.price > 0 && (
+                      <Text style={styles.price}>Cost: {flight.price} {flight.currency}</Text>
+                    )}
+                    {flight.notes && <Text style={[styles.textSecondary, { marginTop: 4 }]}>{flight.notes}</Text>}
+                    {flight.bookingLink && (
+                      <Link src={flight.bookingLink} style={styles.link}>Booking Reference</Link>
+                    )}
+                  </View>
+                )}
+              </View>
+            ))}
           </View>
         </Page>
       )}
 
-      {/* ACTIVITIES TIMELINE PAGE(S) */}
+      {/* 4. Accommodations */}
+      {accommodations.length > 0 && (
+        <Page size="A4" style={styles.page}>
+          <View style={styles.section}>
+            <Text style={styles.sectionHeader}>Accommodations</Text>
+            <View style={styles.grid}>
+              {accommodations.map((acc, i) => (
+                <View key={i} style={styles.gridItem} wrap={false}>
+                  <View style={styles.card}>
+                    <View style={styles.cardHeader}>
+                      <Text style={styles.cardTitle}>{acc.name}</Text>
+                      {getStatusBadge(acc.isConfirmed)}
+                    </View>
+                    
+                    <Text style={[styles.textSecondary, { marginBottom: 8 }]}>{acc.location}</Text>
+                    
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
+                      <View>
+                        <Text style={styles.label}>Check-in</Text>
+                        <Text style={styles.text}>{formatDate(acc.checkIn)}</Text>
+                        {acc.checkInAfter && <Text style={{ fontSize: 8, color: colors.textMuted }}>After {acc.checkInAfter}</Text>}
+                      </View>
+                      <View>
+                        <Text style={styles.label}>Check-out</Text>
+                        <Text style={styles.text}>{formatDate(acc.checkOut)}</Text>
+                        {acc.checkOutBefore && <Text style={{ fontSize: 8, color: colors.textMuted }}>Before {acc.checkOutBefore}</Text>}
+                      </View>
+                    </View>
+
+                    {acc.platform && (
+                      <Text style={styles.textSecondary}>Booked via: <Text style={{ fontWeight: "bold" }}>{acc.platform}</Text></Text>
+                    )}
+
+                    {acc.price > 0 && (
+                      <Text style={styles.price}>Total: {acc.price} {acc.currency}</Text>
+                    )}
+
+                    {acc.notes && <Text style={[styles.textSecondary, { marginTop: 8 }]}>{acc.notes}</Text>}
+                    
+                    {acc.bookingLink && (
+                      <Link src={acc.bookingLink} style={styles.link}>View Confirmation</Link>
+                    )}
+
+                    {acc.image && <Image src={acc.image} style={styles.image} />}
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        </Page>
+      )}
+
+      {/* 5. Activities Timeline */}
       {activities.length > 0 && (
         <Page size="A4" style={styles.page}>
           <View style={styles.section}>
-            {activities.length > 0 && <Text style={styles.sectionHeader}>Activity Timeline</Text>}
-            {trip.tripCountries?.map((tc) => {
-              const countryActivities = activities.filter((a) => a.tripCountryId === tc.id);
-              if (countryActivities.length === 0) return null;
-
-              // Group activities by date within the country group
-              const dates = Array.from(new Set(countryActivities.map((a) => a.date))).sort();
-
-              return (
-                <View key={tc.id} style={{ marginBottom: 20 }}>
-                  <View style={styles.countryHeader} wrap={false}>
-                    <Text style={styles.countryLabel}>{tc.countryName}</Text>
-                    <Text style={styles.itemCount}>
-                      {countryActivities.length}{" "}
-                      {countryActivities.length === 1 ? "Activity" : "Activities"}
-                    </Text>
-                  </View>
-
-                  {dates.map((date) => (
-                    <View key={date} style={{ marginBottom: 16, marginLeft: 10 }}>
-                      <Text
-                        style={[
-                          styles.text,
-                          { fontWeight: "bold", color: colors.primary, marginBottom: 8 },
-                        ]}
-                      >
-                        {formatDate(date)}
-                      </Text>
-                      {countryActivities
-                        .filter((a) => a.date === date)
-                        .sort((a, b) => a.order - b.order)
-                        .map((act, i) => (
-                          <View key={i} style={{ ...styles.card, marginLeft: 16, ...(i > 0 ? { marginTop: 12 } : {}) }} wrap={false}>
-                            <View style={styles.row}>
-                              <Text style={styles.cardTitle}>{act.name}</Text>
-                              <View style={getStatusBadgeStyle(act.isConfirmed)}>
-                                <Text>{getStatusText(act.isConfirmed)}</Text>
-                              </View>
-                            </View>
-
-                            <View style={styles.row}>
-                              {act.type && (
-                                <View style={[styles.badge, styles.actBadge]}>
-                                  <Text>{act.type.toUpperCase()}</Text>
-                                </View>
-                              )}
-                              {act.duration && (
-                                <Text style={[styles.text, { color: colors.textSecondary }]}>
-                                  Duration: {act.duration} mins
-                                </Text>
-                              )}
-                            </View>
-
-                            {act.notes && (
-                              <Text
-                                style={[styles.text, { marginTop: 4, color: colors.textSecondary }]}
-                              >
-                                {act.notes}
-                              </Text>
-                            )}
-                            {((act.cost !== undefined && act.cost > 0) ||
-                              act.link ||
-                              act.image) && (
-                              <View style={{ marginTop: 8 }}>
-                                {act.cost !== undefined && act.cost > 0 && (
-                                  <Text style={styles.priceText}>
-                                    Cost: {act.cost} {act.currency}
-                                  </Text>
-                                )}
-                                {act.link && (
-                                  <Link src={act.link} style={styles.linkText}>
-                                    More Information
-                                  </Link>
-                                )}
-                                {act.image && (
-                                  <View style={styles.imageContainer}>
-                                    <Image src={act.image} style={styles.itemImage} />
-                                  </View>
-                                )}
-                              </View>
-                            )}
+            <Text style={styles.sectionHeader}>Activity Timeline</Text>
+            
+            {/* Grouped by date */}
+            {Array.from(new Set(activities.map(a => a.date))).sort().map(date => (
+              <View key={date} style={{ marginBottom: 20 }}>
+                <Text style={[styles.subSectionHeader, { color: colors.primary, marginTop: 0 }]}>
+                  {formatDate(date)}
+                </Text>
+                
+                {activities
+                  .filter(a => a.date === date)
+                  .sort((a, b) => a.order - b.order)
+                  .map((act, i) => (
+                    <View key={i} style={styles.timelineItem}>
+                      <View style={styles.timelineDot} />
+                      <View style={[styles.card, { marginBottom: 0 }]}>
+                        <View style={styles.cardHeader}>
+                          <View>
+                            <Text style={styles.cardTitle}>{act.name}</Text>
+                            {act.type && <Text style={[styles.textSecondary, { color: colors.secondary }]}>{act.type}</Text>}
                           </View>
-                        ))}
+                          {getStatusBadge(act.isConfirmed)}
+                        </View>
+
+                        {act.notes && <Text style={styles.textSecondary}>{act.notes}</Text>}
+                        
+                        <View style={{ flexDirection: "row", gap: 15, marginTop: 8 }}>
+                          {act.duration && (
+                            <View>
+                              <Text style={styles.label}>Duration</Text>
+                              <Text style={styles.text}>{act.duration} mins</Text>
+                            </View>
+                          )}
+                          {act.cost !== undefined && act.cost > 0 && (
+                            <View>
+                              <Text style={styles.label}>Cost</Text>
+                              <Text style={styles.text}>{act.cost} {act.currency}</Text>
+                            </View>
+                          )}
+                        </View>
+
+                        {act.link && <Link src={act.link} style={styles.link}>More Details</Link>}
+                        {act.image && <Image src={act.image} style={styles.image} />}
+                      </View>
                     </View>
                   ))}
-                </View>
-              );
-            })}
+              </View>
+            ))}
+          </View>
+        </Page>
+      )}
 
-            {/* Other Activities Fallback */}
-            {(() => {
-              const otherActivities = activities.filter(
-                (a) =>
-                  !a.tripCountryId ||
-                  !trip.tripCountries?.some((tc) => tc.id === a.tripCountryId),
-              );
-              if (otherActivities.length === 0) return null;
-              const dates = Array.from(new Set(otherActivities.map((a) => a.date))).sort();
-
-              return (
-                <View style={{ marginTop: 20 }}>
-                  <View style={styles.countryHeader} wrap={false}>
-                    <Text style={styles.countryLabel}>Other Locations</Text>
-                    <Text style={styles.itemCount}>
-                      {otherActivities.length}{" "}
-                      {otherActivities.length === 1 ? "Activity" : "Activities"}
-                    </Text>
-                  </View>
-                  {dates.map((date) => (
-                    <View key={date} style={{ marginBottom: 16, marginLeft: 10 }}>
-                      <Text
-                        style={[
-                          styles.text,
-                          { fontWeight: "bold", color: colors.primary, marginBottom: 8 },
-                        ]}
-                      >
-                        {formatDate(date)}
-                      </Text>
-                      {otherActivities
-                        .filter((a) => a.date === date)
-                        .sort((a, b) => a.order - b.order)
-                        .map((act, i) => (
-                          <View key={i} style={{ ...styles.card, marginLeft: 16, ...(i > 0 ? { marginTop: 12 } : {}) }} wrap={false}>
-                            <View style={styles.row}>
-                              <Text style={styles.cardTitle}>{act.name}</Text>
-                              <View style={getStatusBadgeStyle(act.isConfirmed)}>
-                                <Text>{getStatusText(act.isConfirmed)}</Text>
-                              </View>
-                            </View>
-                            <View style={styles.row}>
-                              {act.type && (
-                                <View style={[styles.badge, styles.actBadge]}>
-                                  <Text>{act.type.toUpperCase()}</Text>
-                                </View>
-                              )}
-                              {act.duration && (
-                                <Text style={[styles.text, { color: colors.textSecondary }]}>
-                                  Duration: {act.duration} mins
-                                </Text>
-                              )}
-                            </View>
-                            {act.notes && (
-                              <Text
-                                style={[styles.text, { marginTop: 4, color: colors.textSecondary }]}
-                              >
-                                {act.notes}
-                              </Text>
-                            )}
-                            {((act.cost !== undefined && act.cost > 0) ||
-                              act.link ||
-                              act.image) && (
-                              <View style={{ marginTop: 8 }}>
-                                {act.cost !== undefined && act.cost > 0 && (
-                                  <Text style={styles.priceText}>
-                                    Cost: {act.cost} {act.currency}
-                                  </Text>
-                                )}
-                                {act.link && (
-                                  <Link src={act.link} style={styles.linkText}>
-                                    More Information
-                                  </Link>
-                                )}
-                                {act.image && (
-                                  <View style={styles.imageContainer}>
-                                    <Image src={act.image} style={styles.itemImage} />
-                                  </View>
-                                )}
-                              </View>
-                            )}
-                          </View>
-                        ))}
+      {/* 6. Documents */}
+      {documents.length > 0 && (
+        <Page size="A4" style={styles.page}>
+          <View style={styles.section}>
+            <Text style={styles.sectionHeader}>Travel Documents</Text>
+            <View style={styles.grid}>
+              {documents.map((doc, i) => (
+                <View key={i} style={styles.gridItem}>
+                  <View style={[styles.card, { flexDirection: "row", alignItems: "center" }]}>
+                    <View style={styles.docIcon}>
+                       <Text style={{ fontSize: 12 }}>📄</Text>
                     </View>
-                  ))}
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.cardTitle}>{doc.name}</Text>
+                      <Text style={styles.textSecondary}>{doc.type}</Text>
+                      <Link src={doc.file} style={styles.link}>View Document</Link>
+                    </View>
+                  </View>
                 </View>
-              );
-            })()}
+              ))}
+            </View>
           </View>
         </Page>
       )}
