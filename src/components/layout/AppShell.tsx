@@ -13,12 +13,11 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
-  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { CountrySelector } from "@/components/ui/CountrySelector";
 import { useTheme, useSettings } from "@/hooks/useTrips";
-import { useAuth } from "@/hooks/useAuth";
+import { UserProfile } from "@/components/user_profile/UserProfile";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
@@ -139,7 +138,6 @@ function SidebarContent({
   onClose?: () => void;
 }) {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
 
   const handleNewTrip = () => {
     onNewTrip();
@@ -149,11 +147,6 @@ function SidebarContent({
   const handleImport = () => {
     onImport();
     onClose?.();
-  };
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/auth");
   };
 
   return (
@@ -265,7 +258,7 @@ function SidebarContent({
         <Button
           variant="ghost"
           className={cn(
-            "w-full justify-start transition-all overflow-hidden",
+            "w-full justify-start transition-all overflow-hidden mb-2",
             isCollapsed ? "px-0 justify-center" : "",
           )}
           onClick={toggleTheme}
@@ -283,25 +276,17 @@ function SidebarContent({
           )}
         </Button>
 
-        <Button
-          variant="ghost"
-          className={cn(
-            "w-full justify-start transition-all overflow-hidden text-rose-pastel-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-950/30 dark:hover:text-rose-400",
-            isCollapsed ? "px-0 justify-center" : "",
-          )}
-          onClick={handleSignOut}
-          title={isCollapsed ? "Sign Out" : undefined}
-        >
-          <LogOut size={16} className="shrink-0" />
-          {!isCollapsed && <span className="ml-2 whitespace-nowrap">Sign Out</span>}
-        </Button>
+        {/* User Profile Popover */}
+        <div className="pt-2 border-t border-border/50">
+          <UserProfile isCollapsed={isCollapsed} />
+        </div>
 
         {/* Collapse Toggle Button (Desktop only) */}
         {!onClose && (
           <Button
             variant="ghost"
             size="icon"
-            className="w-full mt-4 flex items-center justify-center text-text-secondary hover:text-text-primary"
+            className="w-full mt-2 flex items-center justify-center text-text-secondary hover:text-text-primary"
             onClick={onToggleCollapse}
           >
             {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
