@@ -42,11 +42,12 @@ export function AccommodationCard({ acc, onEdit, onDelete, onConfirm }: Accommod
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
+        className="w-full max-w-full lg:w-[380px]"
       >
         <Card
           hover
           className={cn([
-            "overflow-hidden w-110 h-full group flex flex-col border-border/60",
+            "overflow-hidden w-full h-full group flex flex-col border-border/60",
             acc.isConfirmed ? "border-sage-500/50" : "",
           ])}
         >

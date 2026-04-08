@@ -7,8 +7,8 @@ import { DestinationCard } from "./DestinationCard";
 import { DestinationForm } from "./DestinationForm";
 import { DestinationSkeleton, DestinationRefetchingIndicator } from "./DestinationLoadingStates";
 import { DestinationErrorState } from "./DestinationErrorState";
+import { getFlagEmoji } from "@/lib/utils";
 import type { Destination, TripCountry } from "@/db/types";
-import { cn } from "@/lib/utils";
 
 interface DestinationsTabProps {
   tripId: number;
@@ -87,20 +87,80 @@ export function DestinationsTab({ tripId, tripCountries }: DestinationsTabProps)
           </Button>
         </div>
       ) : (
-        <div className={cn("flex flex-wrap gap-5 justify-center")}>
-          <AnimatePresence mode="popLayout">
-            {destinations.map((d) => (
-              <DestinationCard
-                key={d.id}
-                dest={d}
-                onEdit={(dest) => {
-                  setEditingDest(dest);
-                  setDestFormOpen(true);
-                }}
-                onDelete={deleteDestination}
-              />
-            ))}
-          </AnimatePresence>
+        <div className="space-y-12">
+          {tripCountries.map((tc) => {
+            const countryDests = destinations.filter((d) => d.tripCountryId === tc.id);
+            if (countryDests.length === 0) return null;
+
+            return (
+              <div key={tc.id} className="space-y-6">
+                <div className="flex items-center gap-3 pb-3 border-b border-border/50">
+                  <span className="text-2xl" role="img" aria-label={tc.countryName}>
+                    {getFlagEmoji(tc.countryCode)}
+                  </span>
+                  <div>
+                    <h3 className="font-bold text-lg text-text-primary">{tc.countryName}</h3>
+                    <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
+                      {countryDests.length} {countryDests.length === 1 ? "Destination" : "Destinations"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap justify-start gap-6">
+                  <AnimatePresence mode="popLayout">
+                    {countryDests.map((d) => (
+                      <DestinationCard
+                        key={d.id}
+                        dest={d}
+                        onEdit={(dest) => {
+                          setEditingDest(dest);
+                          setDestFormOpen(true);
+                        }}
+                        onDelete={deleteDestination}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Fallback for items with no country or different country */}
+          {(() => {
+            const otherDests = destinations.filter(
+              (d) => !d.tripCountryId || !tripCountries.find((tc) => tc.id === d.tripCountryId),
+            );
+            if (otherDests.length === 0) return null;
+            return (
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 pb-3 border-b border-border/50">
+                  <div className="w-8 h-8 rounded-lg bg-surface-3 flex items-center justify-center">
+                    <MapPin size={16} className="text-text-muted" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-text-primary">Other Locations</h3>
+                    <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
+                      {otherDests.length} {otherDests.length === 1 ? "Destination" : "Destinations"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap justify-start gap-6">
+                  <AnimatePresence mode="popLayout">
+                    {otherDests.map((d) => (
+                      <DestinationCard
+                        key={d.id}
+                        dest={d}
+                        onEdit={(dest) => {
+                          setEditingDest(dest);
+                          setDestFormOpen(true);
+                        }}
+                        onDelete={deleteDestination}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 

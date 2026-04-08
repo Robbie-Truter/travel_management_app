@@ -29,11 +29,12 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
+        className="w-full max-w-full xl:w-[650px]"
       >
         <Card
           hover
           className={cn([
-            "overflow-hidden relative transition-all duration-300 flex flex-col h-full",
+            "overflow-hidden relative transition-all duration-300 flex flex-col h-full w-full",
             flight.isConfirmed
               ? "border-sage-400 dark:border-sage-500 bg-sage-50/30 dark:bg-sage-900/10 shadow-sage-100/50"
               : "",

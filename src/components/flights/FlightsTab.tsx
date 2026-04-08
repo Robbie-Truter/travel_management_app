@@ -59,13 +59,14 @@ export function FlightsTab({
   }
 
   return (
-    <div className="relative">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 bg-surface border border-border rounded-xl">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-4">
-          <h2 className="font-bold text-xl text-text-primary tracking-tight">
+          <h2 className="font-bold text-lg flex items-center gap-2">
+            <Plane size={20} className="text-lavender-500" />
             Flights{" "}
-            <span className="text-text-muted font-normal text-sm ml-2">
-              ({flights.length} total)
+            <span className="text-text-muted font-normal text-sm">
+              ({flights.length})
             </span>
           </h2>
           <AnimatePresence>{isRefetching && <FlightRefetchingIndicator />}</AnimatePresence>
@@ -90,20 +91,23 @@ export function FlightsTab({
           </Button>
         </div>
       </div>
+      <p className="text-sm text-text-secondary mb-6">
+        Keep track of your journeys, tickets, and connections.
+      </p>
 
       {flights.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-surface border border-dashed border-border rounded-2xl">
+        <div className="flex flex-col items-center justify-center py-20 bg-surface-2/50 border border-dashed border-border rounded-2xl">
           <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center mb-4">
             <Plane size={32} className="text-slate-300" />
           </div>
           <p className="text-text-secondary font-medium mb-4">No flights added yet</p>
           <Button variant="primary" size="sm" onClick={() => setFormOpen(true)}>
-            <Plus size={14} />
+            <Plus size={14} className="mr-2" />
             Add Your First Flight
           </Button>
         </div>
       ) : (
-        <div className="space-y-12 max-w-4xl mx-auto">
+        <div className="space-y-12">
           {tripCountries.map((tc) => {
             const countryFlights = flights.filter((f) => f.tripCountryId === tc.id);
             if (countryFlights.length === 0) return null;
@@ -121,7 +125,7 @@ export function FlightsTab({
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-wrap justify-start gap-6">
                   <AnimatePresence mode="popLayout">
                     {countryFlights.map((f) => (
                       <FlightCard

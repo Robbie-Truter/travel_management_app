@@ -8,7 +8,13 @@ export function useDocuments(tripId: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: documents, isLoading } = useQuery({
+  const {
+    data: documents,
+    isLoading,
+    isRefetching,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["documents", tripId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -31,6 +37,8 @@ export function useDocuments(tripId: number) {
       })) as Document[];
     },
     enabled: !!user && !!tripId,
+    refetchOnMount: "always",
+    retry: 3,
   });
 
   const addDocumentMutation = useMutation({
@@ -104,6 +112,9 @@ export function useDocuments(tripId: number) {
   return {
     documents: documents ?? [],
     loading: isLoading,
+    isRefetching,
+    isError,
+    refetch,
     addDocument: async (document: Omit<Document, "id" | "createdAt">) =>
       addDocumentMutation.mutateAsync(document),
     updateDocument: async (id: number, updates: Partial<Document>) =>

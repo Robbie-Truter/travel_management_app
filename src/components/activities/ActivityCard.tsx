@@ -45,12 +45,12 @@ export function ActivityCard({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
-        className="h-full"
+        className="h-full w-full max-w-full lg:w-[380px]"
       >
         <Card
           hover
           className={cn([
-            "overflow-hidden h-full w-100 group flex flex-col border-border/60",
+            "overflow-hidden h-full w-full group flex flex-col border-border/60",
             activity.isConfirmed ? "border-sage-500/50" : "",
           ])}
         >

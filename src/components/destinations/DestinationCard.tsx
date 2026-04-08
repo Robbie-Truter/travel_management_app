@@ -20,11 +20,12 @@ export function DestinationCard({ dest, onEdit, onDelete, onAddActivity }: Desti
     <>
       <motion.div
         layout
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
+        className="w-full max-w-full sm:w-[380px]"
       >
-        <Card hover className="w-120 overflow-hidden h-full group flex flex-col border-border/60">
+        <Card hover className="w-full overflow-hidden h-full group flex flex-col border-border/60">
           {/* Header Area - Consistent with TripCountries */}
           <div className="p-4 flex items-center gap-3 border-b border-border bg-surface-2/80 backdrop-blur-xs">
             <div className="w-10 h-10 rounded-lg bg-surface-3 flex items-center justify-center shrink-0 border border-border shadow-sm">

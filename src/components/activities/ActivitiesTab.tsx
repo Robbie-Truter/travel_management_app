@@ -10,7 +10,7 @@ import { ActivityForm } from "./ActivityForm";
 import { ACTIVITY_TAGS } from "./activity-types";
 import { ActivitySkeleton, ActivityRefetchingIndicator } from "./ActivityLoadingStates";
 import { ActivityErrorState } from "./ActivityErrorState";
-import { cn, getFlagEmoji } from "@/lib/utils";
+import { getFlagEmoji } from "@/lib/utils";
 import type { Activity, TripCountry, Destination } from "@/db/types";
 
 interface ActivitiesTabProps {
@@ -84,13 +84,14 @@ export function ActivitiesTab({
   const hasFilters = filterName || filterCity !== "all" || filterType !== "all" || filterDate;
 
   return (
-    <div className="relative">
+    <div className="p-4 bg-surface border border-border rounded-xl">
       <div className="flex flex-col gap-6 mb-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <h2 className="font-bold text-xl text-text-primary whitespace-nowrap">
+            <h2 className="font-bold text-lg flex items-center gap-2">
+              <Compass size={20} className="text-lavender-500" />
               Activities{" "}
-              <span className="text-text-muted font-normal text-sm ml-2">
+              <span className="text-text-muted font-normal text-sm">
                 ({filteredActivities.length} of {activities.length})
               </span>
             </h2>
@@ -175,9 +176,12 @@ export function ActivitiesTab({
           </div>
         </div>
       </div>
+      <p className="text-sm text-text-secondary mb-6 -mt-4">
+        Explore experiences, tours, and sights at your destinations.
+      </p>
 
       {filteredActivities.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-surface border border-dashed border-border rounded-2xl">
+        <div className="flex flex-col items-center justify-center py-20 bg-surface-2/50 border border-dashed border-border rounded-2xl">
           <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center mb-4">
             <Compass size={32} className="text-slate-300" />
           </div>
@@ -196,7 +200,7 @@ export function ActivitiesTab({
           </Button>
         </div>
       ) : (
-        <div className="space-y-12 max-w-4xl mx-auto">
+        <div className="space-y-12">
           {tripCountries.map((tc) => {
             const countryActivities = filteredActivities.filter((a) => a.tripCountryId === tc.id);
             if (countryActivities.length === 0) return null;
@@ -215,26 +219,20 @@ export function ActivitiesTab({
                     </p>
                   </div>
                 </div>
-                <div
-                  className={cn(
-                    "flex flex-wrap gap-2 ml-10",
-                    countryActivities.length > 1 ? "justify-start" : "justify-center",
-                  )}
-                >
+                <div className="flex flex-wrap justify-start gap-6">
                   <AnimatePresence mode="popLayout">
                     {countryActivities.map((a) => (
-                      <div key={a.id} className="w-full md:w-[calc(50%-12px)] flex">
-                        <ActivityCard
-                          activity={a}
-                          destinationName={destinations.find((d) => d.id === a.destinationId)?.name}
-                          onEdit={(act: Activity) => {
-                            setEditingAct(act);
-                            setFormOpen(true);
-                          }}
-                          onDelete={deleteActivity}
-                          onConfirm={(id) => updateActivity(id, { isConfirmed: true })}
-                        />
-                      </div>
+                      <ActivityCard
+                        key={a.id}
+                        activity={a}
+                        destinationName={destinations.find((d) => d.id === a.destinationId)?.name}
+                        onEdit={(act: Activity) => {
+                          setEditingAct(act);
+                          setFormOpen(true);
+                        }}
+                        onDelete={deleteActivity}
+                        onConfirm={(id) => updateActivity(id, { isConfirmed: true })}
+                      />
                     ))}
                   </AnimatePresence>
                 </div>
@@ -262,21 +260,20 @@ export function ActivitiesTab({
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-wrap justify-center gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
                   <AnimatePresence mode="popLayout">
                     {otherActivities.map((a) => (
-                      <div key={a.id} className="w-full md:w-[calc(50%-12px)] flex">
-                        <ActivityCard
-                          activity={a}
-                          destinationName={destinations.find((d) => d.id === a.destinationId)?.name}
-                          onEdit={(act: Activity) => {
-                            setEditingAct(act);
-                            setFormOpen(true);
-                          }}
-                          onDelete={deleteActivity}
-                          onConfirm={(id) => updateActivity(id, { isConfirmed: true })}
-                        />
-                      </div>
+                      <ActivityCard
+                        key={a.id}
+                        activity={a}
+                        destinationName={destinations.find((d) => d.id === a.destinationId)?.name}
+                        onEdit={(act: Activity) => {
+                          setEditingAct(act);
+                          setFormOpen(true);
+                        }}
+                        onDelete={deleteActivity}
+                        onConfirm={(id) => updateActivity(id, { isConfirmed: true })}
+                      />
                     ))}
                   </AnimatePresence>
                 </div>

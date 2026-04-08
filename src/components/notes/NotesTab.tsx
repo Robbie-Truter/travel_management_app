@@ -58,47 +58,86 @@ export function NotesTab({ tripId }: NotesTabProps) {
   const tips = TRAVEL_TIPS.slice(0, 4);
 
   return (
-    <div className="space-y-6">
-      {/* Notes editor */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-text-primary">Trip Notes</h3>
-          <div className="flex items-center gap-2">
-            {saved && <span className="text-xs text-lavender-500">Auto-saved</span>}
-            {note?.updatedAt && (
-              <span className="text-xs text-text-muted">
-                Last saved: {formatDateTime(note.updatedAt)}
+    <div className="p-4 bg-surface border border-border rounded-xl">
+      <div className="space-y-8">
+        {/* Notes editor area */}
+        <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm shadow-lavender-500/5 transition-all duration-300 focus-within:shadow-md focus-within:shadow-lavender-500/10 focus-within:border-lavender-300">
+          <div className="px-5 py-4 border-b border-border bg-surface-2/50 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-lavender-500 flex items-center justify-center text-white shadow-sm">
+                <Lightbulb size={16} />
+              </div>
+              <h3 className="font-bold text-text-primary tracking-tight">Trip Notebook</h3>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="hidden sm:flex flex-col items-end">
+                {saved && (
+                  <span className="text-[10px] font-black text-lavender-500 uppercase tracking-widest animate-pulse">
+                    Changes Saved
+                  </span>
+                )}
+                {note?.updatedAt && (
+                  <span className="text-[10px] text-text-muted font-medium">
+                    Last sync: {formatDateTime(note.updatedAt)}
+                  </span>
+                )}
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleManualSave}
+                disabled={saving}
+                className="bg-surface shadow-xs border-border hover:border-lavender-300 h-8"
+              >
+                <Save size={14} className={saving ? "animate-spin" : ""} />
+                {saving ? "Syncing..." : "Sync Now"}
+              </Button>
+            </div>
+          </div>
+
+          <div className="relative group">
+            <textarea
+              value={content}
+              onChange={(e) => handleChange(e.target.value)}
+              placeholder="Capture your thoughts, packing lists, and hidden gems here..."
+              className="w-full min-h-120 p-8 text-base text-text-primary placeholder:text-text-muted/50 resize-none focus:outline-none bg-linear-to-b from-surface to-surface-2/30 selection:bg-lavender-100 dark:selection:bg-lavender-900/40 leading-relaxed font-medium transition-colors"
+            />
+            <div className="absolute bottom-4 right-6 pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">
+                {content.length} characters
               </span>
-            )}
-            <Button variant="secondary" size="sm" onClick={handleManualSave} disabled={saving}>
-              <Save size={14} />
-              {saving ? "Saving..." : "Save"}
-            </Button>
+            </div>
           </div>
         </div>
-        <textarea
-          value={content}
-          onChange={(e) => handleChange(e.target.value)}
-          placeholder="Write your trip notes, packing list, reminders, or anything else here..."
-          className="w-full min-h-75 rounded-xl bg-surface px-4 py-3 text-sm text-text-primary placeholder:text-text-muted resize-none focus:outline-none focus:ring-2 focus:ring-lavender-400 focus:border-transparent transition-colors"
-        />
-      </div>
 
-      {/* AI Tips */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Lightbulb size={16} className="text-amber-pastel-400" />
-          <h3 className="font-semibold text-text-primary">Travel Tips</h3>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {tips.map((tip, i) => (
-            <div
-              key={i}
-              className="rounded-xl bg-amber-pastel-50 dark:bg-amber-pastel-900/10 border border-amber-pastel-200 dark:border-amber-pastel-800/30 px-4 py-3 text-sm text-text-secondary"
-            >
-              {tip}
-            </div>
-          ))}
+        {/* Travel Tips Grid */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 px-1">
+            <div className="w-1.5 h-6 bg-amber-pastel-400 rounded-full" />
+            <h3 className="font-bold text-lg text-text-primary tracking-tight">
+              Traveler's Wisdom
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {tips.map((tip, i) => (
+              <div
+                key={i}
+                className="group relative rounded-2xl bg-surface border border-border p-5 transition-all duration-300 hover:border-amber-pastel-300 hover:shadow-lg hover:shadow-amber-500/5 hover:-translate-y-1"
+              >
+                <div className="absolute -top-2 -left-2 w-8 h-8 rounded-xl bg-amber-pastel-50 dark:bg-amber-pastel-900/30 border border-amber-pastel-200 dark:border-amber-pastel-800/30 flex items-center justify-center text-xs shadow-sm z-10">
+                  {tip.split(" ")[0]}
+                </div>
+                <p className="text-sm text-text-secondary leading-relaxed pt-2">
+                  {tip.split(" ").slice(1).join(" ")}
+                </p>
+                <div className="absolute bottom-2 right-4 text-[10px] font-black text-amber-pastel-600/20 uppercase tracking-widest group-hover:text-amber-pastel-500/40 transition-colors">
+                  Tip #{i + 1}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

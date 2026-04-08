@@ -11,7 +11,7 @@ import {
   AccommodationRefetchingIndicator,
 } from "./AccommodationLoadingStates";
 import { AccommodationErrorState } from "./AccommodationErrorState";
-import { cn, getFlagEmoji } from "@/lib/utils";
+import { getFlagEmoji } from "@/lib/utils";
 import type { Accommodation, TripCountry } from "@/db/types";
 
 interface AccommodationsTabProps {
@@ -62,13 +62,14 @@ export function AccommodationsTab({
   }
 
   return (
-    <div className="relative">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 bg-surface border border-border rounded-xl">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-4">
-          <h2 className="font-bold text-xl text-text-primary tracking-tight">
+          <h2 className="font-bold text-lg flex items-center gap-2">
+            <Hotel size={20} className="text-lavender-500" />
             Accommodations{" "}
-            <span className="text-text-muted font-normal text-sm ml-2">
-              ({accommodations.length} total)
+            <span className="text-text-muted font-normal text-sm">
+              ({accommodations.length})
             </span>
           </h2>
           <AnimatePresence>{isRefetching && <AccommodationRefetchingIndicator />}</AnimatePresence>
@@ -93,20 +94,23 @@ export function AccommodationsTab({
           </Button>
         </div>
       </div>
+      <p className="text-sm text-text-secondary mb-6">
+        Manage your hotels, hostels, and other stays.
+      </p>
 
       {accommodations.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-surface border border-dashed border-border rounded-2xl">
+        <div className="flex flex-col items-center justify-center py-20 bg-surface-2/50 border border-dashed border-border rounded-2xl">
           <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center mb-4">
             <Hotel size={32} className="text-slate-300" />
           </div>
           <p className="text-text-secondary font-medium mb-4">No accommodations added yet</p>
           <Button variant="primary" size="sm" onClick={() => setFormOpen(true)}>
-            <Plus size={14} />
+            <Plus size={14} className="mr-2" />
             Add Your First Stay
           </Button>
         </div>
       ) : (
-        <div className="space-y-12 max-w-4xl mx-auto">
+        <div className="space-y-12">
           {tripCountries.map((tc) => {
             const countryAccs = accommodations.filter((a) => a.tripCountryId === tc.id);
             if (countryAccs.length === 0) return null;
@@ -124,25 +128,19 @@ export function AccommodationsTab({
                     </p>
                   </div>
                 </div>
-                <div
-                  className={cn(
-                    "flex flex-wrap gap-5",
-                    countryAccs.length > 1 ? "justify-start" : "justify-center",
-                  )}
-                >
+                <div className="flex flex-wrap justify-start gap-6">
                   <AnimatePresence mode="popLayout">
                     {countryAccs.map((a) => (
-                      <div key={a.id} className="w-full md:w-[calc(50%-12px)] flex">
-                        <AccommodationCard
-                          acc={a}
-                          onEdit={(ac: Accommodation) => {
-                            setEditingAcc(ac);
-                            setFormOpen(true);
-                          }}
-                          onDelete={deleteAccommodation}
-                          onConfirm={confirmAccommodation}
-                        />
-                      </div>
+                      <AccommodationCard
+                        key={a.id}
+                        acc={a}
+                        onEdit={(ac: Accommodation) => {
+                          setEditingAcc(ac);
+                          setFormOpen(true);
+                        }}
+                        onDelete={deleteAccommodation}
+                        onConfirm={confirmAccommodation}
+                      />
                     ))}
                   </AnimatePresence>
                 </div>
@@ -169,20 +167,19 @@ export function AccommodationsTab({
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-wrap justify-center gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
                   <AnimatePresence mode="popLayout">
                     {otherAccs.map((a) => (
-                      <div key={a.id} className="w-full md:w-[calc(50%-12px)] flex">
-                        <AccommodationCard
-                          acc={a}
-                          onEdit={(ac: Accommodation) => {
-                            setEditingAcc(ac);
-                            setFormOpen(true);
-                          }}
-                          onDelete={deleteAccommodation}
-                          onConfirm={confirmAccommodation}
-                        />
-                      </div>
+                      <AccommodationCard
+                        key={a.id}
+                        acc={a}
+                        onEdit={(ac: Accommodation) => {
+                          setEditingAcc(ac);
+                          setFormOpen(true);
+                        }}
+                        onDelete={deleteAccommodation}
+                        onConfirm={confirmAccommodation}
+                      />
                     ))}
                   </AnimatePresence>
                 </div>

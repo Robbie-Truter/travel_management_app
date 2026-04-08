@@ -43,17 +43,14 @@ export function DocumentCard({ document, onDelete, onEdit }: DocumentsCardProps)
       >
         <Card
           hover
-          className="overflow-hidden group"
+          className="w-120 overflow-hidden group flex flex-col border-border/60 transition-all duration-300 min-h-[500px]"
           onClick={async () => {
             if (document.file) {
               try {
-                // To display a data URL correctly in a new tab without being blocked or blank
                 const res = await fetch(document.file);
                 const blob = await res.blob();
                 const objectUrl = URL.createObjectURL(blob);
                 window.open(objectUrl, "_blank");
-                // Note: Object URL memory won't be explicitly revoked here since it is in a new tab,
-                // but the browser manages the lifecycle when that tab closes.
               } catch (e) {
                 console.error("Failed to open document", e);
                 window.open(document.file, "_blank"); // Fallback
@@ -61,95 +58,115 @@ export function DocumentCard({ document, onDelete, onEdit }: DocumentsCardProps)
             }
           }}
         >
-          {/* File/Image Preview */}
-          <div className="relative h-64 sm:h-72 bg-linear-to-br from-slate-100 to-sky-pastel-100 dark:from-slate-900/30 dark:to-sky-pastel-900/30 overflow-hidden flex items-center justify-center">
-            {document.file.startsWith("data:image/") ? (
-              <img
-                src={document.file}
-                alt={document.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-            ) : document.file.startsWith("data:application/pdf") ? (
-              <div className="w-full h-full flex items-center justify-center p-4">
-                <Document
-                  file={document.file}
-                  className="flex items-center justify-center transition-transform duration-500 group-hover:scale-105"
-                >
-                  <Page
-                    pageNumber={1}
-                    renderTextLayer={false}
-                    renderAnnotationLayer={false}
-                    height={240}
-                    className="shadow-lg bg-white rounded-sm overflow-hidden"
-                  />
-                </Document>
-              </div>
-            ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-2 transition-transform duration-500 group-hover:scale-110">
-                <FileText size={48} className="text-slate-300" />
-                <span className="text-xs font-medium uppercase tracking-wider">
-                  {document.type?.split("/")[1] || "FILE"}
+          {/* Header Area - Consistent with other cards */}
+          <div className="p-4 flex items-center gap-3 border-b border-border bg-surface-2/80 backdrop-blur-xs">
+            <div className="w-10 h-10 rounded-lg bg-surface-3 flex items-center justify-center shrink-0 border border-border shadow-sm">
+              <FileText size={18} className="text-lavender-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="font-bold text-lg text-text-primary truncate">{document.name}</h2>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <Calendar size={10} className="text-text-muted" />
+                <span className="text-[10px] font-bold text-text-muted uppercase tracking-tight">
+                  {formatDate(document.createdAt)}
                 </span>
               </div>
-            )}
-
-            {/* Overlay actions */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 pointer-events-none" />
-            <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+            </div>
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <Button
-                variant="secondary"
+                variant="ghost"
                 size="icon-sm"
-                className="bg-white/90 border-0 shadow-sm text-text-secondary hover:text-text-primary"
                 onClick={(e) => {
                   e.stopPropagation();
                   onEdit?.(document);
                 }}
-                title="Edit document"
               >
-                <Pencil size={12} />
+                <Pencil size={14} />
               </Button>
               <Button
-                variant="secondary"
+                variant="ghost"
                 size="icon-sm"
-                className="bg-white/90 border-0 shadow-sm text-rose-pastel-500 hover:text-rose-pastel-600"
+                className="text-rose-pastel-400 hover:text-rose-pastel-500"
                 onClick={(e) => {
                   e.stopPropagation();
                   setDeleteOpen(true);
                 }}
-                title="Delete document"
               >
-                <Trash2 size={12} />
+                <Trash2 size={14} />
               </Button>
-            </div>
-
-            {/* Type badge */}
-            <div className="absolute bottom-2 left-2">
-              <Badge className="bg-white/90 text-lavender-700 shadow-sm capitalize mb-1 flex items-center gap-1.5">
-                {(() => {
-                  const type = DOCUMENT_TYPES.find((t) => t.value === document.type);
-                  if (type) {
-                    return (
-                      <>
-                        <type.icon size={12} />
-                        {type.label}
-                      </>
-                    );
-                  }
-                  return document.type?.split("/")[1] || document.type || "File";
-                })()}
-              </Badge>
             </div>
           </div>
 
-          <CardContent className="pt-4">
-            <h3 className="font-semibold text-text-primary truncate">{document.name}</h3>
-            <div className="flex items-center gap-1 mt-1 text-xs text-text-muted">
-              <Calendar size={12} />
-              <span>{formatDate(document.createdAt)}</span>
+          <CardContent className="p-0 flex flex-col h-full bg-surface overflow-hidden">
+            {/* Visual Section - Fixed Height Preview */}
+            <div className="relative aspect-video w-full overflow-hidden border-b border-border/40 bg-linear-to-br from-slate-50 to-sky-pastel-50 dark:from-slate-900/20 dark:to-sky-pastel-900/20 flex items-center justify-center">
+              {document.file.startsWith("data:image/") ? (
+                <img
+                  src={document.file}
+                  alt={document.name}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              ) : document.file.startsWith("data:application/pdf") ? (
+                <div className="w-full h-full flex items-center justify-center p-4">
+                  <Document
+                    file={document.file}
+                    className="flex items-center justify-center transition-transform duration-500 group-hover:scale-105"
+                  >
+                    <Page
+                      pageNumber={1}
+                      renderTextLayer={false}
+                      renderAnnotationLayer={false}
+                      height={200}
+                      className="shadow-xl bg-white rounded-sm overflow-hidden"
+                    />
+                  </Document>
+                </div>
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-2 transition-transform duration-500 group-hover:scale-110">
+                  <FileText size={48} className="text-slate-300" strokeWidth={1} />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">
+                    {document.type?.split("/")[1] || "FILE"}
+                  </span>
+                </div>
+              )}
+              {/* Optional Gradient Overlay */}
+              <div className="absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-            {document.description && (
-              <p className="mt-2 text-xs text-text-muted line-clamp-2">{document.description}</p>
-            )}
+
+            {/* Content Area */}
+            <div className="p-5 flex-1 flex flex-col min-h-[120px]">
+              <div className="mb-4 flex flex-wrap gap-2">
+                <Badge className="bg-lavender-50 text-lavender-700 dark:bg-lavender-900/40 dark:text-lavender-300 border-lavender-100/50 shadow-none text-[10px] py-0.5 px-2 font-black uppercase flex items-center gap-1.5">
+                  {(() => {
+                    const type = DOCUMENT_TYPES.find((t) => t.value === document.type);
+                    if (type) {
+                      return (
+                        <>
+                          <type.icon size={10} />
+                          {type.label}
+                        </>
+                      );
+                    }
+                    return document.type?.split("/")[1] || document.type || "File";
+                  })()}
+                </Badge>
+              </div>
+
+              {document.description ? (
+                <div className="relative">
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-text-muted mb-2 block">
+                    Description
+                  </span>
+                  <p className="text-sm text-text-secondary leading-relaxed line-clamp-4 italic">
+                    "{document.description}"
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full py-2 opacity-40 italic">
+                  <p className="text-xs text-text-muted">No description provided</p>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </motion.div>

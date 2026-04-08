@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
-import { fileToBase64 } from "@/lib/utils";
+import { fileToBase64, cn } from "@/lib/utils";
 import { parseISO, format } from "date-fns";
 import type { Trip, TripStatus } from "@/db/types";
 
@@ -101,31 +101,47 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
         <div>
           <label className="text-sm font-medium text-text-primary block mb-1.5">Cover Image</label>
           <div
-            className="relative h-32 rounded-xl border-2 border-dashed border-border overflow-hidden cursor-pointer hover:border-lavender-400 transition-colors group"
+            className={cn(
+              "relative min-h-32 rounded-2xl border-2 border-dashed overflow-hidden cursor-pointer transition-all duration-300 group",
+              coverImage
+                ? "border-lavender-400 bg-lavender-50/10"
+                : "border-border hover:border-lavender-400 bg-surface-2/30",
+            )}
             onClick={() => fileInputRef.current?.click()}
           >
             {coverImage ? (
-              <>
-                <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                  <span className="opacity-0 group-hover:opacity-100 text-white text-sm font-medium">
-                    Change Image
+              <div className="relative aspect-video sm:aspect-auto sm:h-40 w-full overflow-hidden">
+                <img
+                  src={coverImage}
+                  alt="Cover"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                  <span className="opacity-0 group-hover:opacity-100 text-white text-xs font-black uppercase tracking-widest bg-black/50 px-4 py-2 rounded-full backdrop-blur-md border border-white/20">
+                    Change Cover
                   </span>
                 </div>
                 <button
-                  className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-rose-500 transition-colors z-10 backdrop-blur-md"
                   onClick={(e) => {
                     e.stopPropagation();
                     setCoverImage(undefined);
                   }}
                 >
-                  <X size={12} />
+                  <X size={14} />
                 </button>
-              </>
+              </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full gap-2 text-text-muted">
-                <Image size={24} />
-                <span className="text-sm">Click to upload a cover image</span>
+              <div className="flex flex-col items-center justify-center p-8 gap-3 text-text-muted">
+                <div className="w-12 h-12 rounded-2xl bg-surface flex items-center justify-center shadow-sm border border-border group-hover:border-lavender-200 transition-colors">
+                  <Image size={24} className="text-lavender-400" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-bold text-text-primary">Click to upload cover image</p>
+                  <p className="text-[10px] uppercase tracking-widest font-black opacity-60 mt-0.5">
+                    Recommended: 1200 x 600
+                  </p>
+                </div>
               </div>
             )}
           </div>
