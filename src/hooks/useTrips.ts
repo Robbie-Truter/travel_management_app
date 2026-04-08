@@ -51,7 +51,6 @@ export function useTrips() {
       );
     },
     enabled: !!user,
-    refetchOnMount: "always",
   });
 
   const addTripMutation = useMutation({
@@ -200,15 +199,15 @@ export function useTrip(id: number | undefined) {
     refetch,
   } = useQuery({
     queryKey: ["trip", id],
-    queryFn: async (): Promise<Trip | undefined> => {
-      if (!id) return undefined;
+    queryFn: async (): Promise<Trip | null> => {
+      if (!id) return null;
       const { data, error } = await supabase
         .from("trips")
         .select("*, trip_countries(*)")
         .eq("id", id)
         .single();
       if (error) throw error;
-      if (!data) return undefined;
+      if (!data) return null;
 
       const tripRow = (data as unknown) as TripRow;
       return {

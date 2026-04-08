@@ -46,7 +46,6 @@ export function useAccommodations(tripId: number) {
     },
     enabled: !!user && !!tripId,
     retry: 3,
-    refetchOnMount: "always",
   });
 
   const addAccommodationMutation = useMutation({

@@ -42,7 +42,6 @@ export function useActivities(tripId: number) {
     },
     enabled: !!user && !!tripId,
     retry: 3,
-    refetchOnMount: "always",
   });
 
   const addActivityMutation = useMutation({

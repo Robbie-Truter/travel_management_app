@@ -38,7 +38,6 @@ export function useTripCountries(tripId: number) {
     },
     enabled: !!user && !!tripId,
     retry: 3,
-    refetchOnMount: "always",
   });
 
   const addTripCountryMutation = useMutation({

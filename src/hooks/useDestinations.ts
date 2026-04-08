@@ -42,7 +42,6 @@ export function useDestinations(tripId: number) {
     },
     enabled: !!user && !!tripId,
     retry: 3,
-    refetchOnMount: "always",
   });
 
   const addDestinationMutation = useMutation({

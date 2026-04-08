@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Lightbulb, Save } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { Lightbulb, RefreshCcw } from "lucide-react";
 import { useNotes } from "@/hooks/useNotes";
 import { formatDateTime } from "@/lib/utils";
 
@@ -24,10 +23,9 @@ interface NotesTabProps {
 }
 
 export function NotesTab({ tripId }: NotesTabProps) {
-  const { note, saveNote } = useNotes(tripId);
+  const { note, saveNote, saving } = useNotes(tripId);
 
   const [content, setContent] = useState("");
-  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -48,13 +46,6 @@ export function NotesTab({ tripId }: NotesTabProps) {
     }, 1500);
   };
 
-  const handleManualSave = async () => {
-    setSaving(true);
-    await saveNote(content);
-    setSaving(false);
-    setSaved(true);
-  };
-
   const tips = TRAVEL_TIPS.slice(0, 4);
 
   return (
@@ -70,29 +61,28 @@ export function NotesTab({ tripId }: NotesTabProps) {
               <h3 className="font-bold text-text-primary tracking-tight">Trip Notebook</h3>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex flex-col items-end">
-                {saved && (
-                  <span className="text-[10px] font-black text-lavender-500 uppercase tracking-widest animate-pulse">
-                    Changes Saved
-                  </span>
-                )}
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col items-end">
+                <div className="flex items-center gap-1.5 h-4">
+                  {saving ? (
+                    <div className="flex items-center gap-1.5 transition-opacity">
+                      <RefreshCcw size={10} className="animate-spin text-lavender-500" />
+                      <span className="text-[10px] font-bold text-lavender-500 uppercase tracking-widest">
+                        Saving...
+                      </span>
+                    </div>
+                  ) : saved ? (
+                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest animate-in fade-in slide-in-from-bottom-1">
+                      Changes Saved
+                    </span>
+                  ) : null}
+                </div>
                 {note?.updatedAt && (
-                  <span className="text-[10px] text-text-muted font-medium">
+                  <span className="text-[10px] text-text-muted font-medium mt-0.5">
                     Last sync: {formatDateTime(note.updatedAt)}
                   </span>
                 )}
               </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleManualSave}
-                disabled={saving}
-                className="bg-surface shadow-xs border-border hover:border-lavender-300 h-8"
-              >
-                <Save size={14} className={saving ? "animate-spin" : ""} />
-                {saving ? "Syncing..." : "Sync Now"}
-              </Button>
             </div>
           </div>
 

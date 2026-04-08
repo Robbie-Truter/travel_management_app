@@ -40,7 +40,6 @@ export function useFlights(tripId?: number) {
     },
     enabled: !!user && (tripId === undefined || !!tripId),
     retry: 3,
-    refetchOnMount: "always",
   });
 
   const addFlightMutation = useMutation({

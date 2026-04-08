@@ -72,8 +72,8 @@ export function UserProfile({ isCollapsed = false }: UserProfileProps) {
               <Popover.Content
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
-                side={isCollapsed ? "right" : "top"}
-                align={isCollapsed ? "center" : "start"}
+                side="right"
+                align="start"
                 sideOffset={12}
                 asChild
               >

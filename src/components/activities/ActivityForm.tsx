@@ -1,18 +1,11 @@
 import { useState, useRef } from "react";
-import {
-  Image as ImageIcon,
-  X,
-  MapPin,
-} from "lucide-react";
+import { Image as ImageIcon, X, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Input, Textarea } from "@/components/ui/Input";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
-import {
-  fileToBase64,
-  getFlagEmoji,
-} from "@/lib/utils";
+import { fileToBase64, getFlagEmoji } from "@/lib/utils";
 import type { Activity, Currency, TripCountry, Destination } from "@/db/types";
 import { ACTIVITY_TAGS } from "./activity-types";
 
@@ -77,7 +70,27 @@ export function ActivityForm({
     const e: Record<string, string> = {};
     if (!form.name.trim()) e.name = "Required";
     if (!form.date) e.date = "Required";
+    if (!form.destinationId) e.destinationId = "Required";
     return e;
+  };
+
+  const handleClose = () => {
+    setForm({
+      name: initial?.name ?? "",
+      tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
+      destinationId: initial?.destinationId ?? undefined,
+      type: initial?.type ?? "other",
+      date: initial?.date ?? tripStartDate,
+      duration: initial?.duration?.toString() ?? "",
+      cost: initial?.cost?.toString() ?? "",
+      currency: initial?.currency ?? "USD",
+      link: initial?.link ?? "",
+      notes: initial?.notes ?? "",
+      image: initial?.image ?? "",
+      isConfirmed: initial?.isConfirmed ?? false,
+    });
+    setErrors({});
+    onClose();
   };
 
   const handleSave = async () => {
@@ -118,12 +131,12 @@ export function ActivityForm({
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       title={initial ? "Edit Activity" : "Add Activity"}
       size="md"
       footer={
         <>
-          <Button variant="secondary" onClick={onClose} disabled={saving}>
+          <Button variant="secondary" onClick={handleClose} disabled={saving}>
             Cancel
           </Button>
           <Button variant="primary" onClick={handleSave} disabled={saving}>
@@ -209,6 +222,7 @@ export function ActivityForm({
             options={destinationOptions}
             onChange={(val: string) => set("destinationId", Number(val))}
             disabled={!form.tripCountryId}
+            error={errors.destinationId}
           />
         </div>
 

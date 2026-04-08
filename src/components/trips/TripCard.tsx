@@ -47,10 +47,11 @@ export function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.2 }}
+        className="w-full xl:w-120"
       >
         <Card
           hover
-          className="w-120 overflow-hidden group flex flex-col border-border/60 transition-all duration-300 min-h-[400px]"
+          className="w-full overflow-hidden group flex flex-col border-border/60 transition-all duration-300 h-[400px]"
           onClick={() => navigate(`/trips/${trip.id}`)}
         >
           {/* Cover Image Area */}

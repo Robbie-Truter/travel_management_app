@@ -137,7 +137,6 @@ export function FlightForm({
 
     form.segments.forEach((seg, i) => {
       if (!seg.airline.trim()) e[`seg-air-${i}`] = "Required";
-      if (!seg.flightNumber.trim()) e[`seg-num-${i}`] = "Required";
       if (!seg.departureAirport.trim()) e[`seg-dep-ap-${i}`] = "Required";
       if (!seg.arrivalAirport.trim()) e[`seg-arr-ap-${i}`] = "Required";
       if (!seg.departureTime) e[`seg-dep-t-${i}`] = "Required";
@@ -159,9 +158,36 @@ export function FlightForm({
       }
     });
 
+    if (!form.tripCountryId) e.tripCountryId = "Country is Required";
     if (!form.price || isNaN(Number(form.price))) e.price = "Valid price required";
 
     return e;
+  };
+
+  const handleClose = () => {
+    setForm({
+      segments: initial?.segments?.map((s) => ({
+        ...s,
+      })) ?? [
+        {
+          airline: lastFlight?.segments[0]?.airline ?? "",
+          flightNumber: lastFlight?.segments[0]?.flightNumber ?? "",
+          departureAirport: "",
+          arrivalAirport: "",
+          departureTime: tripStartDate,
+          arrivalTime: tripStartDate,
+        },
+      ],
+      description: initial?.description ?? "",
+      tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
+      price: initial?.price?.toString() ?? "",
+      currency: initial?.currency ?? (lastFlight?.currency || "USD"),
+      bookingLink: initial?.bookingLink ?? "",
+      notes: initial?.notes ?? "",
+      isConfirmed: initial?.isConfirmed ?? false,
+    });
+    setErrors({});
+    onClose();
   };
 
   const handleSave = async () => {
@@ -189,12 +215,12 @@ export function FlightForm({
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       title={initial ? "Edit Flight" : "Add Flight"}
       size="lg"
       footer={
         <>
-          <Button variant="secondary" onClick={onClose} disabled={saving}>
+          <Button variant="secondary" onClick={handleClose} disabled={saving}>
             Cancel
           </Button>
           <Button variant="primary" onClick={handleSave} disabled={saving}>
@@ -213,8 +239,9 @@ export function FlightForm({
         />
         <SearchableSelect
           id="fl-country"
-          label="Country"
-          placeholder="Select country..."
+          label="Country To"
+          searchHint="End destination country"
+          placeholder="Select country.."
           value={form.tripCountryId?.toString() || ""}
           options={tripCountries.map((tc) => ({
             value: tc.id!.toString(),
@@ -223,6 +250,7 @@ export function FlightForm({
           }))}
           onChange={(val: string) => set("tripCountryId", Number(val))}
           includeSearch={false}
+          error={errors.tripCountryId}
         />
 
         {form.segments.map((seg, index) => (
@@ -283,7 +311,6 @@ export function FlightForm({
                 placeholder="e.g. EK201"
                 value={seg.flightNumber}
                 onChange={(e) => updateSegment(index, "flightNumber", e.target.value)}
-                error={errors[`seg-num-${index}`]}
               />
             </div>
 

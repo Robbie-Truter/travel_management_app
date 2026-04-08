@@ -53,49 +53,65 @@ export function DashboardPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div className="flex flex-col">
+      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 mb-12">
+        <div className="space-y-1 relative">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-text-primary tracking-tight">My Trips</h1>
-            <AnimatePresence>{isRefetching && <RefetchingIndicator />}</AnimatePresence>
+            <h1 className="text-3xl font-bold text-text-primary tracking-tight md:text-4xl">
+              My Trips
+            </h1>
+            <AnimatePresence>
+              {isRefetching && (
+                <div className="absolute -right-8 top-1">
+                  <RefetchingIndicator />
+                </div>
+              )}
+            </AnimatePresence>
           </div>
-          <p className="text-sm text-text-secondary mt-0.5">
-            {trips.length} trip{trips.length !== 1 ? "s" : ""} planned
+          <p className="text-base text-text-secondary font-medium">
+            Discover and manage your{" "}
+            <span className="text-lavender-500 font-bold">{trips.length}</span> active journey
+            {trips.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
-          <div className="relative w-full sm:w-auto">
+
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full xl:w-auto">
+          {/* Search Bar - More prominent */}
+          <div className="relative flex-1 md:w-80 group">
             <Search
-              size={15}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
+              size={18}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-lavender-500 transition-colors"
             />
             <input
               type="text"
-              placeholder="Search trips..."
+              placeholder="Search your adventures..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-9 pl-9 pr-4 rounded-lg border border-border bg-surface text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-lavender-400 focus:border-transparent w-full sm:w-64 shadow-xs"
+              className="h-11 w-full pl-11 pr-4 rounded-xl border border-border bg-surface/50 backdrop-blur-sm text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-lavender-400 focus:border-transparent transition-all shadow-sm hover:border-border/80"
             />
           </div>
-          <Button
-            variant="secondary"
-            className="w-full sm:w-auto"
-            onClick={() => importRef.current?.click()}
-          >
-            <Upload size={15} />
-            Import
-          </Button>
-          <Button
-            variant="primary"
-            className="w-full sm:w-auto"
-            onClick={() => {
-              setEditingTrip(undefined);
-              setFormOpen(true);
-            }}
-          >
-            <Plus size={15} />
-            New Trip
-          </Button>
+
+          {/* Action Group */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              className="flex-1 md:flex-none h-11 px-6 rounded-xl border-border bg-surface/50 backdrop-blur-sm"
+              onClick={() => importRef.current?.click()}
+            >
+              <Upload size={16} className="text-text-secondary" />
+              <span>Import</span>
+            </Button>
+            <Button
+              variant="primary"
+              className="flex-1 md:flex-none h-11 px-8 rounded-xl"
+              onClick={() => {
+                setEditingTrip(undefined);
+                setFormOpen(true);
+              }}
+            >
+              <Plus size={18} />
+              <span className="font-bold">New Trip</span>
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -145,7 +161,7 @@ export function DashboardPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+            className="flex gap-2 flex-wrap"
           >
             <AnimatePresence mode="popLayout">
               {filtered.map((trip) => (

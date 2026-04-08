@@ -77,8 +77,30 @@ export function AccommodationForm({
     if (!form.destinationId) e.destinationId = "Required";
     if (!form.checkIn) e.checkIn = "Required";
     if (!form.checkOut) e.checkOut = "Required";
-    if (!form.price || isNaN(Number(form.price))) e.price = "Valid price required";
     return e;
+  };
+
+  const handleClose = () => {
+    setForm({
+      name: initial?.name ?? "",
+      tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
+      destinationId: initial?.destinationId ?? undefined,
+      type: initial?.type ?? "hotel",
+      platform: initial?.platform ?? "booking",
+      location: initial?.location ?? "",
+      checkIn: initial?.checkIn ?? tripStartDate,
+      checkOut: initial?.checkOut ?? tripStartDate,
+      price: initial?.price?.toString() ?? "",
+      currency: initial?.currency ?? "USD",
+      bookingLink: initial?.bookingLink ?? "",
+      notes: initial?.notes ?? "",
+      image: initial?.image ?? "",
+      checkInAfter: initial?.checkInAfter ?? "",
+      checkOutBefore: initial?.checkOutBefore ?? "",
+      isConfirmed: initial?.isConfirmed ?? false,
+    });
+    setErrors({});
+    onClose();
   };
 
   const handleSave = async () => {
@@ -118,12 +140,12 @@ export function AccommodationForm({
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       title={initial ? "Edit Accommodation" : "Add Accommodation"}
       size="md"
       footer={
         <>
-          <Button variant="secondary" onClick={onClose} disabled={saving}>
+          <Button variant="secondary" onClick={handleClose} disabled={saving}>
             Cancel
           </Button>
           <Button variant="primary" onClick={handleSave} disabled={saving}>
@@ -208,24 +230,6 @@ export function AccommodationForm({
           }}
           includeSearch={false}
         />
-        <div className="grid grid-cols-2 gap-3">
-          <SearchableSelect
-            id="acc-type"
-            label="Type"
-            placeholder="Select type..."
-            value={form.type}
-            options={TYPE_OPTIONS}
-            onChange={(val: string) => set("type", val)}
-          />
-          <SearchableSelect
-            id="acc-platform"
-            label="Platform"
-            placeholder="Select platform..."
-            value={form.platform}
-            options={PLATFORM_OPTIONS}
-            onChange={(val: string) => set("platform", val)}
-          />
-        </div>
         <SearchableSelect
           id="acc-location"
           label="City / Town (Destination)"
@@ -248,6 +252,25 @@ export function AccommodationForm({
           error={errors.destinationId}
           includeSearch={false}
         />
+        <div className="grid grid-cols-2 gap-3">
+          <SearchableSelect
+            id="acc-type"
+            label="Type"
+            placeholder="Select type..."
+            value={form.type}
+            options={TYPE_OPTIONS}
+            onChange={(val: string) => set("type", val)}
+          />
+          <SearchableSelect
+            id="acc-platform"
+            label="Platform"
+            placeholder="Select platform..."
+            value={form.platform}
+            options={PLATFORM_OPTIONS}
+            onChange={(val: string) => set("platform", val)}
+          />
+        </div>
+
         <Input
           id="acc-address"
           label="Address / Specific Area (optional)"
@@ -299,7 +322,6 @@ export function AccommodationForm({
               placeholder="0.00"
               value={form.price}
               onChange={(e) => set("price", e.target.value)}
-              error={errors.price}
             />
           </div>
           <SearchableSelect
