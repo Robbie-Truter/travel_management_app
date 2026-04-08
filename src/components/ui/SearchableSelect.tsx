@@ -28,6 +28,10 @@ interface SearchableSelectProps {
   isSearchLoading?: boolean;
   /** Text shown as a hint inside the trigger button when no country/context is selected yet */
   searchHint?: string;
+  /** An option to ensure is always in the list (e.g. the currently saved value) */
+  selectedOption?: SearchableOption;
+  /** Whether to show an "Add manually" option when the search query doesn't match */
+  allowManual?: boolean;
 }
 
 export function SearchableSelect({
@@ -45,36 +49,66 @@ export function SearchableSelect({
   onSearchChange,
   isSearchLoading = false,
   searchHint,
+  selectedOption: activeOption,
+  allowManual = false,
 }: SearchableSelectProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
 
-  const normalizedOptions = React.useMemo(() => {
-    return options.map((opt) => {
+  const sourceOptions = React.useMemo(() => {
+    const list = options.map((opt) => {
       if (typeof opt === "string") {
         return { value: opt, label: opt } as SearchableOption;
       }
       return opt;
     });
-  }, [options]);
+
+    // If we have an active selection that isn't in the provided options, add it
+    if (activeOption && !list.find((opt) => opt.value === activeOption.value)) {
+      list.unshift(activeOption);
+    }
+
+    return list;
+  }, [options, activeOption]);
 
   // When onSearchChange is provided, options are already server-filtered — skip internal filtering
   const filteredOptions = React.useMemo(() => {
-    if (onSearchChange) return normalizedOptions;
-    const query = searchQuery.toLowerCase();
-    return normalizedOptions.filter(
-      (opt) =>
-        opt.label.toLowerCase().includes(query) ||
-        opt.value.toLowerCase().includes(query) ||
-        opt.sublabel?.toLowerCase().includes(query),
-    );
-  }, [normalizedOptions, searchQuery, onSearchChange]);
+    const query = searchQuery.toLowerCase().trim();
+
+    let list = sourceOptions;
+    if (!onSearchChange && query) {
+      list = sourceOptions.filter(
+        (opt) =>
+          opt.label.toLowerCase().includes(query) ||
+          opt.value.toLowerCase().includes(query) ||
+          opt.sublabel?.toLowerCase().includes(query),
+      );
+    }
+
+    // Add manual option if allowed and no exact match exists
+    if (allowManual && query.length >= 2) {
+      const hasExactMatch = list.some((opt) => opt.label.toLowerCase() === query);
+      const isSelectedManual = value.startsWith("__manual__") && value.toLowerCase().replace("__manual__", "") === query;
+
+      if (!hasExactMatch && !isSelectedManual) {
+        list = [
+          ...list,
+          {
+            value: `__manual__${searchQuery.trim()}`,
+            label: `Add manually: "${searchQuery.trim()}"`,
+          },
+        ];
+      }
+    }
+
+    return list;
+  }, [sourceOptions, searchQuery, onSearchChange, allowManual, value]);
 
   const displayedOptions = React.useMemo(() => {
     return filteredOptions.slice(0, displayLimit);
   }, [filteredOptions, displayLimit]);
 
-  const selectedOption = normalizedOptions.find((opt) => opt.value === value);
+  const displayOption = sourceOptions.find((opt) => opt.value === value) || activeOption;
 
   return (
     <div className={cn("flex flex-col gap-1.5 w-full", className)}>
@@ -96,8 +130,8 @@ export function SearchableSelect({
             )}
           >
             <span className={cn("truncate flex items-center gap-2", !value && "text-text-muted")}>
-              {selectedOption?.icon && <span>{selectedOption.icon}</span>}
-              {selectedOption ? selectedOption.label : placeholder}
+              {displayOption?.icon && <span>{displayOption.icon}</span>}
+              {displayOption ? displayOption.label : placeholder}
             </span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </button>

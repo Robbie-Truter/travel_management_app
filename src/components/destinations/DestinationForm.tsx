@@ -33,10 +33,10 @@ export function DestinationForm({
     notes: initial?.notes ?? "",
     image: initial?.image ?? "",
   });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
-  // City search state — raw input value for the search box
   const [citySearchRaw, setCitySearchRaw] = useState("");
   const debounced = useDebounce(citySearchRaw, 300);
 
@@ -48,23 +48,11 @@ export function DestinationForm({
 
   const { cities, isLoading: isCityLoading } = useCitySearch(debounced, iso2);
 
-  // Build dropdown options from server results
+  // Dropdown with city options from server response
   const cityOptions = cities.map((city) => ({
     value: String(city.id),
     label: city.city,
   }));
-
-  // Add "Add manually" option when user has typed something
-  const showManualOption = debounced.trim().length >= 2;
-  if (showManualOption) {
-    const exactMatch = cities.some((c) => c.city.toLowerCase() === debounced.trim().toLowerCase());
-    if (!exactMatch) {
-      cityOptions.push({
-        value: `__manual__${debounced.trim()}`,
-        label: `Add manually: "${debounced.trim()}"`,
-      });
-    }
-  }
 
   const set = (k: string, v: string | boolean | number | undefined) =>
     setForm((prev) => ({ ...prev, [k]: v }));
@@ -219,9 +207,16 @@ export function DestinationForm({
           onChange={handleCitySelect}
           onSearchChange={setCitySearchRaw}
           isSearchLoading={isCityLoading}
-          searchHint={
-            debounced.trim().length < 2 ? "Type at least 2 characters to search" : "No cities found"
+          searchHint="Type at least 2 characters to search"
+          selectedOption={
+            form.name
+              ? {
+                  value: citySelectValue,
+                  label: form.name,
+                }
+              : undefined
           }
+          allowManual
           error={errors.name}
           disabled={!iso2}
           includeSearch
