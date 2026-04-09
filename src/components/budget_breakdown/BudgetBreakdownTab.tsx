@@ -4,21 +4,51 @@ import { useExchangeRates } from "@/hooks/useExchangeRates";
 import { useFlights } from "@/hooks/useFlights";
 import { Info, PiggyBank, RefreshCw } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import { Card } from "../ui/Card";
 import { SearchableSelect } from "../ui/SearchableSelect";
 import { formatCurrency, getFlagEmoji } from "@/lib/utils";
 import { CURRENCIES } from "@/constants/currencies";
 import { type Trip } from "@/db/types";
+import {
+  BudgetBreakdownSkeleton,
+  BudgetBreakdownRefetchingIndicator,
+} from "./BudgetBreakdownLoadingStates";
+import { BudgetBreakdownErrorState } from "./BudgetBreakdownErrorState";
 
 const BudgetBreakdownTab = ({ trip }: { trip: Trip }) => {
   const tripId = trip.id!;
   const [displayCurrency, setDisplayCurrency] = useState(trip.baseCurrency);
 
-  const { flights } = useFlights(tripId);
-  const { accommodations } = useAccommodations(tripId);
-  const { activities } = useActivities(tripId);
+  const {
+    flights,
+    loading: flightsLoading,
+    isRefetching: flightsRefetching,
+    isError: flightsError,
+    refetch: refetchFlights,
+  } = useFlights(tripId);
+  const {
+    accommodations,
+    loading: accLoading,
+    isRefetching: accRefetching,
+    isError: accError,
+    refetch: refetchAccs,
+  } = useAccommodations(tripId);
+  const {
+    activities,
+    loading: actLoading,
+    isRefetching: actRefetching,
+    isError: actError,
+    refetch: refetchActs,
+  } = useActivities(tripId);
 
-  const { data: currencyRates } = useExchangeRates();
+  const {
+    data: currencyRates,
+    isLoading: currencyLoading,
+    isRefetching: currencyRefetching,
+    error: currencyError,
+    refetch: refetchCurrency,
+  } = useExchangeRates();
 
   const convertCurrency = useCallback(
     (amount: number, from: string, to: string) => {
@@ -126,8 +156,35 @@ const BudgetBreakdownTab = ({ trip }: { trip: Trip }) => {
   const totalInBase = globalTotals.total;
   const confirmedTotalInBase = globalTotals.confirmedTotal;
 
+  const isLoading = flightsLoading || accLoading || actLoading || currencyLoading;
+  const isAnyRefetching = flightsRefetching || accRefetching || actRefetching || currencyRefetching;
+  const isAnyError = flightsError || accError || actError || currencyError || !trip.tripCountries;
+
+  const handleRetry = () => {
+    refetchFlights();
+    refetchAccs();
+    refetchActs();
+    refetchCurrency();
+  };
+
+  if (isLoading && totalInBase === 0) {
+    return <BudgetBreakdownSkeleton />;
+  }
+
+  if (isAnyError) {
+    return <BudgetBreakdownErrorState onRetry={handleRetry} />;
+  }
+
   return (
-    <>
+    <div className="relative">
+      <AnimatePresence>
+        {isAnyRefetching && (
+          <div className="absolute top-0 right-0 z-10 -mt-8">
+            <BudgetBreakdownRefetchingIndicator />
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Budget Breakdown Summary */}
       <Card className="mt-8 sm:mt-10 p-0 overflow-hidden shadow-md border-rose-pastel-100/50">
         <div className="bg-rose-pastel-50 dark:bg-rose-pastel-900/10 p-4 sm:p-6 border-b border-rose-pastel-100 dark:border-rose-pastel-900/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -401,7 +458,7 @@ const BudgetBreakdownTab = ({ trip }: { trip: Trip }) => {
           )}
         </div>
       </Card>
-    </>
+    </div>
   );
 };
 
