@@ -9,13 +9,14 @@ import { FlightComparison } from "./FlightComparison";
 import { FlightSkeleton, FlightRefetchingIndicator } from "./FlightLoadingStates";
 import { FlightErrorState } from "./FlightErrorState";
 import { getFlagEmoji } from "@/lib/utils";
-import type { Flight, TripCountry } from "@/db/types";
+import type { Flight, Currency, TripCountry } from "@/db/types";
 
 interface FlightsTabProps {
   tripId: number;
   tripCountries: TripCountry[];
   tripStartDate: string;
   tripEndDate: string;
+  tripCurrency: Currency;
 }
 
 export function FlightsTab({
@@ -23,6 +24,7 @@ export function FlightsTab({
   tripCountries,
   tripStartDate,
   tripEndDate,
+  tripCurrency,
 }: FlightsTabProps) {
   const {
     flights,
@@ -206,6 +208,7 @@ export function FlightsTab({
         lastFlight={flights[flights.length - 1]}
         tripStartDate={tripStartDate}
         tripEndDate={tripEndDate}
+        tripCurrency={tripCurrency}
       />
 
       <FlightComparison

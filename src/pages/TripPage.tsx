@@ -12,6 +12,7 @@ import {
   MapPin,
   LayoutGrid,
   Loader2,
+  PiggyBank,
 } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
@@ -33,6 +34,7 @@ import { CountriesTab } from "@/components/countries/CountriesTab";
 import { DocumentsTab } from "@/components/documents/DocumentsTab";
 import { formatDate, tripDuration, cn } from "@/lib/utils";
 import type { Trip, TripStatus } from "@/db/types";
+import BudgetBreakdownTab from "@/components/budget_breakdown/BudgetBreakdownTab";
 
 type Tab =
   | "overview"
@@ -43,7 +45,8 @@ type Tab =
   | "activities"
   | "planner"
   | "notes"
-  | "documents";
+  | "documents"
+  | "budget_breakdown";
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Overview", icon: LayoutGrid },
@@ -55,6 +58,7 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "planner", label: "Planner", icon: Calendar },
   { id: "notes", label: "Notes", icon: StickyNote },
   { id: "documents", label: "Documents", icon: File },
+  { id: "budget_breakdown", label: "Budget Breakdown", icon: PiggyBank },
 ];
 
 export function TripPage() {
@@ -219,6 +223,7 @@ export function TripPage() {
                 tripCountries={tripCountries}
                 tripStartDate={trip.startDate}
                 tripEndDate={trip.endDate}
+                tripCurrency={trip.baseCurrency}
               />
             )}
 
@@ -229,6 +234,7 @@ export function TripPage() {
                 tripCountries={tripCountries}
                 tripStartDate={trip.startDate}
                 tripEndDate={trip.endDate}
+                tripCurrency={trip.baseCurrency}
               />
             )}
 
@@ -240,6 +246,7 @@ export function TripPage() {
                 destinations={destinations}
                 tripStartDate={trip.startDate}
                 tripEndDate={trip.endDate}
+                tripCurrency={trip.baseCurrency}
               />
             )}
 
@@ -279,6 +286,16 @@ export function TripPage() {
                   <h2 className="font-semibold text-text-primary">Documents</h2>
                 </div>
                 <DocumentsTab tripId={id} />
+              </div>
+            )}
+
+            {/* BUDGET BREAKDOWN */}
+            {activeTab === "budget_breakdown" && (
+              <div>
+                <div className="mb-4">
+                  <h2 className="font-semibold text-text-primary">Budget Breakdown</h2>
+                </div>
+                <BudgetBreakdownTab trip={trip as Trip} />
               </div>
             )}
           </motion.div>

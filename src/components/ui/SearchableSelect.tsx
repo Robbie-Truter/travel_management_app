@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as Popover from "@radix-ui/react-popover";
-import { Check, ChevronsUpDown, Search } from "lucide-react";
+import { Check, ChevronsUpDown, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface SearchableOption {
@@ -32,6 +32,10 @@ interface SearchableSelectProps {
   selectedOption?: SearchableOption;
   /** Whether to show an "Add manually" option when the search query doesn't match */
   allowManual?: boolean;
+  /** Size of the select trigger */
+  size?: "sm" | "md";
+  /** Whether the value can be cleared */
+  isClearable?: boolean;
 }
 
 export function SearchableSelect({
@@ -51,6 +55,8 @@ export function SearchableSelect({
   searchHint,
   selectedOption: activeOption,
   allowManual = false,
+  size = "md",
+  isClearable = false,
 }: SearchableSelectProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -125,7 +131,8 @@ export function SearchableSelect({
             role="combobox"
             aria-expanded={open}
             className={cn(
-              "flex h-9 w-full items-center justify-between rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-lavender-400 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50",
+              "flex w-full items-center justify-between rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-lavender-400 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50",
+              size === "sm" ? "h-8 text-xs px-2" : "h-9",
               error && "border-rose-pastel-400 focus:ring-rose-pastel-400",
             )}
           >
@@ -133,7 +140,28 @@ export function SearchableSelect({
               {displayOption?.icon && <span>{displayOption.icon}</span>}
               {displayOption ? displayOption.label : placeholder}
             </span>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <div className="flex items-center gap-1.5 shrink-0 opacity-50">
+              {isClearable && value && (
+                <div
+                  role="button"
+                  tabIndex={0}
+                  className="p-0.5 hover:bg-black/5 dark:hover:bg-white/10 rounded-sm transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onChange("");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.stopPropagation();
+                      onChange("");
+                    }
+                  }}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </div>
+              )}
+              <ChevronsUpDown className="h-4 w-4" />
+            </div>
           </button>
         </Popover.Trigger>
         <Popover.Content

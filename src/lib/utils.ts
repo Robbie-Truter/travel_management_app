@@ -39,15 +39,18 @@ export function tripDuration(startDate: string, endDate: string) {
   }
 }
 
-export function formatCurrency(amount: number, currency: "USD" | "ZAR" | "EUR") {
-  if (currency === "ZAR") {
-    return new Intl.NumberFormat("en-ZA", { style: "currency", currency }).format(amount);
+export function formatCurrency(amount: number, currency: string) {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: currency.toUpperCase(),
+    }).format(amount);
+  } catch {
+    return `${currency.toUpperCase()} ${amount.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
   }
-
-  if (currency === "EUR")
-    return new Intl.NumberFormat("en-EU", { style: "currency", currency }).format(amount);
-
-  return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount);
 }
 
 export function formatDuration(minutes: number) {

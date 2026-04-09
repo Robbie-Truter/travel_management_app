@@ -108,6 +108,19 @@ export function DestinationForm({
     onClose();
   };
 
+  const handleClose = () => {
+    setForm({
+      name: initial?.name ?? "",
+      tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
+      cityLookupId: initial?.cityLookupId ?? undefined,
+      notes: initial?.notes ?? "",
+      image: initial?.image ?? "",
+    });
+    setErrors({});
+    setCitySearchRaw("");
+    onClose();
+  };
+
   // Derive the displayed city value — match by cityLookupId or fall back to name
   const citySelectValue = form.cityLookupId
     ? String(form.cityLookupId)
@@ -118,12 +131,12 @@ export function DestinationForm({
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       title={initial ? "Edit Destination" : "Add Destination"}
       size="md"
       footer={
         <>
-          <Button variant="secondary" onClick={onClose} disabled={saving}>
+          <Button variant="secondary" onClick={handleClose} disabled={saving}>
             Cancel
           </Button>
           <Button variant="primary" onClick={handleSave} disabled={saving}>

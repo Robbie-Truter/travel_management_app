@@ -7,7 +7,8 @@ import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import { fileToBase64, cn } from "@/lib/utils";
 import { parseISO, format } from "date-fns";
-import type { Trip, TripStatus } from "@/db/types";
+import type { Trip, TripStatus, Currency } from "@/db/types";
+import { CURRENCIES } from "@/constants/currencies";
 
 const STATUS_OPTIONS = [
   { value: "planning", label: "Planning" },
@@ -37,6 +38,7 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
     [startDate, endDate],
   );
   const [status, setStatus] = useState<TripStatus>(initial?.status ?? "planning");
+  const [baseCurrency, setBaseCurrency] = useState(initial?.baseCurrency ?? "USD");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [coverImage, setCoverImage] = useState<string | undefined>(initial?.coverImage);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -67,8 +69,21 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
       status,
       description,
       coverImage,
+      baseCurrency,
     });
     setSaving(false);
+    onClose();
+  };
+
+  const handleClose = () => {
+    setName(initial?.name ?? "");
+    setStartDate(initial?.startDate ?? "");
+    setEndDate(initial?.endDate ?? "");
+    setStatus(initial?.status ?? "planning");
+    setBaseCurrency(initial?.baseCurrency ?? "USD");
+    setDescription(initial?.description ?? "");
+    setCoverImage(initial?.coverImage);
+    setErrors({});
     onClose();
   };
 
@@ -82,12 +97,12 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       title={initial ? "Edit Trip" : "New Trip"}
       size="md"
       footer={
         <>
-          <Button variant="secondary" onClick={onClose} disabled={saving}>
+          <Button variant="secondary" onClick={handleClose} disabled={saving}>
             Cancel
           </Button>
           <Button variant="primary" onClick={handleSave} disabled={saving}>
@@ -178,6 +193,18 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
           onChange={(val) => setStatus(val as TripStatus)}
           options={STATUS_OPTIONS}
           includeSearch={false}
+        />
+        <SearchableSelect
+          id="trip-currency"
+          label="Base Currency"
+          placeholder="Select currency..."
+          value={baseCurrency}
+          options={CURRENCIES.map((c) => ({
+            value: c.code,
+            label: `${c.code} - ${c.name}`,
+          }))}
+          onChange={(val: string) => setBaseCurrency(val as Currency)}
+          includeSearch={true}
         />
         <Textarea
           id="trip-description"

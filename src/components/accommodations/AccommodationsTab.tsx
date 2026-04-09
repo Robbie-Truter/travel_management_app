@@ -12,13 +12,14 @@ import {
 } from "./AccommodationLoadingStates";
 import { AccommodationErrorState } from "./AccommodationErrorState";
 import { getFlagEmoji } from "@/lib/utils";
-import type { Accommodation, TripCountry } from "@/db/types";
+import type { Accommodation, Currency, TripCountry } from "@/db/types";
 
 interface AccommodationsTabProps {
   tripId: number;
   tripCountries: TripCountry[];
   tripStartDate: string;
   tripEndDate: string;
+  tripCurrency: Currency;
 }
 
 export function AccommodationsTab({
@@ -26,6 +27,7 @@ export function AccommodationsTab({
   tripCountries,
   tripStartDate,
   tripEndDate,
+  tripCurrency,
 }: AccommodationsTabProps) {
   const {
     accommodations,
@@ -208,6 +210,7 @@ export function AccommodationsTab({
         tripCountries={tripCountries}
         tripStartDate={tripStartDate}
         tripEndDate={tripEndDate}
+        tripCurrency={tripCurrency}
       />
 
       <AccommodationComparison

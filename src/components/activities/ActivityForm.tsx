@@ -19,6 +19,7 @@ interface ActivityFormProps {
   destinations?: Destination[];
   tripStartDate: string;
   tripEndDate: string;
+  tripCurrency: Currency;
 }
 
 export function ActivityForm({
@@ -31,6 +32,7 @@ export function ActivityForm({
   destinations = [],
   tripStartDate,
   tripEndDate,
+  tripCurrency,
 }: ActivityFormProps) {
   const [form, setForm] = useState({
     name: initial?.name ?? "",
@@ -40,7 +42,7 @@ export function ActivityForm({
     date: initial?.date ?? tripStartDate,
     duration: initial?.duration?.toString() ?? "",
     cost: initial?.cost?.toString() ?? "",
-    currency: initial?.currency ?? "USD",
+    currency: initial?.currency ?? tripCurrency,
     link: initial?.link ?? "",
     notes: initial?.notes ?? "",
     image: initial?.image ?? "",
@@ -49,12 +51,6 @@ export function ActivityForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const CURRENCIES = [
-    { value: "USD", label: "USD" },
-    { value: "EUR", label: "EUR" },
-    { value: "ZAR", label: "ZAR" },
-  ];
 
   const set = (k: string, v: string | boolean | number | undefined) =>
     setForm((prev) => ({ ...prev, [k]: v }));
@@ -83,7 +79,7 @@ export function ActivityForm({
       date: initial?.date ?? tripStartDate,
       duration: initial?.duration?.toString() ?? "",
       cost: initial?.cost?.toString() ?? "",
-      currency: initial?.currency ?? "USD",
+      currency: initial?.currency ?? tripCurrency,
       link: initial?.link ?? "",
       notes: initial?.notes ?? "",
       image: initial?.image ?? "",
@@ -254,25 +250,16 @@ export function ActivityForm({
             value={form.duration}
             onChange={(e) => set("duration", e.target.value)}
           />
-          <div className="col-span-1">
+          <div className="col-span-2">
             <Input
               id="act-cost"
-              label="Cost"
+              label={`Cost (${tripCurrency})`}
               type="number"
               placeholder="0.00"
               value={form.cost}
               onChange={(e) => set("cost", e.target.value)}
             />
           </div>
-          <SearchableSelect
-            id="act-currency"
-            label="Currency"
-            placeholder="Search currency..."
-            value={form.currency}
-            options={CURRENCIES}
-            onChange={(val: string) => set("currency", val)}
-            includeSearch={false}
-          />
         </div>
 
         <Input

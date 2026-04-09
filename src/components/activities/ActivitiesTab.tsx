@@ -11,7 +11,7 @@ import { ACTIVITY_TAGS } from "./activity-types";
 import { ActivitySkeleton, ActivityRefetchingIndicator } from "./ActivityLoadingStates";
 import { ActivityErrorState } from "./ActivityErrorState";
 import { getFlagEmoji } from "@/lib/utils";
-import type { Activity, TripCountry, Destination } from "@/db/types";
+import type { Activity, TripCountry, Destination, Currency } from "@/db/types";
 
 interface ActivitiesTabProps {
   tripId: number;
@@ -19,6 +19,7 @@ interface ActivitiesTabProps {
   destinations: Destination[];
   tripStartDate: string;
   tripEndDate: string;
+  tripCurrency: Currency;
 }
 
 export function ActivitiesTab({
@@ -27,6 +28,7 @@ export function ActivitiesTab({
   destinations,
   tripStartDate,
   tripEndDate,
+  tripCurrency,
 }: ActivitiesTabProps) {
   const {
     activities,
@@ -303,6 +305,7 @@ export function ActivitiesTab({
         destinations={destinations}
         tripStartDate={tripStartDate}
         tripEndDate={tripEndDate}
+        tripCurrency={tripCurrency}
       />
     </div>
   );

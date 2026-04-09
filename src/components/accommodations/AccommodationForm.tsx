@@ -19,6 +19,7 @@ interface AccommodationFormProps {
   tripCountries?: TripCountry[];
   tripStartDate: string;
   tripEndDate: string;
+  tripCurrency: Currency;
 }
 
 export function AccommodationForm({
@@ -30,6 +31,7 @@ export function AccommodationForm({
   tripCountries = [],
   tripStartDate,
   tripEndDate,
+  tripCurrency,
 }: AccommodationFormProps) {
   const [form, setForm] = useState({
     name: initial?.name ?? "",
@@ -41,7 +43,7 @@ export function AccommodationForm({
     checkIn: initial?.checkIn ?? tripStartDate,
     checkOut: initial?.checkOut ?? tripStartDate,
     price: initial?.price?.toString() ?? "",
-    currency: initial?.currency ?? "USD",
+    currency: initial?.currency ?? tripCurrency,
     bookingLink: initial?.bookingLink ?? "",
     notes: initial?.notes ?? "",
     image: initial?.image ?? "",
@@ -54,12 +56,6 @@ export function AccommodationForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { destinations } = useDestinations(tripId);
-
-  const CURRENCIES = [
-    { value: "USD", label: "USD" },
-    { value: "EUR", label: "EUR" },
-    { value: "ZAR", label: "ZAR" },
-  ];
 
   const set = (k: string, v: string | boolean | number | undefined) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -91,7 +87,7 @@ export function AccommodationForm({
       checkIn: initial?.checkIn ?? tripStartDate,
       checkOut: initial?.checkOut ?? tripStartDate,
       price: initial?.price?.toString() ?? "",
-      currency: initial?.currency ?? "USD",
+      currency: initial?.currency ?? tripCurrency,
       bookingLink: initial?.bookingLink ?? "",
       notes: initial?.notes ?? "",
       image: initial?.image ?? "",
@@ -313,26 +309,17 @@ export function AccommodationForm({
             onChange={(e) => set("checkOutBefore", e.target.value)}
           />
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2">
             <Input
               id="acc-price"
-              label="Total Price"
+              label={`Total Price (${tripCurrency})`}
               type="number"
               placeholder="0.00"
               value={form.price}
               onChange={(e) => set("price", e.target.value)}
             />
           </div>
-          <SearchableSelect
-            id="acc-currency"
-            label="Currency"
-            placeholder="Search currency..."
-            value={form.currency}
-            options={CURRENCIES}
-            onChange={(val: string) => set("currency", val)}
-            includeSearch={false}
-          />
         </div>
         <Input
           id="acc-link"

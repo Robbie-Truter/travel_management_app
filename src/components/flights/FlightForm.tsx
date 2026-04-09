@@ -26,6 +26,7 @@ interface FlightFormProps {
   tripCountries?: TripCountry[];
   tripStartDate: string;
   tripEndDate: string;
+  tripCurrency: Currency;
 }
 
 export function FlightForm({
@@ -38,6 +39,7 @@ export function FlightForm({
   tripCountries = [],
   tripStartDate,
   tripEndDate,
+  tripCurrency,
 }: FlightFormProps) {
   const [form, setForm] = useState({
     segments: initial?.segments?.map((s) => ({
@@ -55,7 +57,7 @@ export function FlightForm({
     description: initial?.description ?? "",
     tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
     price: initial?.price?.toString() ?? "",
-    currency: initial?.currency ?? (lastFlight?.currency || "USD"),
+    currency: initial?.currency ?? tripCurrency,
     bookingLink: initial?.bookingLink ?? "",
     notes: initial?.notes ?? "",
     isConfirmed: initial?.isConfirmed ?? false,
@@ -126,12 +128,6 @@ export function FlightForm({
     }));
   }, [airports]);
 
-  const CURRENCIES = [
-    { value: "USD", label: "USD" },
-    { value: "EUR", label: "EUR" },
-    { value: "ZAR", label: "ZAR" },
-  ];
-
   const validate = () => {
     const e: Record<string, string> = {};
 
@@ -181,7 +177,7 @@ export function FlightForm({
       description: initial?.description ?? "",
       tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
       price: initial?.price?.toString() ?? "",
-      currency: initial?.currency ?? (lastFlight?.currency || "USD"),
+      currency: initial?.currency ?? tripCurrency,
       bookingLink: initial?.bookingLink ?? "",
       notes: initial?.notes ?? "",
       isConfirmed: initial?.isConfirmed ?? false,
@@ -392,7 +388,7 @@ export function FlightForm({
           <div className="col-span-2">
             <Input
               id="fl-price"
-              label="Total Price"
+              label={`Total Price (${tripCurrency})`}
               type="number"
               placeholder="0.00"
               value={form.price}
@@ -400,15 +396,6 @@ export function FlightForm({
               error={errors.price}
             />
           </div>
-          <SearchableSelect
-            id="fl-currency"
-            label="Currency"
-            placeholder="Search..."
-            value={form.currency}
-            options={CURRENCIES}
-            onChange={(val: string) => set("currency", val)}
-            includeSearch={false}
-          />
         </div>
 
         <Input

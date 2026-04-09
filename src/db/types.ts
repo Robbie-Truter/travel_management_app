@@ -1,6 +1,6 @@
 // Common Shared Types
 export type TripStatus = "planning" | "booked" | "ongoing" | "completed" | "cancelled";
-export type Currency = "USD" | "EUR" | "ZAR";
+export type Currency = string;
 
 // --- City Lookup ---
 export interface CityLookupRow {
@@ -42,6 +42,7 @@ export interface TripRow {
   description?: string;
   budget?: string;
   cover_image?: string;
+  base_currency: Currency;
   created_at: string;
   updated_at: string;
   trip_countries?: TripCountryRow[];
@@ -57,6 +58,7 @@ export interface Trip {
   tripCountries?: TripCountry[];
   budget?: string;
   coverImage?: string;
+  baseCurrency: Currency;
   createdAt: string;
   updatedAt: string;
 }

@@ -47,6 +47,7 @@ export function useTrips() {
                 ? d.cover_image
                 : getFileUrl("trip-covers", d.cover_image)
               : undefined,
+            baseCurrency: d.base_currency || "USD",
           }) as Trip,
       );
     },
@@ -74,6 +75,7 @@ export function useTrips() {
         description: trip.description,
         budget: trip.budget,
         cover_image: coverImagePath,
+        base_currency: trip.baseCurrency || "USD",
         created_at: now,
         updated_at: now,
       };
@@ -107,6 +109,7 @@ export function useTrips() {
       if (changes.status !== undefined) updateData.status = changes.status;
       if (changes.description !== undefined) updateData.description = changes.description;
       if (changes.budget !== undefined) updateData.budget = changes.budget;
+      if (changes.baseCurrency !== undefined) updateData.base_currency = changes.baseCurrency;
 
       const { data, error } = await supabase
         .from("trips")
@@ -172,6 +175,7 @@ export function useTrips() {
           ? tripRow.cover_image
           : getFileUrl("trip-covers", tripRow.cover_image)
         : undefined,
+      baseCurrency: tripRow.base_currency || "USD",
     } as Trip;
   };
 
@@ -230,6 +234,7 @@ export function useTrip(id: number | undefined) {
             ? tripRow.cover_image
             : getFileUrl("trip-covers", tripRow.cover_image)
           : undefined,
+        baseCurrency: tripRow.base_currency || "USD",
       } as Trip;
     },
     enabled: !!id && !!user,
