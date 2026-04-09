@@ -51,7 +51,7 @@ export function UserProfile({ isCollapsed = false }: UserProfileProps) {
             )}
           >
             {/* Rounded Avatar Icon */}
-            <div className="w-10 h-10 rounded-full bg-linear-to-br from-lavender-500 to-fuchsia-pastel-500 flex items-center justify-center text-white shadow-md shadow-lavender-500/20 group-hover:scale-105 transition-transform duration-300">
+            <div className="w-10 h-10 rounded-full bg-lavender-500 flex items-center justify-center text-white shadow-md shadow-lavender-500/20 group-hover:scale-105 transition-transform duration-300">
               <User size={20} strokeWidth={2.5} />
             </div>
 

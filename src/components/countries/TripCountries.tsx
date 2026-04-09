@@ -99,11 +99,13 @@ export function TripCountries({
               id="country-select"
               label="Select Country"
               placeholder="e.g. Japan"
-              options={countries.map((c) => ({
-                value: c.id.toString(),
-                label: c.name,
-                icon: <span>{getFlagEmoji(c.iso2)}</span>,
-              }))}
+              options={countries
+                .filter((c) => !tripCountries.some((tc) => tc.countryId === c.id))
+                .map((c) => ({
+                  value: c.id.toString(),
+                  label: c.name,
+                  icon: <span>{getFlagEmoji(c.iso2)}</span>,
+                }))}
               value={selectedCountryId}
               onChange={(val) => setSelectedCountryId(val)}
               onSearchChange={setSearchQuery}

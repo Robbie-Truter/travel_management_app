@@ -181,6 +181,7 @@ export function DestinationsTab({ tripId, tripCountries }: DestinationsTabProps)
         initial={editingDest}
         tripId={tripId}
         tripCountries={tripCountries}
+        existingDestinations={destinations}
       />
     </div>
   );

@@ -16,6 +16,7 @@ interface DestinationFormProps {
   initial?: Destination;
   tripId: number;
   tripCountries?: TripCountry[];
+  existingDestinations?: Destination[];
 }
 
 export function DestinationForm({
@@ -25,6 +26,7 @@ export function DestinationForm({
   initial,
   tripId,
   tripCountries = [],
+  existingDestinations = [],
 }: DestinationFormProps) {
   const [form, setForm] = useState({
     name: initial?.name ?? "",
@@ -48,11 +50,21 @@ export function DestinationForm({
 
   const { cities, isLoading: isCityLoading } = useCitySearch(debounced, iso2);
 
-  // Dropdown with city options from server response
-  const cityOptions = cities.map((city) => ({
-    value: String(city.id),
-    label: city.city,
-  }));
+  // Dropdown with city options from server response — filter out ones already in the trip
+  const cityOptions = cities
+    .filter(
+      (city) =>
+        !existingDestinations.some(
+          (d) =>
+            d.cityLookupId === city.id &&
+            d.tripCountryId === form.tripCountryId &&
+            (!initial || d.id !== initial.id),
+        ),
+    )
+    .map((city) => ({
+      value: String(city.id),
+      label: city.city,
+    }));
 
   const set = (k: string, v: string | boolean | number | undefined) =>
     setForm((prev) => ({ ...prev, [k]: v }));
@@ -68,6 +80,20 @@ export function DestinationForm({
     const e: Record<string, string> = {};
     if (!form.name.trim()) e.name = "Required";
     if (!form.tripCountryId) e.country = "Required";
+
+    // Prevent manual name duplicate in the same country
+    if (!e.name && form.tripCountryId) {
+      const isDuplicate = existingDestinations.some(
+        (d) =>
+          d.name.toLowerCase() === form.name.trim().toLowerCase() &&
+          d.tripCountryId === form.tripCountryId &&
+          (!initial || d.id !== initial.id),
+      );
+      if (isDuplicate) {
+        e.name = "This destination already exists in your trip for this country.";
+      }
+    }
+
     return e;
   };
 
