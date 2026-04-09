@@ -73,6 +73,12 @@ export function AccommodationForm({
     if (!form.destinationId) e.destinationId = "Required";
     if (!form.checkIn) e.checkIn = "Required";
     if (!form.checkOut) e.checkOut = "Required";
+
+    if (form.checkIn && form.checkOut && new Date(form.checkIn) > new Date(form.checkOut)) {
+      e.checkIn = "Check-in must be before check-out";
+      e.checkOut = "Check-out must be after check-in";
+    }
+
     return e;
   };
 

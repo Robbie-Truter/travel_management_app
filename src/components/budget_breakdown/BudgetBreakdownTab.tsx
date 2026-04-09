@@ -167,7 +167,7 @@ const BudgetBreakdownTab = ({ trip }: { trip: Trip }) => {
     refetchCurrency();
   };
 
-  if (isLoading && totalInBase === 0) {
+  if (isLoading) {
     return <BudgetBreakdownSkeleton />;
   }
 
