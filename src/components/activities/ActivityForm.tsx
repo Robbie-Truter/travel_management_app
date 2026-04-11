@@ -64,9 +64,10 @@ export function ActivityForm({
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!form.name.trim()) e.name = "Required";
-    if (!form.date) e.date = "Required";
-    if (!form.destinationId) e.destinationId = "Required";
+    if (!form.name.trim()) e.name = "Activity name is required";
+    if (!form.date) e.date = "Date and time are required";
+    if (!form.destinationId) e.destinationId = "Please select a destination";
+    if (!form.tripCountryId) e.tripCountryId = "Please select a country";
     return e;
   };
 
@@ -209,6 +210,7 @@ export function ActivityForm({
               set("destinationId", undefined);
             }}
             includeSearch={false}
+            error={errors.tripCountryId}
           />
           <SearchableSelect
             id="act-dest"

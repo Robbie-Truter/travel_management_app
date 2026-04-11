@@ -87,7 +87,10 @@ export function useTripCountries(tripId: number) {
       const { error } = await supabase.from("trip_countries").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tripCountries", tripId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tripCountries", tripId] });
+      queryClient.invalidateQueries({ queryKey: ["destinations", tripId] });
+    },
   });
 
   return {

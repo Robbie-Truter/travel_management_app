@@ -132,15 +132,15 @@ export function FlightForm({
     const e: Record<string, string> = {};
 
     form.segments.forEach((seg, i) => {
-      if (!seg.airline.trim()) e[`seg-air-${i}`] = "Required";
-      if (!seg.departureAirport.trim()) e[`seg-dep-ap-${i}`] = "Required";
-      if (!seg.arrivalAirport.trim()) e[`seg-arr-ap-${i}`] = "Required";
-      if (!seg.departureTime) e[`seg-dep-t-${i}`] = "Required";
-      if (!seg.arrivalTime) e[`seg-arr-t-${i}`] = "Required";
+      if (!seg.airline.trim()) e[`seg-air-${i}`] = "Airline is required";
+      if (!seg.departureAirport.trim()) e[`seg-dep-ap-${i}`] = "Departure airport is required";
+      if (!seg.arrivalAirport.trim()) e[`seg-arr-ap-${i}`] = "Arrival airport is required";
+      if (!seg.departureTime) e[`seg-dep-t-${i}`] = "Departure time is required";
+      if (!seg.arrivalTime) e[`seg-arr-t-${i}`] = "Arrival time is required";
 
       if (seg.departureTime && seg.arrivalTime) {
         if (new Date(seg.arrivalTime) < new Date(seg.departureTime)) {
-          e[`seg-arr-t-${i}`] = "Must be after departure";
+          e[`seg-arr-t-${i}`] = "Arrival must be after departure";
         }
       }
 
@@ -148,14 +148,14 @@ export function FlightForm({
         const prevSeg = form.segments[i - 1];
         if (prevSeg.arrivalTime && seg.departureTime) {
           if (new Date(seg.departureTime) < new Date(prevSeg.arrivalTime)) {
-            e[`seg-dep-t-${i}`] = "Must be after previous arrival";
+            e[`seg-dep-t-${i}`] = "Must be after previous leg's arrival";
           }
         }
       }
     });
 
-    if (!form.tripCountryId) e.tripCountryId = "Country is Required";
-    if (!form.price || isNaN(Number(form.price))) e.price = "Valid price required";
+    if (!form.tripCountryId) e.tripCountryId = "Destination country is required";
+    if (!form.price || isNaN(Number(form.price))) e.price = "Please enter a valid price";
 
     return e;
   };

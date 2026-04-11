@@ -69,13 +69,13 @@ export function AccommodationForm({
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!form.name.trim()) e.name = "Required";
-    if (!form.destinationId) e.destinationId = "Required";
-    if (!form.checkIn) e.checkIn = "Required";
-    if (!form.checkOut) e.checkOut = "Required";
+    if (!form.name.trim()) e.name = "Accommodation name is required";
+    if (!form.tripCountryId) e.tripCountryId = "Country is required";
+    if (!form.destinationId) e.destinationId = "City / Town is required";
+    if (!form.checkIn) e.checkIn = "Check-in date is required";
+    if (!form.checkOut) e.checkOut = "Check-out date is required";
 
     if (form.checkIn && form.checkOut && new Date(form.checkIn) > new Date(form.checkOut)) {
-      e.checkIn = "Check-in must be before check-out";
       e.checkOut = "Check-out must be after check-in";
     }
 
@@ -230,6 +230,7 @@ export function AccommodationForm({
               }
             }
           }}
+          error={errors.tripCountryId}
           includeSearch={false}
         />
         <SearchableSelect

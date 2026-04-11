@@ -78,8 +78,8 @@ export function DestinationForm({
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!form.name.trim()) e.name = "Required";
-    if (!form.tripCountryId) e.country = "Required";
+    if (!form.name.trim()) e.name = "City or town name is required";
+    if (!form.tripCountryId) e.country = "Please select a country first";
 
     // Prevent manual name duplicate in the same country
     if (!e.name && form.tripCountryId) {
@@ -90,7 +90,7 @@ export function DestinationForm({
           (!initial || d.id !== initial.id),
       );
       if (isDuplicate) {
-        e.name = "This destination already exists in your trip for this country.";
+        e.name = "This destination already exists for this country";
       }
     }
 
