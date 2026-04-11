@@ -78,9 +78,6 @@ export function BudgetBreakdownRefetchingIndicator() {
       >
         <RefreshCw size={12} className="text-rose-pastel-500" />
       </motion.div>
-      <span className="text-[10px] font-medium text-rose-pastel-600 dark:text-rose-pastel-400 uppercase tracking-wider">
-        Updating Budget
-      </span>
     </motion.div>
   );
 }

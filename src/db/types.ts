@@ -268,6 +268,7 @@ export interface DocumentRow {
   name: string;
   description?: string;
   type: string;
+  mime_type?: string;
   file: string;
   created_at: string;
 }
@@ -278,6 +279,7 @@ export interface Document {
   name: string;
   description?: string;
   type: string;
+  mimeType?: string;
   file: string;
   createdAt: string;
 }

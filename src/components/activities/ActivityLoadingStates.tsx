@@ -86,9 +86,6 @@ export function ActivityRefetchingIndicator() {
       >
         <RefreshCw size={12} className="text-orange-500" />
       </motion.div>
-      <span className="text-[10px] font-medium text-orange-600 dark:text-orange-400 uppercase tracking-wider">
-        Updating Experiences
-      </span>
     </motion.div>
   );
 }

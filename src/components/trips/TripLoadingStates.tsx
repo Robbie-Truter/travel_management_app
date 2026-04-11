@@ -70,9 +70,6 @@ export function RefetchingIndicator() {
       >
         <RefreshCw size={12} className="text-lavender-500" />
       </motion.div>
-      <span className="text-[10px] font-medium text-lavender-600 dark:text-lavender-400 uppercase tracking-wider">
-        Syncing
-      </span>
     </motion.div>
   );
 }

@@ -25,7 +25,7 @@ export function DocumentForm({ open, onClose, onSave, initial }: DocumentFormPro
   const [description, setDescription] = useState(initial?.description ?? "");
   const [file, setFile] = useState<string | undefined>(initial?.file);
   const [fileMimeType, setFileMimeType] = useState<string | undefined>(
-    getMimeFromBase64(initial?.file),
+    initial?.mimeType ?? getMimeFromBase64(initial?.file),
   );
   const [docType, setDocType] = useState<string>(
     (() => {
@@ -42,7 +42,7 @@ export function DocumentForm({ open, onClose, onSave, initial }: DocumentFormPro
       setName(initial?.name ?? "");
       setDescription(initial?.description ?? "");
       setFile(initial?.file);
-      setFileMimeType(getMimeFromBase64(initial?.file));
+      setFileMimeType(initial?.mimeType ?? getMimeFromBase64(initial?.file));
       // Try to find if initial.type is one of our DOCUMENT_TYPES, otherwise fallback to 'other'
       const isCustomType = DOCUMENT_TYPES.some((t) => t.value === initial?.type);
       setDocType(isCustomType ? (initial?.type ?? "other") : "other");
@@ -71,6 +71,7 @@ export function DocumentForm({ open, onClose, onSave, initial }: DocumentFormPro
         description,
         file: file!,
         type: docType,
+        mimeType: fileMimeType,
       });
       onClose();
     } catch (err) {

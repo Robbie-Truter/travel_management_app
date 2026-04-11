@@ -61,9 +61,6 @@ export function DestinationRefetchingIndicator() {
       >
         <RefreshCw size={12} className="text-rose-500" />
       </motion.div>
-      <span className="text-[10px] font-medium text-rose-600 dark:text-rose-400 uppercase tracking-wider">
-        Updating Destinations
-      </span>
     </motion.div>
   );
 }

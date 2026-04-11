@@ -145,9 +145,6 @@ export function FlightRefetchingIndicator() {
       >
         <RefreshCw size={12} className="text-sky-500" />
       </motion.div>
-      <span className="text-[10px] font-medium text-sky-600 dark:text-sky-400 uppercase tracking-wider">
-        Updating Flights
-      </span>
     </motion.div>
   );
 }

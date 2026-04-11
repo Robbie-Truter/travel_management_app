@@ -53,9 +53,6 @@ export function CountriesRefetchingIndicator() {
       >
         <RefreshCw size={12} className="text-lavender-500" />
       </motion.div>
-      <span className="text-[10px] font-medium text-lavender-600 dark:text-lavender-400 uppercase tracking-wider">
-        Updating Countries
-      </span>
     </motion.div>
   );
 }

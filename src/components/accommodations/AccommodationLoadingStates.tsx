@@ -77,9 +77,6 @@ export function AccommodationRefetchingIndicator() {
       >
         <RefreshCw size={12} className="text-emerald-500" />
       </motion.div>
-      <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-        Updating Stays
-      </span>
     </motion.div>
   );
 }

@@ -100,35 +100,46 @@ export function DocumentCard({ document, onDelete, onEdit }: DocumentsCardProps)
           <CardContent className="p-0 flex flex-col h-full bg-surface overflow-hidden">
             {/* Visual Section - Fixed Height Preview */}
             <div className="relative aspect-video w-full overflow-hidden border-b border-border/40 bg-linear-to-br from-slate-50 to-sky-pastel-50 dark:from-slate-900/20 dark:to-sky-pastel-900/20 flex items-center justify-center">
-              {document.file.startsWith("data:image/") ? (
-                <img
-                  src={document.file}
-                  alt={document.name}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-              ) : document.file.startsWith("data:application/pdf") ? (
-                <div className="w-full h-full flex items-center justify-center p-4">
-                  <Document
-                    file={document.file}
-                    className="flex items-center justify-center transition-transform duration-500 group-hover:scale-105"
-                  >
-                    <Page
-                      pageNumber={1}
-                      renderTextLayer={false}
-                      renderAnnotationLayer={false}
-                      height={200}
-                      className="shadow-xl bg-white rounded-sm overflow-hidden"
+              {(() => {
+                if (document.mimeType?.startsWith("image/")) {
+                  return (
+                    <img
+                      src={document.file}
+                      alt={document.name}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
-                  </Document>
-                </div>
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-2 transition-transform duration-500 group-hover:scale-110">
-                  <FileText size={48} className="text-slate-300" strokeWidth={1} />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">
-                    {document.type?.split("/")[1] || "FILE"}
-                  </span>
-                </div>
-              )}
+                  );
+                }
+
+                if (document.mimeType === "application/pdf") {
+                  return (
+                    <div className="w-full h-full flex items-center justify-center p-4">
+                      <Document
+                        file={document.file}
+                        className="flex items-center justify-center transition-transform duration-500 group-hover:scale-105"
+                      >
+                        <Page
+                          pageNumber={1}
+                          renderTextLayer={false}
+                          renderAnnotationLayer={false}
+                          height={200}
+                          className="shadow-xl bg-white rounded-sm overflow-hidden"
+                        />
+                      </Document>
+                    </div>
+                  );
+                }
+
+                // Default state for non-previewable files (or missing mimeType)
+                return (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-2 transition-transform duration-500 group-hover:scale-110">
+                    <FileText size={48} className="text-slate-300" strokeWidth={1} />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">
+                      {document.mimeType?.split("/")[1] || "FILE"}
+                    </span>
+                  </div>
+                );
+              })()}
               {/* Optional Gradient Overlay */}
               <div className="absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
@@ -147,7 +158,7 @@ export function DocumentCard({ document, onDelete, onEdit }: DocumentsCardProps)
                         </>
                       );
                     }
-                    return document.type?.split("/")[1] || document.type || "File";
+                    return document.mimeType?.split("/")[1] || "File";
                   })()}
                 </Badge>
               </div>

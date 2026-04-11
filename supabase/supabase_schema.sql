@@ -185,6 +185,7 @@ create table public.documents (
   name        text not null,
   description text,
   type        text not null,
+  mime_type   text,
   file        text not null,
   created_at  timestamptz not null default now()
 );
