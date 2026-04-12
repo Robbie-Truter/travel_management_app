@@ -27,7 +27,7 @@ export function DestinationCard({ dest, onEdit, onDelete, onAddActivity }: Desti
       >
         <Card hover className="w-full overflow-hidden h-full group flex flex-col border-border/60">
           {/* Header Area - Consistent with TripCountries */}
-          <div className="p-4 flex items-center gap-3 border-b border-border bg-surface-2/80 backdrop-blur-xs">
+          <div className="p-4 flex items-center gap-3 border-b border-border bg-surface-2/80 backdrop-blur-xs rounded-md">
             <div className="w-10 h-10 rounded-lg bg-surface-3 flex items-center justify-center shrink-0 border border-border shadow-sm">
               <MapPin size={18} className="text-lavender-500" />
             </div>

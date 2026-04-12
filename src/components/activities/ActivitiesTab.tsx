@@ -86,103 +86,106 @@ export function ActivitiesTab({
   const hasFilters = filterName || filterCity !== "all" || filterType !== "all" || filterDate;
 
   return (
-    <div className="p-4 bg-surface border border-border rounded-xl">
-      <div className="flex flex-col gap-6 mb-8">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <h2 className="font-bold text-lg flex items-center gap-2">
-              <Compass size={20} className="text-lavender-500" />
-              Activities{" "}
-              <span className="text-text-muted font-normal text-sm">
-                ({filteredActivities.length} of {activities.length})
-              </span>
-            </h2>
-            <AnimatePresence>{isRefetching && <ActivityRefetchingIndicator />}</AnimatePresence>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 flex-1 justify-end">
-            <div className="w-full sm:w-auto min-w-[160px]">
-              <Input
-                id="act-name-filter"
-                placeholder="Search..."
-                value={filterName}
-                onChange={(e) => setFilterName(e.target.value)}
-                className="bg-surface h-9 text-sm"
-              />
-            </div>
-            <div className="w-full sm:w-auto min-w-[160px]">
-              <SearchableSelect
-                id="act-city-filter"
-                placeholder="All Cities"
-                value={filterCity}
-                options={[
-                  { value: "all", label: "All Cities", icon: <MapPin size={14} /> },
-                  ...destinations.map((d) => {
-                    const tc = tripCountries.find((c) => c.id === d.tripCountryId);
-                    return {
-                      value: d.id!.toString(),
-                      label: `${d.name}`,
-                      icon: <span>{getFlagEmoji(tc?.countryCode || "")}</span>,
-                    };
-                  }),
-                ]}
-                onChange={(val: string) => setFilterCity(val)}
-                includeSearch={true}
-                className="h-9"
-              />
-            </div>
-            <div className="w-full sm:w-auto min-w-[160px]">
-              <SearchableSelect
-                id="act-type-filter"
-                placeholder="All Types"
-                value={filterType}
-                options={[
-                  { value: "all", label: "All Types", icon: <Filter size={14} /> },
-                  ...ACTIVITY_TAGS.map((t) => ({
-                    value: t.value,
-                    label: t.label,
-                    icon: <span>{t.icon}</span>,
-                  })),
-                ]}
-                onChange={(val: string) => setFilterType(val)}
-                includeSearch={false}
-                className="h-9"
-              />
+    <div className="bg-surface border border-border rounded-xl overflow-hidden">
+      <div className="bg-fuchsia-pastel-50 dark:bg-fuchsia-pastel-900/10 p-4 border-b border-fuchsia-pastel-100 dark:border-fuchsia-pastel-900/20">
+        <div className="flex flex-col gap-6 mb-2">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <h2 className="font-bold text-lg flex items-center gap-2 text-fuchsia-pastel-700 dark:text-fuchsia-pastel-400">
+                <Compass size={20} className="text-fuchsia-pastel-500" />
+                Activities{" "}
+                <span className="text-fuchsia-pastel-600/60 dark:text-fuchsia-pastel-400/40 font-normal text-sm">
+                  ({filteredActivities.length} of {activities.length})
+                </span>
+              </h2>
+              <AnimatePresence>{isRefetching && <ActivityRefetchingIndicator />}</AnimatePresence>
             </div>
 
-            {hasFilters && (
+            <div className="flex flex-wrap items-center gap-2 flex-1 justify-end">
+              <div className="w-full sm:w-auto min-w-[160px]">
+                <Input
+                  id="act-name-filter"
+                  placeholder="Search..."
+                  value={filterName}
+                  onChange={(e) => setFilterName(e.target.value)}
+                  className="bg-white/80 dark:bg-surface-2/80 h-9 text-sm"
+                />
+              </div>
+              <div className="w-full sm:w-auto min-w-[160px]">
+                <SearchableSelect
+                  id="act-city-filter"
+                  placeholder="All Cities"
+                  value={filterCity}
+                  options={[
+                    { value: "all", label: "All Cities", icon: <MapPin size={14} /> },
+                    ...destinations.map((d) => {
+                      const tc = tripCountries.find((c) => c.id === d.tripCountryId);
+                      return {
+                        value: d.id!.toString(),
+                        label: `${d.name}`,
+                        icon: <span>{getFlagEmoji(tc?.countryCode || "")}</span>,
+                      };
+                    }),
+                  ]}
+                  onChange={(val: string) => setFilterCity(val)}
+                  includeSearch={true}
+                  className="h-9 bg-white/80 dark:bg-surface-2/80"
+                />
+              </div>
+              <div className="w-full sm:w-auto min-w-[160px]">
+                <SearchableSelect
+                  id="act-type-filter"
+                  placeholder="All Types"
+                  value={filterType}
+                  options={[
+                    { value: "all", label: "All Types", icon: <Filter size={14} /> },
+                    ...ACTIVITY_TAGS.map((t) => ({
+                      value: t.value,
+                      label: t.label,
+                      icon: <span>{t.icon}</span>,
+                    })),
+                  ]}
+                  onChange={(val: string) => setFilterType(val)}
+                  includeSearch={false}
+                  className="h-9 bg-white/80 dark:bg-surface-2/80"
+                />
+              </div>
+
+              {hasFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="h-9 text-fuchsia-pastel-600/60 hover:text-fuchsia-pastel-500 px-2"
+                >
+                  <X size={14} />
+                </Button>
+              )}
+
+              <div className="h-6 w-px bg-fuchsia-pastel-200 dark:bg-fuchsia-pastel-800 mx-1 hidden lg:block" />
+
               <Button
-                variant="ghost"
+                variant="primary"
                 size="sm"
-                onClick={clearFilters}
-                className="h-9 text-text-muted hover:text-rose-pastel-500 px-2"
+                onClick={() => {
+                  setEditingAct(undefined);
+                  setFormOpen(true);
+                }}
+                className="h-9"
               >
-                <X size={14} />
+                <Plus size={14} />
+                Add Activity
               </Button>
-            )}
-
-            <div className="h-6 w-px bg-border mx-1 hidden lg:block" />
-
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => {
-                setEditingAct(undefined);
-                setFormOpen(true);
-              }}
-              className="h-9"
-            >
-              <Plus size={14} />
-              Add Activity
-            </Button>
+            </div>
           </div>
         </div>
+        <p className="text-sm text-fuchsia-pastel-600/80 dark:text-fuchsia-pastel-400/80">
+          Explore experiences, tours, and sights at your destinations.
+        </p>
       </div>
-      <p className="text-sm text-text-secondary mb-6 -mt-4">
-        Explore experiences, tours, and sights at your destinations.
-      </p>
 
-      {filteredActivities.length === 0 ? (
+      <div className="p-6">
+        {filteredActivities.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 bg-surface-2/50 border border-dashed border-border rounded-2xl">
           <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center mb-4">
             <Compass size={32} className="text-slate-300" />
@@ -284,6 +287,7 @@ export function ActivitiesTab({
           })()}
         </div>
       )}
+      </div>
 
       <ActivityForm
         key={editingAct?.id ?? "new"}

@@ -49,49 +49,54 @@ export function NotesTab({ tripId }: NotesTabProps) {
   const tips = TRAVEL_TIPS.slice(0, 4);
 
   return (
-    <div className="p-4 bg-surface border border-border rounded-xl">
-      <div className="space-y-8">
-        {/* Notes editor area */}
-        <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm shadow-lavender-500/5 transition-all duration-300 focus-within:shadow-md focus-within:shadow-lavender-500/10 focus-within:border-lavender-300">
-          <div className="px-5 py-4 border-b border-border bg-surface-2/50 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-lavender-500 flex items-center justify-center text-white shadow-sm">
-                <Lightbulb size={16} />
-              </div>
-              <h3 className="font-bold text-text-primary tracking-tight">Trip Notebook</h3>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="flex flex-col items-end">
-                <div className="flex items-center gap-1.5 h-4">
-                  {saving ? (
-                    <div className="flex items-center gap-1.5 transition-opacity">
-                      <RefreshCcw size={10} className="animate-spin text-lavender-500" />
-                      <span className="text-[10px] font-bold text-lavender-500 uppercase tracking-widest">
-                        Saving...
-                      </span>
-                    </div>
-                  ) : saved ? (
-                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest animate-in fade-in slide-in-from-bottom-1">
-                      Changes Saved
-                    </span>
-                  ) : null}
-                </div>
-                {note?.updatedAt && (
-                  <span className="text-[10px] text-text-muted font-medium mt-0.5">
-                    Last sync: {formatDateTime(note.updatedAt)}
-                  </span>
-                )}
-              </div>
-            </div>
+    <div className="bg-surface border border-border rounded-xl overflow-hidden">
+      <div className="bg-amber-pastel-50 dark:bg-amber-pastel-900/10 p-4 border-b border-amber-pastel-100 dark:border-amber-pastel-900/20">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <h2 className="font-bold text-lg flex items-center gap-2 text-amber-pastel-700 dark:text-amber-pastel-400">
+              <Lightbulb size={20} className="text-amber-pastel-500" />
+              Trip Notebook
+            </h2>
           </div>
 
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col items-end">
+              <div className="flex items-center gap-1.5 h-4">
+                {saving ? (
+                  <div className="flex items-center gap-1.5 transition-opacity">
+                    <RefreshCcw size={10} className="animate-spin text-amber-pastel-500" />
+                    <span className="text-[10px] font-bold text-amber-pastel-600 uppercase tracking-widest">
+                      Saving...
+                    </span>
+                  </div>
+                ) : saved ? (
+                  <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest animate-in fade-in slide-in-from-bottom-1">
+                    Changes Saved
+                  </span>
+                ) : null}
+              </div>
+              {note?.updatedAt && (
+                <span className="text-[10px] text-amber-pastel-600/60 dark:text-amber-pastel-400/40 font-medium mt-0.5">
+                  Last sync: {formatDateTime(note.updatedAt)}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        <p className="text-sm text-amber-pastel-600/80 dark:text-amber-pastel-400/80">
+          Capture your thoughts, packing lists, and hidden gems here.
+        </p>
+      </div>
+
+      <div className="p-6 space-y-8">
+        {/* Notes editor area */}
+        <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm shadow-amber-pastel-500/5 transition-all duration-300 focus-within:shadow-md focus-within:shadow-amber-pastel-500/10 focus-within:border-amber-pastel-300">
           <div className="relative group">
             <textarea
               value={content}
               onChange={(e) => handleChange(e.target.value)}
-              placeholder="Capture your thoughts, packing lists, and hidden gems here..."
-              className="w-full min-h-120 p-8 text-base text-text-primary placeholder:text-text-muted/50 resize-none focus:outline-none bg-linear-to-b from-surface to-surface-2/30 selection:bg-lavender-100 dark:selection:bg-lavender-900/40 leading-relaxed font-medium transition-colors"
+              placeholder="Start writing..."
+              className="w-full min-h-120 p-8 text-base text-text-primary placeholder:text-text-muted/50 resize-none focus:outline-none bg-linear-to-b from-surface to-surface-2/30 selection:bg-amber-pastel-100 dark:selection:bg-amber-pastel-900/40 leading-relaxed font-medium transition-colors"
             />
             <div className="absolute bottom-4 right-6 pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">

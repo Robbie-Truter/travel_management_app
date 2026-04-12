@@ -254,7 +254,6 @@ export function TripPage() {
             {activeTab === "planner" && (
               <div>
                 <div className="mb-4">
-                  <h2 className="font-semibold text-text-primary">Trip Planner</h2>
                   <p className="text-sm text-text-secondary mt-0.5">
                     Drag activities between days to reorganize your itinerary.
                   </p>
@@ -272,9 +271,6 @@ export function TripPage() {
             {/* NOTES */}
             {activeTab === "notes" && (
               <div>
-                <div className="mb-4">
-                  <h2 className="font-semibold text-text-primary">Notes & Tips</h2>
-                </div>
                 <NotesTab tripId={id} />
               </div>
             )}
@@ -282,9 +278,7 @@ export function TripPage() {
             {/* DOCUMENTS */}
             {activeTab === "documents" && (
               <div>
-                <div className="mb-4">
-                  <h2 className="font-semibold text-text-primary">Documents</h2>
-                </div>
+                <div className="mb-4"></div>
                 <DocumentsTab tripId={id} />
               </div>
             )}
@@ -292,9 +286,6 @@ export function TripPage() {
             {/* BUDGET BREAKDOWN */}
             {activeTab === "budget_breakdown" && (
               <div>
-                <div className="mb-4">
-                  <h2 className="font-semibold text-text-primary">Budget Breakdown</h2>
-                </div>
                 <BudgetBreakdownTab trip={trip as Trip} />
               </div>
             )}

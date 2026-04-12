@@ -76,12 +76,12 @@ export function TripCountries({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">
           Visited Countries ({tripCountries.length})
         </h3>
         {!isAdding && (
-          <Button variant="secondary" size="sm" onClick={() => setIsAdding(true)}>
+          <Button variant="primary" size="sm" onClick={() => setIsAdding(true)}>
             <Plus size={14} />
             Add Country
           </Button>

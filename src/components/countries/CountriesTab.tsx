@@ -86,30 +86,38 @@ export function CountriesTab({ trip }: CountriesTabProps) {
   }
 
   return (
-    <div className="p-4 bg-surface border border-border rounded-xl">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-4">
-          <h2 className="font-bold text-lg flex items-center gap-2">
-            <MapPin size={20} className="text-lavender-500" />
-            Trip Countries
-          </h2>
-          <AnimatePresence>{isAnyRefetching && <CountriesRefetchingIndicator />}</AnimatePresence>
+    <div className="bg-surface border border-border rounded-xl overflow-hidden">
+      <div className="bg-teal-pastel-50 dark:bg-teal-pastel-900/10 p-4 border-b border-teal-pastel-100 dark:border-teal-pastel-900/20">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-4">
+            <h2 className="font-bold text-lg flex items-center gap-2 text-teal-pastel-700 dark:text-teal-pastel-400">
+              <MapPin size={20} className="text-teal-pastel-500" />
+              Trip Countries
+            </h2>
+            <AnimatePresence>{isAnyRefetching && <CountriesRefetchingIndicator />}</AnimatePresence>
+          </div>
         </div>
+        <p className="text-sm text-teal-pastel-600/80 dark:text-teal-pastel-400/80">
+          Manage the countries you'll be visiting during this trip.
+        </p>
       </div>
-      <p className="text-sm text-text-secondary mb-6">
-        Manage the countries you'll be visiting during this trip.
-      </p>
 
-      <TripCountries
-        trip={trip}
-        tripCountries={tripCountries}
-        destinations={destinations}
-        flights={flights}
-        accommodations={accommodations}
-        activities={activities}
-      />
+      <div className="p-6">
+        <TripCountries
+          trip={trip}
+          tripCountries={tripCountries}
+          destinations={destinations}
+          flights={flights}
+          accommodations={accommodations}
+          activities={activities}
+        />
 
-      <UnassignedItems flights={flights} accommodations={accommodations} activities={activities} />
+        <UnassignedItems
+          flights={flights}
+          accommodations={accommodations}
+          activities={activities}
+        />
+      </div>
     </div>
   );
 }

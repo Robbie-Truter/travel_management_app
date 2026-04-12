@@ -40,10 +40,11 @@ export function DocumentCard({ document, onDelete, onEdit }: DocumentsCardProps)
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.2 }}
+        className="w-full max-w-full lg:w-full"
       >
         <Card
           hover
-          className="w-120 overflow-hidden group flex flex-col border-border/60 transition-all duration-300 min-h-[500px]"
+          className="w-full overflow-hidden group flex flex-col border-border/60 transition-all duration-300 min-h-[500px]"
           onClick={async () => {
             if (document.file) {
               try {
@@ -59,7 +60,7 @@ export function DocumentCard({ document, onDelete, onEdit }: DocumentsCardProps)
           }}
         >
           {/* Header Area - Consistent with other cards */}
-          <div className="p-4 flex items-center gap-3 border-b border-border bg-surface-2/80 backdrop-blur-xs">
+          <div className="p-4 flex items-center gap-3 border-b border-border rounded-t-md bg-surface-2/80 backdrop-blur-xs">
             <div className="w-10 h-10 rounded-lg bg-surface-3 flex items-center justify-center shrink-0 border border-border shadow-sm">
               <FileText size={18} className="text-lavender-500" />
             </div>

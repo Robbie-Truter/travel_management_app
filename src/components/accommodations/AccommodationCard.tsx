@@ -54,7 +54,7 @@ export function AccommodationCard({ acc, onEdit, onDelete, onConfirm }: Accommod
           {/* Header Area - Consistent with TripCountries and Destinations */}
           <div
             className={cn(
-              "p-4 flex items-center gap-3 border-b border-border transition-colors",
+              "p-4 flex items-center gap-3 border-b border-border transition-colors rounded-md",
               acc.isConfirmed
                 ? "bg-sage-50/50 dark:bg-sage-900/10"
                 : "bg-surface-2/80 backdrop-blur-xs",

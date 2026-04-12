@@ -8,6 +8,7 @@ type Mode = "login" | "signup";
 
 export function AuthPage() {
   const { session, loading } = useAuth();
+
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

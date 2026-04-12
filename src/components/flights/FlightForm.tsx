@@ -155,8 +155,6 @@ export function FlightForm({
     });
 
     if (!form.tripCountryId) e.tripCountryId = "Destination country is required";
-    if (!form.price || isNaN(Number(form.price))) e.price = "Please enter a valid price";
-
     return e;
   };
 
@@ -393,7 +391,6 @@ export function FlightForm({
               placeholder="0.00"
               value={form.price}
               onChange={(e) => set("price", e.target.value)}
-              error={errors.price}
             />
           </div>
         </div>
