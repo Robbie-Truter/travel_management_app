@@ -5,6 +5,7 @@ export interface AuthContextType {
   session: Session | null;
   user: User | null;
   loading: boolean;
+  isRecovery: boolean;
   signOut: () => Promise<void>;
 }
 

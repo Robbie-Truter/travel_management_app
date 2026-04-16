@@ -6,6 +6,8 @@ import { TripPage } from "@/pages/TripPage";
 import { MapsPage } from "@/pages/MapsPage";
 import { BrochurePage } from "@/pages/BrochurePage";
 import { AuthPage } from "@/pages/AuthPage";
+import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
+import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
 import { TripForm } from "@/components/trips/TripForm";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -61,6 +63,8 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route
             path="/*"
             element={

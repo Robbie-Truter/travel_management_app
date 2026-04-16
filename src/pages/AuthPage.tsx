@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Plane, Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { Navigate } from "react-router-dom";
+import { Plane, Loader2, Mail, Lock, Eye, EyeOff, SquareArrowOutUpRight } from "lucide-react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
 type Mode = "login" | "signup";
 
 export function AuthPage() {
   const { session, loading } = useAuth();
+  const navigate = useNavigate();
 
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
@@ -105,7 +106,6 @@ export function AuthPage() {
                 />
               </div>
             </div>
-
             {/* Password */}
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-1.5">
@@ -134,7 +134,6 @@ export function AuthPage() {
                 </button>
               </div>
             </div>
-
             {/* Error / Success */}
             {error && (
               <div className="text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">
@@ -146,6 +145,14 @@ export function AuthPage() {
                 {success}
               </div>
             )}
+
+            <div
+              className="flex items-center gap-2 text-lavender-500 cursor-pointer hover:opacity-80"
+              onClick={() => navigate("/forgot-password")}
+            >
+              <p className="text-sm">Forgot Password?</p>
+              <SquareArrowOutUpRight size={12} />
+            </div>
 
             {/* Submit */}
             <button
