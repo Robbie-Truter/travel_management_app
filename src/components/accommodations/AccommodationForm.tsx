@@ -53,6 +53,7 @@ export function AccommodationForm({
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { destinations } = useDestinations(tripId);
@@ -107,6 +108,7 @@ export function AccommodationForm({
 
   const handleSave = async () => {
     const e = validate();
+
     if (Object.keys(e).length > 0) {
       setErrors(e);
       return;
@@ -116,27 +118,31 @@ export function AccommodationForm({
 
     setSaving(true);
 
-    await onSave({
-      tripId,
-      name: form.name,
-      tripCountryId: form.tripCountryId,
-      destinationId: form.destinationId,
-      type: form.type as Accommodation["type"],
-      platform: form.platform,
-      location: form.location.trim() || selectedDest?.name || "Unknown",
-      checkIn: form.checkIn,
-      checkOut: form.checkOut,
-      price: Number(form.price),
-      currency: form.currency as Currency,
-      bookingLink: form.bookingLink || undefined,
-      notes: form.notes || undefined,
-      image: form.image || undefined,
-      checkInAfter: form.checkInAfter || undefined,
-      checkOutBefore: form.checkOutBefore || undefined,
-      isConfirmed: form.isConfirmed,
-    });
-    setSaving(false);
-    onClose();
+    try {
+      await onSave({
+        tripId,
+        name: form.name,
+        tripCountryId: form.tripCountryId,
+        destinationId: form.destinationId,
+        type: form.type as Accommodation["type"],
+        platform: form.platform,
+        location: form.location.trim() || selectedDest?.name || "Unknown",
+        checkIn: form.checkIn,
+        checkOut: form.checkOut,
+        price: Number(form.price),
+        currency: form.currency as Currency,
+        bookingLink: form.bookingLink || undefined,
+        notes: form.notes || undefined,
+        image: form.image || undefined,
+        checkInAfter: form.checkInAfter || undefined,
+        checkOutBefore: form.checkOutBefore || undefined,
+        isConfirmed: form.isConfirmed,
+      });
+
+      handleClose();
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (

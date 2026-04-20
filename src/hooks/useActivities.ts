@@ -1,12 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
 import { uploadFile, getFileUrl, deleteFile } from "@/lib/storage";
 import type { Activity } from "@/db/types";
 
 export function useActivities(tripId: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { showToast } = useNotification();
 
   const {
     data: activities,
@@ -81,6 +83,9 @@ export function useActivities(tripId: number) {
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["activities"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to add activity", "error");
+    },
   });
 
   const updateActivityMutation = useMutation({
@@ -120,6 +125,9 @@ export function useActivities(tripId: number) {
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["activities"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to update activity", "error");
+    },
   });
 
   const deleteActivityMutation = useMutation({
@@ -136,6 +144,9 @@ export function useActivities(tripId: number) {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["activities"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to delete activity", "error");
+    },
   });
 
   const reorderActivitiesMutation = useMutation({
@@ -147,6 +158,9 @@ export function useActivities(tripId: number) {
       }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["activities"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to reorder activities", "error");
+    },
   });
 
   return {

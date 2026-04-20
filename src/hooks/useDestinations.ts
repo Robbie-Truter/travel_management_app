@@ -1,12 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
 import { uploadFile, getFileUrl, deleteFile } from "@/lib/storage";
 import type { Destination } from "@/db/types";
 
 export function useDestinations(tripId: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { showToast } = useNotification();
 
   const {
     data: destinations,
@@ -80,6 +82,9 @@ export function useDestinations(tripId: number) {
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["destinations"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to add destination", "error");
+    },
   });
 
   const updateDestinationMutation = useMutation({
@@ -102,7 +107,8 @@ export function useDestinations(tripId: number) {
       if (changes.name !== undefined) dbUpdates.name = changes.name;
       if (changes.tripCountryId !== undefined) dbUpdates.trip_country_id = changes.tripCountryId;
       if (changes.countryId !== undefined) dbUpdates.country_id = changes.countryId;
-      if (changes.cityLookupId !== undefined) dbUpdates.city_lookup_id = changes.cityLookupId ?? null;
+      if (changes.cityLookupId !== undefined)
+        dbUpdates.city_lookup_id = changes.cityLookupId ?? null;
       if (changes.notes !== undefined) dbUpdates.notes = changes.notes;
       if (changes.order !== undefined) dbUpdates.order = changes.order;
 
@@ -110,6 +116,9 @@ export function useDestinations(tripId: number) {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["destinations"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to update destination", "error");
+    },
   });
 
   const deleteDestinationMutation = useMutation({
@@ -130,6 +139,9 @@ export function useDestinations(tripId: number) {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["destinations"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to delete destination", "error");
+    },
   });
 
   return {

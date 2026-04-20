@@ -264,6 +264,7 @@ export function DocumentsTab({ tripId }: { tripId: number }) {
       </div>
 
       <DocumentForm
+        key={editingDocument?.id ?? "new"}
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSave={handleSave}

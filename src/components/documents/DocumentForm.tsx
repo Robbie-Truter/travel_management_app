@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { FileText, Upload } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
@@ -21,41 +21,45 @@ export function DocumentForm({ open, onClose, onSave, initial }: DocumentFormPro
     return b64.split(";")[0].split(":")[1];
   };
 
-  const [name, setName] = useState(initial?.name ?? "");
-  const [description, setDescription] = useState(initial?.description ?? "");
-  const [file, setFile] = useState<string | undefined>(initial?.file);
-  const [fileMimeType, setFileMimeType] = useState<string | undefined>(
-    initial?.mimeType ?? getMimeFromBase64(initial?.file),
-  );
-  const [docType, setDocType] = useState<string>(
-    (() => {
+  const [form, setForm] = useState({
+    name: initial?.name ?? "",
+    description: initial?.description ?? "",
+    file: initial?.file,
+    mimeType: initial?.mimeType ?? getMimeFromBase64(initial?.file),
+    type: (() => {
       const isCustomType = DOCUMENT_TYPES.some((t) => t.value === initial?.type);
       return isCustomType ? (initial?.type ?? "other") : "other";
     })(),
-  );
+  });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (open) {
-      setName(initial?.name ?? "");
-      setDescription(initial?.description ?? "");
-      setFile(initial?.file);
-      setFileMimeType(initial?.mimeType ?? getMimeFromBase64(initial?.file));
-      // Try to find if initial.type is one of our DOCUMENT_TYPES, otherwise fallback to 'other'
-      const isCustomType = DOCUMENT_TYPES.some((t) => t.value === initial?.type);
-      setDocType(isCustomType ? (initial?.type ?? "other") : "other");
-      setErrors({});
-    }
-  }, [open, initial]);
+  const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
+    setForm((f) => ({ ...f, [k]: v }));
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!name.trim()) e.name = "Title is required";
-    if (!docType) e.docType = "Document type is required";
-    if (!file) e.file = "File is required";
+    if (!form.name.trim()) e.name = "Title is required";
+    if (!form.type) e.docType = "Document type is required";
+    if (!form.file) e.file = "File is required";
     return e;
+  };
+
+  const handleClose = () => {
+    setForm({
+      name: initial?.name ?? "",
+      description: initial?.description ?? "",
+      file: initial?.file,
+      mimeType: initial?.mimeType ?? getMimeFromBase64(initial?.file),
+      type: (() => {
+        const isCustomType = DOCUMENT_TYPES.some((t) => t.value === initial?.type);
+        return isCustomType ? (initial?.type ?? "other") : "other";
+      })(),
+    });
+    setErrors({});
+    onClose();
   };
 
   const handleSave = async () => {
@@ -67,15 +71,13 @@ export function DocumentForm({ open, onClose, onSave, initial }: DocumentFormPro
     setSaving(true);
     try {
       await onSave({
-        name,
-        description,
-        file: file!,
-        type: docType,
-        mimeType: fileMimeType,
+        name: form.name,
+        description: form.description,
+        file: form.file!,
+        type: form.type,
+        mimeType: form.mimeType,
       });
-      onClose();
-    } catch (err) {
-      console.error("Failed to save document", err);
+      handleClose();
     } finally {
       setSaving(false);
     }
@@ -87,15 +89,19 @@ export function DocumentForm({ open, onClose, onSave, initial }: DocumentFormPro
 
     try {
       const { base64, type } = await fileToBase64(selectedFile);
-      setFile(base64);
-      setFileMimeType(type);
+
+      const updates: Partial<typeof form> = {
+        file: base64,
+        mimeType: type,
+      };
 
       // Default name to filename if name is empty
-      if (!name) {
-        // Strip extension for the name
+      if (!form.name) {
         const fileName = selectedFile.name.split(".").slice(0, -1).join(".");
-        setName(fileName || selectedFile.name);
+        updates.name = fileName || selectedFile.name;
       }
+
+      setForm((prev) => ({ ...prev, ...updates }));
     } catch (err) {
       console.error("File upload failed", err);
     }
@@ -104,12 +110,12 @@ export function DocumentForm({ open, onClose, onSave, initial }: DocumentFormPro
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       title={initial ? "Edit Document" : "Upload Document"}
       size="md"
       footer={
         <>
-          <Button variant="secondary" onClick={onClose} disabled={saving}>
+          <Button variant="secondary" onClick={handleClose} disabled={saving}>
             Cancel
           </Button>
           <Button variant="primary" onClick={handleSave} disabled={saving}>
@@ -135,17 +141,17 @@ export function DocumentForm({ open, onClose, onSave, initial }: DocumentFormPro
             }`}
             onClick={() => fileInputRef.current?.click()}
           >
-            {file ? (
+            {form.file ? (
               <div className="p-4">
-                {fileMimeType?.startsWith("image/") ? (
+                {form.mimeType?.startsWith("image/") ? (
                   <div className="relative aspect-video rounded-lg overflow-hidden border border-border">
-                    <img src={file} alt="Preview" className="w-full h-full object-cover" />
+                    <img src={form.file} alt="Preview" className="w-full h-full object-cover" />
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-4 gap-2 text-lavender-600">
                     <FileText size={48} className="text-lavender-400" />
                     <span className="text-sm font-medium uppercase">
-                      {fileMimeType?.split("/")[1] || "FILE"}
+                      {form.mimeType?.split("/")[1] || "FILE"}
                     </span>
                   </div>
                 )}
@@ -179,8 +185,8 @@ export function DocumentForm({ open, onClose, onSave, initial }: DocumentFormPro
           id="doc-title"
           label="Title"
           placeholder="e.g. Flight Ticket"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={form.name}
+          onChange={(e) => set("name", e.target.value)}
           error={errors.name}
         />
 
@@ -188,13 +194,13 @@ export function DocumentForm({ open, onClose, onSave, initial }: DocumentFormPro
           id="doc-type"
           label="Document Type"
           placeholder="Select category..."
-          value={docType}
+          value={form.type}
           options={DOCUMENT_TYPES.map((t) => ({
             value: t.value,
             label: t.label,
             icon: <t.icon size={14} />,
           }))}
-          onChange={(val: string) => setDocType(val)}
+          onChange={(val: string) => set("type", val)}
           error={errors.docType}
         />
 
@@ -202,8 +208,8 @@ export function DocumentForm({ open, onClose, onSave, initial }: DocumentFormPro
           id="doc-description"
           label="Description (optional)"
           placeholder="Add some details about this document..."
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          value={form.description}
+          onChange={(e) => set("description", e.target.value)}
           rows={3}
         />
       </div>

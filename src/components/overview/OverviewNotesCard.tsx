@@ -19,10 +19,10 @@ interface Props {
 }
 
 export function OverviewNotesCard({ tripId }: Props) {
-  const { note, loading, isError, refetch } = useNotes(tripId);
+  const { note, isLoading, isRefetching, isError, refetch } = useNotes(tripId);
 
   // We only show skeleton if it's loading and there's no previous note data
-  if (loading && !note) return <CardSkeleton />;
+  if (isLoading && !note) return <CardSkeleton />;
 
   if (isError) {
     return (
@@ -49,7 +49,7 @@ export function OverviewNotesCard({ tripId }: Props) {
 
   return (
     <>
-      <AnimatePresence>{loading && <OverviewRefetchingIndicator />}</AnimatePresence>
+      <AnimatePresence>{isRefetching && <OverviewRefetchingIndicator />}</AnimatePresence>
       <Card className="p-0 overflow-hidden group hover:shadow-card-hover transition-shadow h-full">
         <div className="bg-fuchsia-pastel-50 dark:bg-fuchsia-pastel-900/10 p-5">
           <h3 className="font-bold text-lg flex items-center gap-2 text-fuchsia-pastel-700 dark:text-fuchsia-pastel-400">

@@ -40,6 +40,9 @@ export function FlightsTab({
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingFlight, setEditingFlight] = useState<Flight | undefined>();
+  const [lastInteractedFlight, setLastInteractedFlight] = useState<Flight | undefined>(
+    flights[flights.length - 1],
+  );
   const [compareOpen, setCompareOpen] = useState(false);
 
   if (loading && flights.length === 0) {
@@ -143,6 +146,7 @@ export function FlightsTab({
                           flight={f}
                           onEdit={(fl: Flight) => {
                             setEditingFlight(fl);
+                            setLastInteractedFlight(fl);
                             setFormOpen(true);
                           }}
                           onDelete={deleteFlight}
@@ -182,6 +186,7 @@ export function FlightsTab({
                           flight={f}
                           onEdit={(fl: Flight) => {
                             setEditingFlight(fl);
+                            setLastInteractedFlight(fl);
                             setFormOpen(true);
                           }}
                           onDelete={deleteFlight}
@@ -207,14 +212,18 @@ export function FlightsTab({
         onSave={
           editingFlight?.id
             ? async (data) => {
-                await updateFlight(editingFlight.id!, data);
+                const updated = await updateFlight(editingFlight.id!, data);
+                setLastInteractedFlight(updated as Flight);
               }
-            : addFlight
+            : async (data) => {
+                const added = await addFlight(data);
+                setLastInteractedFlight(added as Flight);
+              }
         }
         initial={editingFlight}
         tripId={tripId}
         tripCountries={tripCountries}
-        lastFlight={flights[flights.length - 1]}
+        lastFlight={lastInteractedFlight}
         tripStartDate={tripStartDate}
         tripEndDate={tripEndDate}
         tripCurrency={tripCurrency}

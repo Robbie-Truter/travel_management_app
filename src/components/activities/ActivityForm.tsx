@@ -97,24 +97,28 @@ export function ActivityForm({
       return;
     }
     setSaving(true);
-    await onSave({
-      tripId,
-      name: form.name,
-      tripCountryId: form.tripCountryId,
-      destinationId: form.destinationId,
-      type: form.type as Activity["type"],
-      date: form.date,
-      duration: Number(form.duration) || undefined,
-      cost: Number(form.cost) || 0,
-      currency: form.currency as Currency,
-      link: form.link || undefined,
-      notes: form.notes || undefined,
-      image: form.image || undefined,
-      isConfirmed: form.isConfirmed,
-      order: initial?.order ?? 0,
-    });
-    setSaving(false);
-    onClose();
+
+    try {
+      await onSave({
+        tripId,
+        name: form.name,
+        tripCountryId: form.tripCountryId,
+        destinationId: form.destinationId,
+        type: form.type as Activity["type"],
+        date: form.date,
+        duration: Number(form.duration) || undefined,
+        cost: Number(form.cost) || 0,
+        currency: form.currency as Currency,
+        link: form.link || undefined,
+        notes: form.notes || undefined,
+        image: form.image || undefined,
+        isConfirmed: form.isConfirmed,
+        order: initial?.order ?? 0,
+      });
+      handleClose();
+    } finally {
+      setSaving(false);
+    }
   };
 
   const filteredDestinations = destinations.filter((d) => d.tripCountryId === form.tripCountryId);

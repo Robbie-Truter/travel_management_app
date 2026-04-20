@@ -68,6 +68,7 @@ export function NotesTab({ tripId }: NotesTabProps) {
               <h2 className="font-bold text-lg flex items-center gap-2 text-amber-pastel-700 dark:text-amber-pastel-400">
                 <Lightbulb size={20} className="text-amber-pastel-500" />
                 Trip Notebook
+                <AnimatePresence>{isRefetching && <NoteRefetchingIndicator />}</AnimatePresence>
               </h2>
             </div>
 

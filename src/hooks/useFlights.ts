@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
 import type { Flight } from "@/db/types";
 
 export function useFlights(tripId?: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { showToast } = useNotification();
 
   const {
     data: flights,
@@ -63,6 +65,9 @@ export function useFlights(tripId?: number) {
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["flights"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to add flight", "error");
+    },
   });
 
   const updateFlightMutation = useMutation({
@@ -88,6 +93,9 @@ export function useFlights(tripId?: number) {
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["flights"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to update flight", "error");
+    },
   });
 
   const deleteFlightMutation = useMutation({
@@ -96,6 +104,9 @@ export function useFlights(tripId?: number) {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["flights"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to delete flight", "error");
+    },
   });
 
   const confirmFlightMutation = useMutation({
@@ -104,6 +115,9 @@ export function useFlights(tripId?: number) {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["flights"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to confirm flight", "error");
+    },
   });
 
   return {

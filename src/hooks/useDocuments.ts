@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
 import { uploadFile, deleteFile } from "@/lib/storage";
 import type { Document } from "@/db/types";
 
@@ -16,6 +17,7 @@ const getExtensionFromMime = (mime?: string, defaultExt = "file") => {
 export function useDocuments(tripId: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { showToast } = useNotification();
 
   const {
     data: documents,
@@ -121,6 +123,9 @@ export function useDocuments(tripId: number) {
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["documents"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to add document", "error");
+    },
   });
 
   const updateDocumentMutation = useMutation({
@@ -156,6 +161,9 @@ export function useDocuments(tripId: number) {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["documents"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to update document", "error");
+    },
   });
 
   const deleteDocumentMutation = useMutation({
@@ -174,6 +182,9 @@ export function useDocuments(tripId: number) {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["documents"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to delete document", "error");
+    },
   });
 
   return {

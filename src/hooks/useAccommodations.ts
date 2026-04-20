@@ -1,12 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
 import { uploadFile, getFileUrl, deleteFile } from "@/lib/storage";
 import type { Accommodation } from "@/db/types";
 
 export function useAccommodations(tripId: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { showToast } = useNotification();
 
   const {
     data: accommodations,
@@ -88,6 +90,9 @@ export function useAccommodations(tripId: number) {
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["accommodations"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to add accommodation", "error");
+    },
   });
 
   const updateAccommodationMutation = useMutation({
@@ -134,6 +139,9 @@ export function useAccommodations(tripId: number) {
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["accommodations"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to update accommodation", "error");
+    },
   });
 
   const deleteAccommodationMutation = useMutation({
@@ -154,6 +162,9 @@ export function useAccommodations(tripId: number) {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["accommodations"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to delete accommodation", "error");
+    },
   });
 
   const confirmAccommodationMutation = useMutation({
@@ -165,6 +176,9 @@ export function useAccommodations(tripId: number) {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["accommodations"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to confirm accommodation", "error");
+    },
   });
 
   return {

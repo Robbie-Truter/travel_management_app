@@ -1,10 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
 
 export function useNotes(tripId: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { showToast } = useNotification();
 
   const {
     data: note,
@@ -41,6 +43,7 @@ export function useNotes(tripId: number) {
   const saveNoteMutation = useMutation({
     mutationFn: async (content: string) => {
       if (!user) throw new Error("Not authenticated");
+
       const now = new Date().toISOString();
 
       const { error } = await supabase.from("notes").upsert(
@@ -56,6 +59,9 @@ export function useNotes(tripId: number) {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notes"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to save note", "error");
+    },
   });
 
   return {

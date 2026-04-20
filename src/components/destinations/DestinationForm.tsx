@@ -115,23 +115,30 @@ export function DestinationForm({
 
   const handleSave = async () => {
     const e = validate();
+
     if (Object.keys(e).length > 0) {
       setErrors(e);
       return;
     }
+
     setSaving(true);
-    await onSave({
-      tripId,
-      name: form.name,
-      tripCountryId: form.tripCountryId!,
-      countryId: selectedCountry!.countryId,
-      cityLookupId: form.cityLookupId,
-      notes: form.notes || undefined,
-      image: form.image || undefined,
-      order: initial?.order ?? 0,
-    });
-    setSaving(false);
-    onClose();
+
+    try {
+      await onSave({
+        tripId,
+        name: form.name,
+        tripCountryId: form.tripCountryId!,
+        countryId: selectedCountry!.countryId,
+        cityLookupId: form.cityLookupId,
+        notes: form.notes || undefined,
+        image: form.image || undefined,
+        order: initial?.order ?? 0,
+      });
+
+      onClose();
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleClose = () => {

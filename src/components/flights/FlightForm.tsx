@@ -16,6 +16,13 @@ interface Airport {
   country: string;
 }
 
+interface Airline {
+  id: string;
+  lcc: string;
+  name: string;
+  logo: string;
+}
+
 interface FlightFormProps {
   open: boolean;
   onClose: () => void;
@@ -46,8 +53,8 @@ export function FlightForm({
       ...s,
     })) ?? [
       {
-        airline: lastFlight?.segments[0]?.airline ?? "",
-        flightNumber: lastFlight?.segments[0]?.flightNumber ?? "",
+        airline: "",
+        flightNumber: "",
         departureAirport: "",
         arrivalAirport: "",
         departureTime: tripStartDate,
@@ -62,15 +69,22 @@ export function FlightForm({
     notes: initial?.notes ?? "",
     isConfirmed: initial?.isConfirmed ?? false,
   });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [airports, setAirports] = useState<Airport[]>([]);
+  const [airlines, setAirlines] = useState<Airline[]>([]);
 
   React.useEffect(() => {
     fetch("/data/airports-search.json")
       .then((res) => res.json())
       .then((data) => setAirports(data))
       .catch((err) => console.error("Failed to load airports:", err));
+
+    fetch("/data/airlines.json")
+      .then((res) => res.json())
+      .then((data) => setAirlines(data))
+      .catch((err) => console.error("Failed to load airlines:", err));
   }, []);
 
   const addSegment = () => {
@@ -127,6 +141,24 @@ export function FlightForm({
       country: ap.country,
     }));
   }, [airports]);
+
+  const airlineOptions = React.useMemo(() => {
+    return airlines.map((al) => ({
+      value: al.name,
+      label: al.name,
+      sublabel: al.id !== "None" ? al.id : undefined,
+      icon: (
+        <div className="w-5 h-5 rounded-sm overflow-hidden flex items-center justify-center bg-white border border-border shrink-0">
+          <img
+            src={al.logo}
+            alt=""
+            className="max-w-full max-h-full object-contain"
+            loading="lazy"
+          />
+        </div>
+      ),
+    }));
+  }, [airlines]);
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -186,24 +218,30 @@ export function FlightForm({
 
   const handleSave = async () => {
     const e = validate();
+
     if (Object.keys(e).length > 0) {
       setErrors(e);
       return;
     }
+
     setSaving(true);
-    await onSave({
-      tripId,
-      description: form.description || undefined,
-      tripCountryId: form.tripCountryId,
-      segments: form.segments,
-      price: Number(form.price),
-      currency: form.currency as Currency,
-      bookingLink: form.bookingLink || undefined,
-      notes: form.notes || undefined,
-      isConfirmed: form.isConfirmed,
-    });
-    setSaving(false);
-    onClose();
+
+    try {
+      await onSave({
+        tripId,
+        description: form.description || undefined,
+        tripCountryId: form.tripCountryId,
+        segments: form.segments,
+        price: Number(form.price),
+        currency: form.currency as Currency,
+        bookingLink: form.bookingLink || undefined,
+        notes: form.notes || undefined,
+        isConfirmed: form.isConfirmed,
+      });
+      handleClose();
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -291,12 +329,13 @@ export function FlightForm({
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <Input
+              <SearchableSelect
                 id={`seg-air-${index}`}
                 label="Airline"
-                placeholder="e.g. Emirates"
+                placeholder="Search airline..."
+                options={airlineOptions}
                 value={seg.airline}
-                onChange={(e) => updateSegment(index, "airline", e.target.value)}
+                onChange={(val: string) => updateSegment(index, "airline", val)}
                 error={errors[`seg-air-${index}`]}
               />
               <Input
@@ -382,18 +421,14 @@ export function FlightForm({
           </Button>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 pt-2">
-          <div className="col-span-2">
-            <Input
-              id="fl-price"
-              label={`Total Price (${tripCurrency})`}
-              type="number"
-              placeholder="0.00"
-              value={form.price}
-              onChange={(e) => set("price", e.target.value)}
-            />
-          </div>
-        </div>
+        <Input
+          id="fl-price"
+          label={`Total Price (${tripCurrency})`}
+          type="number"
+          placeholder="0.00"
+          value={form.price}
+          onChange={(e) => set("price", e.target.value)}
+        />
 
         <Input
           id="fl-link"

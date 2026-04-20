@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
 import type { TripCountry, TripCountryRow } from "@/db/types";
 
 export function useTripCountries(tripId: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { showToast } = useNotification();
 
   const {
     data: tripCountries,
@@ -64,6 +66,9 @@ export function useTripCountries(tripId: number) {
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tripCountries", tripId] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to add country", "error");
+    },
   });
 
   const updateTripCountryMutation = useMutation({
@@ -80,6 +85,9 @@ export function useTripCountries(tripId: number) {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tripCountries", tripId] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to update country", "error");
+    },
   });
 
   const deleteTripCountryMutation = useMutation({
@@ -90,6 +98,9 @@ export function useTripCountries(tripId: number) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tripCountries", tripId] });
       queryClient.invalidateQueries({ queryKey: ["destinations", tripId] });
+    },
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to delete country", "error");
     },
   });
 
