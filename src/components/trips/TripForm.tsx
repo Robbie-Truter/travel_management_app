@@ -30,13 +30,6 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
   const [startDate, setStartDate] = useState(initial?.startDate ?? "");
   const [endDate, setEndDate] = useState(initial?.endDate ?? "");
 
-  const dateRange = React.useMemo(
-    () => ({
-      from: startDate ? parseISO(startDate) : undefined,
-      to: endDate ? parseISO(endDate) : undefined,
-    }),
-    [startDate, endDate],
-  );
   const [status, setStatus] = useState<TripStatus>(initial?.status ?? "planning");
   const [baseCurrency, setBaseCurrency] = useState(initial?.baseCurrency ?? "USD");
   const [description, setDescription] = useState(initial?.description ?? "");
@@ -44,6 +37,14 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const dateRange = React.useMemo(
+    () => ({
+      from: startDate ? parseISO(startDate) : undefined,
+      to: endDate ? parseISO(endDate) : undefined,
+    }),
+    [startDate, endDate],
+  );
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -57,21 +58,30 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
 
   const handleSave = async () => {
     const e = validate();
+
     if (Object.keys(e).length > 0) {
       setErrors(e);
       return;
     }
+
     setSaving(true);
-    await onSave({
-      name,
-      startDate,
-      endDate,
-      status,
-      description,
-      coverImage,
-      baseCurrency,
-    });
-    setSaving(false);
+
+    try {
+      await onSave({
+        name,
+        startDate,
+        endDate,
+        status,
+        description,
+        coverImage,
+        baseCurrency,
+      });
+    } catch (error) {
+      console.error("Error saving trip:", error);
+    } finally {
+      setSaving(false);
+    }
+
     onClose();
   };
 

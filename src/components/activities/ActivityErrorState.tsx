@@ -24,11 +24,11 @@ export function ActivityErrorState({
           {message}. We encountered an error fetching your itinerary activities.
         </p>
         <Button
-          variant="primary"
+          variant="secondary"
           onClick={onRetry}
-          className="bg-orange-600 hover:bg-orange-700 text-white border-none shadow-lg shadow-orange-200 dark:shadow-none"
+          className="flex items-center gap-2"
         >
-          <RefreshCw size={16} className="mr-2" />
+          <RefreshCw size={16} />
           Try Again
         </Button>
       </CardContent>

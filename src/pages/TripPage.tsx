@@ -13,6 +13,7 @@ import {
   LayoutGrid,
   Loader2,
   PiggyBank,
+  AlertCircle,
 } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
@@ -66,7 +67,8 @@ export function TripPage() {
   const navigate = useNavigate();
 
   const id = Number(tripId);
-  const { trip, loading } = useTrip(id);
+
+  const { trip, isLoading, isError, error, refetch } = useTrip(id);
 
   // Still needed for Hero Header and some tab passing
   const { tripCountries } = useTripCountries(id);
@@ -79,7 +81,30 @@ export function TripPage() {
 
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
-  if (loading) {
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full min-h-[400px] p-6 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-rose-pastel-50 dark:bg-rose-pastel-900/30 flex items-center justify-center text-rose-pastel-500 border border-rose-pastel-200 dark:border-rose-pastel-800 mb-6 mx-auto">
+          <AlertCircle size={32} />
+        </div>
+        <h3 className="text-xl font-bold text-text-primary tracking-tight">Failed to load trip</h3>
+        <p className="text-sm text-text-secondary mb-8 max-w-xs mx-auto font-medium">
+          {error instanceof Error
+            ? error.message
+            : "We encountered an issue fetching your trip details. Please check your connection and try again."}
+        </p>
+        <Button
+          variant="secondary"
+          onClick={() => refetch()}
+          className="h-11 px-8 rounded-xl font-bold"
+        >
+          Try Again
+        </Button>
+      </div>
+    );
+  }
+
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-[400px]">
         <motion.div

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { TripCard } from "@/components/trips/TripCard";
 import { TripForm } from "@/components/trips/TripForm";
 import { TripSkeleton, RefetchingIndicator } from "@/components/trips/TripLoadingStates";
+import TripErrorState from "@/components/trips/TripErrorState";
 import { useTrips } from "@/hooks/useTrips";
 import { importTripFromJSON } from "@/lib/export";
 import type { Trip } from "@/db/types";
@@ -14,7 +15,8 @@ export function DashboardPage() {
   const [editingTrip, setEditingTrip] = useState<Trip | undefined>();
   const [search, setSearch] = useState("");
 
-  const { trips, addTrip, updateTrip, deleteTrip, loading, isRefetching } = useTrips();
+  const { trips, addTrip, updateTrip, deleteTrip, loading, isRefetching, isError, error, refetch } =
+    useTrips();
 
   const importRef = useRef<HTMLInputElement>(null);
 
@@ -117,7 +119,13 @@ export function DashboardPage() {
 
       {/* Trip grid */}
       <AnimatePresence mode="wait">
-        {loading ? (
+        {isError ? (
+          <TripErrorState
+            key="error"
+            message={error instanceof Error ? error.message : "Something went wrong"}
+            onRetry={refetch}
+          />
+        ) : loading ? (
           <motion.div
             key="loading"
             initial={{ opacity: 0 }}

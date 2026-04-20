@@ -7,7 +7,10 @@ interface AccommodationErrorStateProps {
   onRetry: () => void;
 }
 
-export function AccommodationErrorState({ message = "Failed to load accommodation data", onRetry }: AccommodationErrorStateProps) {
+export function AccommodationErrorState({
+  message = "Failed to load accommodation data",
+  onRetry,
+}: AccommodationErrorStateProps) {
   return (
     <Card className="border-rose-200 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/10">
       <CardContent className="p-8 flex flex-col items-center text-center">
@@ -20,12 +23,8 @@ export function AccommodationErrorState({ message = "Failed to load accommodatio
         <p className="text-sm text-slate-600 dark:text-slate-400 max-w-xs mb-6">
           {message}. We couldn't retrieve your stays.
         </p>
-        <Button 
-          variant="primary" 
-          onClick={onRetry}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white border-none shadow-lg shadow-emerald-200 dark:shadow-none"
-        >
-          <RefreshCw size={16} className="mr-2" />
+        <Button variant="secondary" onClick={onRetry} className="flex items-center gap-2">
+          <RefreshCw size={16} />
           Try Again
         </Button>
       </CardContent>

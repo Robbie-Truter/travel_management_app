@@ -2,17 +2,22 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
 import { uploadFile, getFileUrl, deleteFile } from "@/lib/storage";
 import type { Trip, TripRow, TripCountryRow } from "@/db/types";
 
 export function useTrips() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { showToast } = useNotification();
 
   const {
     data: trips,
     isLoading,
+    isError,
+    error,
     isRefetching,
+    refetch,
   } = useQuery({
     queryKey: ["trips", user?.id],
     queryFn: async (): Promise<Trip[]> => {
@@ -54,7 +59,12 @@ export function useTrips() {
     enabled: !!user,
   });
 
-  const addTripMutation = useMutation({
+  const {
+    mutateAsync: addTripMutation,
+    isPending: isAdding,
+    isError: isAddError,
+    error: addError,
+  } = useMutation({
     mutationFn: async (trip: Omit<Trip, "id" | "createdAt" | "updatedAt">) => {
       if (!user) throw new Error("Not authenticated");
 
@@ -85,9 +95,17 @@ export function useTrips() {
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["trips"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to add trip", "error");
+    },
   });
 
-  const updateTripMutation = useMutation({
+  const {
+    mutateAsync: updateTripMutation,
+    isPending: isUpdating,
+    isError: isUpdateError,
+    error: updateError,
+  } = useMutation({
     mutationFn: async ({ id, changes }: { id: number; changes: Partial<Trip> }) => {
       if (!user) throw new Error("Not authenticated");
       const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
@@ -118,15 +136,24 @@ export function useTrips() {
         .select()
         .single();
       if (error) throw error;
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["trips"] });
       queryClient.invalidateQueries({ queryKey: ["trip"] });
     },
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to update trip", "error");
+    },
   });
 
-  const deleteTripMutation = useMutation({
+  const {
+    mutateAsync: deleteTripMutation,
+    isPending: isDeleting,
+    isError: isDeleteError,
+    error: deleteError,
+  } = useMutation({
     mutationFn: async (id: number) => {
       // 1. Get trip to find cover image path
       const { data: trip } = await supabase
@@ -145,6 +172,9 @@ export function useTrips() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["trips"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to delete trip", "error");
+    },
   });
 
   const getTrip = async (id: number): Promise<Trip | undefined> => {
@@ -182,13 +212,23 @@ export function useTrips() {
   return {
     trips: trips ?? [],
     loading: isLoading,
+    isError,
+    error,
     isRefetching,
-    addTrip: async (trip: Omit<Trip, "id" | "createdAt" | "updatedAt">) =>
-      addTripMutation.mutateAsync(trip),
-    updateTrip: async (id: number, changes: Partial<Trip>) =>
-      updateTripMutation.mutateAsync({ id, changes }),
-    deleteTrip: async (id: number) => deleteTripMutation.mutateAsync(id),
+    addTrip: async (trip: Omit<Trip, "id" | "createdAt" | "updatedAt">) => addTripMutation(trip),
+    isAdding,
+    isAddError,
+    addError,
+    updateTrip: async (id: number, changes: Partial<Trip>) => updateTripMutation({ id, changes }),
+    isUpdating,
+    isUpdateError,
+    updateError,
+    deleteTrip: async (id: number) => deleteTripMutation(id),
+    isDeleting,
+    isDeleteError,
+    deleteError,
     getTrip,
+    refetch,
   };
 }
 
@@ -197,9 +237,10 @@ export function useTrip(id: number | undefined) {
 
   const {
     data: trip,
-    isLoading: loading,
+    isLoading,
     isRefetching,
     isError,
+    error,
     refetch,
   } = useQuery({
     queryKey: ["trip", id],
@@ -213,7 +254,7 @@ export function useTrip(id: number | undefined) {
       if (error) throw error;
       if (!data) return null;
 
-      const tripRow = (data as unknown) as TripRow;
+      const tripRow = data as unknown as TripRow;
       return {
         ...tripRow,
         startDate: tripRow.start_date,
@@ -240,7 +281,7 @@ export function useTrip(id: number | undefined) {
     enabled: !!id && !!user,
   });
 
-  return { trip, loading, isError, isRefetching, refetch };
+  return { trip, isLoading, isError, error, isRefetching, refetch };
 }
 
 export function useSettings() {

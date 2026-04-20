@@ -158,18 +158,38 @@ function SidebarContent({
           isCollapsed ? "justify-center px-0" : "justify-between px-5 py-5",
         )}
       >
-        <button
+        <motion.button
           onClick={() => {
             navigate("/");
             onClose?.();
           }}
-          className="flex items-center gap-2.5 cursor-pointer overflow-hidden whitespace-nowrap"
+          className="cursor-pointer overflow-hidden whitespace-nowrap"
         >
-          <div className="w-8 h-8 rounded-lg bg-lavender-500 flex items-center justify-center shrink-0">
-            <Plane size={16} className="text-white" />
-          </div>
-          {!isCollapsed && <span className="font-bold text-lg text-text-primary">Wanderplan</span>}
-        </button>
+          <AnimatePresence mode="wait">
+            {isCollapsed ? (
+              <motion.img
+                src="/SideBarLogo.svg"
+                alt="Logo"
+                initial={{ opacity: 0, filter: "blur(4px)", scale: 0.5 }}
+                animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
+                exit={{ opacity: 0, filter: "blur(4px)", scale: 0.5 }}
+                transition={{ duration: 0.2, delay: 0.1 }}
+              />
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, filter: "blur(4px)", scale: 0.5 }}
+                animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
+                exit={{ opacity: 0, filter: "blur(4px)", scale: 0.5 }}
+                transition={{ duration: 0.2, delay: 0.1 }}
+                className="flex items-center gap-2"
+              >
+                <img src="/SideBarLogo.svg" alt="Side Quest Plan Logo" />
+                <p className="font-bold text-lg text-text-primary">Side Quest Plan</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.button>
+
         {onClose && (
           <Button variant="ghost" size="icon-sm" onClick={onClose}>
             <X size={16} />
@@ -178,7 +198,12 @@ function SidebarContent({
       </div>
 
       {/* Nav */}
-      <nav className={cn("flex-1 py-4 space-y-1 overflow-y-auto min-h-0 scrollbar-hide", isCollapsed ? "px-2" : "px-3")}>
+      <nav
+        className={cn(
+          "flex-1 py-4 space-y-1 overflow-y-auto min-h-0 scrollbar-hide",
+          isCollapsed ? "px-2" : "px-3",
+        )}
+      >
         <NavLink
           to="/"
           onClick={onClose}

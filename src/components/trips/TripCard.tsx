@@ -23,9 +23,12 @@ export function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
 
   const handleDelete = async () => {
     setDeleting(true);
-    await onDelete(trip.id!);
-    setDeleting(false);
-    setDeleteOpen(false);
+    try {
+      await onDelete(trip.id!);
+    } catch {
+      setDeleting(false);
+      setDeleteOpen(false);
+    }
   };
 
   const handleExport = async (e: React.MouseEvent) => {

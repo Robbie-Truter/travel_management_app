@@ -1,99 +1,31 @@
-import React, { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback } from "react";
 import type { Trip, TripCountry } from "@/db/types";
-import { useNotes } from "@/hooks/useNotes";
 import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import {
-  Plane,
-  Hotel,
-  Compass,
-  Calendar,
-  StickyNote,
-  Plus,
-  PiggyBank,
-  MapPin,
-  RefreshCw,
-  Info,
-} from "lucide-react";
-import { formatDate, formatCurrency, formatDuration, getFlagEmoji } from "@/lib/utils";
+import { PiggyBank, RefreshCw, Info } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 import { useExchangeRates } from "@/hooks/useExchangeRates";
 import { CURRENCIES } from "@/constants/currencies";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
-import { Badge } from "@/components/ui/Badge";
 import { useFlights } from "@/hooks/useFlights";
 import { useAccommodations } from "@/hooks/useAccommodations";
 import { useActivities } from "@/hooks/useActivities";
-import { AnimatePresence } from "framer-motion";
-import { OverviewSkeleton, OverviewRefetchingIndicator } from "./OverviewLoadingStates";
-import { OverviewErrorState } from "./OverviewErrorState";
-
-const ACTIVITY_TAGS = [
-  { value: "sightseeing", label: "Sightseeing", icon: "🏛️" },
-  { value: "dining", label: "Dining", icon: "🍽️" },
-  { value: "adventure", label: "Adventure", icon: "🌋" },
-  { value: "culture", label: "Culture", icon: "🎭" },
-  { value: "relaxation", label: "Relaxation", icon: "🧘" },
-  { value: "shopping", label: "Shopping", icon: "🛍️" },
-  { value: "entertainment", label: "Entertainment", icon: "🍿" },
-  { value: "sport", label: "Sport", icon: "⚽" },
-  { value: "nature", label: "Nature", icon: "🌳" },
-  { value: "other", label: "Other", icon: "📍" },
-];
+import { OverviewFlightsCard } from "./OverviewFlightsCard";
+import { OverviewAccommodationsCard } from "./OverviewAccommodationsCard";
+import { OverviewActivitiesCard } from "./OverviewActivitiesCard";
+import { OverviewCountriesCard } from "./OverviewCountriesCard";
+import { OverviewPlannerCard } from "./OverviewPlannerCard";
+import { OverviewNotesCard } from "./OverviewNotesCard";
 
 interface TripOverviewProps {
   trip: Trip;
   tripCountries: TripCountry[];
 }
 
-function EmptyState({
-  icon: Icon,
-  label,
-  action,
-  actionLabel,
-}: {
-  icon: React.ElementType;
-  label: string;
-  action?: () => void;
-  actionLabel?: string;
-}) {
-  return (
-    <div className="text-center p-4">
-      <Icon size={24} className="mx-auto text-gray-400" />
-      <p className="mt-2 text-sm text-gray-500">{label}</p>
-      {action && actionLabel && (
-        <Button variant="primary" size="sm" onClick={action} className="mt-2">
-          <Plus size={14} />
-          {actionLabel}
-        </Button>
-      )}
-    </div>
-  );
-}
-
 export function OverviewTab({ trip, tripCountries }: TripOverviewProps) {
-  const {
-    flights,
-    loading: flightsLoading,
-    isRefetching: flightsRefetching,
-    isError: flightsError,
-    refetch: refetchFlights,
-  } = useFlights(trip.id!);
-  const {
-    accommodations,
-    loading: accsLoading,
-    isRefetching: accsRefetching,
-    isError: accsError,
-    refetch: refetchAccs,
-  } = useAccommodations(trip.id!);
-  const {
-    activities,
-    loading: actsLoading,
-    isRefetching: actsRefetching,
-    isError: actsError,
-    refetch: refetchActs,
-  } = useActivities(trip.id!);
+  const { flights } = useFlights(trip.id!);
+  const { accommodations } = useAccommodations(trip.id!);
+  const { activities } = useActivities(trip.id!);
 
-  const { note } = useNotes(trip.id!);
   const { data: currencyRates } = useExchangeRates();
   const [displayCurrency, setDisplayCurrency] = useState(trip.baseCurrency);
 
@@ -110,16 +42,6 @@ export function OverviewTab({ trip, tripCountries }: TripOverviewProps) {
     [currencyRates],
   );
 
-  const isInitialLoading = flightsLoading || accsLoading || actsLoading;
-  const isAnyRefetching = flightsRefetching || accsRefetching || actsRefetching;
-  const isAnyError = flightsError || accsError || actsError;
-
-  const handleRetry = () => {
-    refetchFlights();
-    refetchAccs();
-    refetchActs();
-  };
-
   const countryMap = useMemo(() => {
     const map: Record<number, string> = {};
     tripCountries.forEach((tc) => {
@@ -127,36 +49,6 @@ export function OverviewTab({ trip, tripCountries }: TripOverviewProps) {
     });
     return map;
   }, [tripCountries]);
-
-  // Derived data
-  const {
-    confirmedFlights,
-    unconfirmedFlights,
-    upcomingFlights,
-    confirmedStays,
-    unconfirmedStays,
-    upcomingStays,
-    confirmedActivities,
-    unconfirmedActivities,
-    upcomingActivities,
-  } = useMemo(() => {
-    const now = new Date();
-    return {
-      confirmedFlights: flights.filter((f) => f.isConfirmed),
-      unconfirmedFlights: flights.filter((f) => !f.isConfirmed),
-      upcomingFlights: flights.filter((f) => new Date(f.segments[0].departureTime) > now),
-      confirmedStays: accommodations.filter((a) => a.isConfirmed),
-      unconfirmedStays: accommodations.filter((a) => !a.isConfirmed),
-      upcomingStays: accommodations
-        .filter((a) => new Date(a.checkIn) >= now)
-        .sort((a, b) => new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime()),
-      confirmedActivities: activities.filter((a) => a.isConfirmed),
-      unconfirmedActivities: activities.filter((a) => !a.isConfirmed),
-      upcomingActivities: activities
-        .filter((a) => new Date(a.date) > now)
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
-    };
-  }, [flights, accommodations, activities]);
 
   // Budget calculations
   const { budgetBreakdown, totalInBase, confirmedTotalInBase } = useMemo(() => {
@@ -233,349 +125,28 @@ export function OverviewTab({ trip, tripCountries }: TripOverviewProps) {
 
   const currencies = useMemo(() => Object.keys(budgetBreakdown), [budgetBreakdown]);
 
-  // Early returns for loading and error states
-  if (isInitialLoading) {
-    return <OverviewSkeleton />;
-  }
-
-  if (isAnyError) {
-    return <OverviewErrorState onRetry={handleRetry} />;
-  }
-
   return (
     <div className="relative">
-      <AnimatePresence>{isAnyRefetching && <OverviewRefetchingIndicator />}</AnimatePresence>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Countries Card */}
-        <Card className="flex flex-col p-0 h-110 overflow-hidden group hover:shadow-card-hover transition-shadow text-center sm:text-left">
-          <div className="bg-lavender-50 dark:bg-lavender-900/10 p-5 border-b border-lavender-100 dark:border-lavender-900/20 text-left shrink-0">
-            <h3 className="font-bold text-lg flex items-center gap-2 text-lavender-700 dark:text-lavender-400">
-              <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
-                <MapPin size={18} className="text-lavender-500" />
-              </div>
-              Countries
-            </h3>
-          </div>
-          <div className="p-5 flex flex-col h-full overflow-y-auto">
-            <div className="grow">
-              <p className="text-3xl font-bold text-text-primary">{tripCountries?.length ?? 0}</p>
-              <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">
-                Countries Visited
-              </p>
-
-              {(tripCountries?.length ?? 0) > 0 && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {tripCountries?.map((tc) => (
-                    <span
-                      key={tc.id}
-                      className="px-2 py-1 bg-surface-3 rounded-md text-[11px] font-medium text-text-primary border border-border flex items-center gap-1.5"
-                    >
-                      <span className="text-[14px]">{getFlagEmoji(tc.countryCode)}</span>
-                      {tc.countryName}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {(tripCountries?.length ?? 0) === 0 && (
-              <p className="text-xs text-text-muted italic mt-2">No countries added yet.</p>
-            )}
-          </div>
-        </Card>
+        <OverviewCountriesCard tripCountries={tripCountries} />
 
         {/* Flights Card */}
-        <Card className="flex flex-col p-0 h-110 overflow-hidden group hover:shadow-card-hover transition-shadow">
-          <div className="bg-sky-pastel-50 dark:bg-sky-pastel-900/10 p-5 border-b border-sky-pastel-100 dark:border-sky-pastel-900/20 shrink-0">
-            <h3 className="font-bold text-lg flex items-center gap-2 text-sky-pastel-700 dark:text-sky-pastel-400">
-              <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
-                <Plane size={18} className="text-sky-pastel-500" />
-              </div>
-              Flights
-            </h3>
-          </div>
-          <div className="grow p-5 overflow-y-auto">
-            {flights.length > 0 ? (
-              <div className="flex flex-col h-full space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-3xl font-bold text-text-primary">{flights.length}</p>
-                    <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">
-                      Total
-                    </p>
-                  </div>
-                  <div className="border-l border-border pl-4">
-                    <p className="text-3xl font-bold text-sage-600">{confirmedFlights.length}</p>
-                    <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">
-                      Confirmed
-                    </p>
-                  </div>
-                </div>
-
-                {upcomingFlights.length > 0 && (
-                  <div className="pt-4 border-t border-border">
-                    <h4 className="text-xs font-semibold text-text-muted uppercase mb-3 flex items-center gap-1.5">
-                      <Calendar size={12} />
-                      Upcoming
-                    </h4>
-                    <ul className="space-y-3">
-                      {upcomingFlights.slice(0, 2).map((f) => (
-                        <li key={f.id} className="group/item">
-                          <div className="flex justify-between items-start mb-0.5">
-                            <span className="text-sm font-semibold text-text-primary group-hover/item:text-sky-pastel-600 transition-colors">
-                              {f.description ||
-                                `${f.segments[0].airline} ${f.segments[0].flightNumber}`}
-                            </span>
-                            {!f.isConfirmed && (
-                              <span className="text-[9px] px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded-full font-bold uppercase tracking-tighter border border-amber-100">
-                                Planning
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-text-secondary flex items-center gap-1">
-                            {f.description && (
-                              <span className="text-text-muted">
-                                {f.segments[0].airline} {f.segments[0].flightNumber} •{" "}
-                              </span>
-                            )}
-                            {formatDate(f.segments[0].departureTime)}
-                          </p>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <div className="mt-auto">
-                  <p className="text-[11px] text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg font-medium border border-amber-100/50">
-                    {`${unconfirmedFlights?.length > 0 ? unconfirmedFlights?.length : "No"} flight${unconfirmedFlights.length > 1 ? "s" : ""} in planning phase`}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <EmptyState icon={Plane} label="No flights yet" />
-            )}
-          </div>
-        </Card>
+        <OverviewFlightsCard tripId={trip.id!} />
 
         {/* Accommodations Card */}
-        <Card className="flex flex-col p-0 h-110 overflow-hidden group hover:shadow-card-hover transition-shadow">
-          <div className="bg-lavender-50 dark:bg-lavender-900/10 p-5 border-b border-lavender-100 dark:border-lavender-900/20 shrink-0">
-            <h3 className="font-bold text-lg flex items-center gap-2 text-lavender-700 dark:text-lavender-400">
-              <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
-                <Hotel size={18} className="text-lavender-500" />
-              </div>
-              Stays
-            </h3>
-          </div>
-          <div className="grow p-5 overflow-y-auto">
-            {accommodations.length > 0 ? (
-              <div className="flex flex-col h-full space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-3xl font-bold text-text-primary">{accommodations.length}</p>
-                    <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">
-                      Total
-                    </p>
-                  </div>
-                  <div className="border-l border-border pl-4">
-                    <p className="text-3xl font-bold text-sage-600">{confirmedStays.length}</p>
-                    <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">
-                      Confirmed
-                    </p>
-                  </div>
-                </div>
-
-                {upcomingStays.length > 0 && (
-                  <div className="pt-4 border-t border-border">
-                    <h4 className="text-xs font-semibold text-text-muted uppercase mb-3 flex items-center gap-1.5">
-                      <Calendar size={12} />
-                      Upcoming
-                    </h4>
-                    <ul className="space-y-3">
-                      {upcomingStays.slice(0, 2).map((a) => (
-                        <li key={a.id} className="group/item">
-                          <div className="flex justify-between items-start mb-0.5">
-                            <div className="text-sm font-semibold text-text-primary group-hover/item:text-lavender-600 transition-colors">
-                              {a.tripCountryId && (
-                                <span className="font-semibold">
-                                  {countryMap[a.tripCountryId]},{" "}
-                                </span>
-                              )}
-                              {a.name}
-                            </div>
-                            {!a.isConfirmed && (
-                              <span className="text-[9px] px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded-full font-bold uppercase tracking-tighter border border-amber-100">
-                                Planning
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-text-secondary flex items-center gap-1">
-                            {a.location}
-                          </p>
-                          <p className="text-[10px] text-text-muted mt-0.5">
-                            {formatDate(a.checkIn, "MMM d")} - {formatDate(a.checkOut, "MMM d")}
-                          </p>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <div className="mt-auto">
-                  <p className="text-[11px] text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg font-medium border border-amber-100/50">
-                    {`${unconfirmedStays?.length > 0 ? unconfirmedStays?.length : "No"} stay${unconfirmedStays.length !== 1 ? "s" : ""} in planning phase`}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <EmptyState icon={Hotel} label="No accommodations yet" />
-            )}
-          </div>
-        </Card>
+        <OverviewAccommodationsCard tripId={trip.id!} countryMap={countryMap} />
 
         {/* Activities Card */}
-        <Card className="flex flex-col p-0 h-110 overflow-hidden group hover:shadow-card-hover transition-shadow">
-          <div className="bg-teal-pastel-50 dark:bg-teal-pastel-900/10 p-5 border-b border-teal-pastel-100 dark:border-teal-pastel-900/20 shrink-0">
-            <h3 className="font-bold text-lg flex items-center gap-2 text-teal-pastel-700 dark:text-teal-pastel-400">
-              <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
-                <Compass size={18} className="text-teal-pastel-500" />
-              </div>
-              Activities
-            </h3>
-          </div>
-          <div className="grow p-5 overflow-y-auto">
-            {activities.length > 0 ? (
-              <div className="flex flex-col h-full space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-3xl font-bold text-text-primary">{activities.length}</p>
-                    <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">
-                      Total
-                    </p>
-                  </div>
-                  <div className="border-l border-border pl-4">
-                    <p className="text-3xl font-bold text-sage-600">{confirmedActivities.length}</p>
-                    <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">
-                      Confirmed
-                    </p>
-                  </div>
-                </div>
-                {upcomingActivities.length > 0 && (
-                  <div className="pt-4 border-t border-border">
-                    <h4 className="text-xs font-semibold text-text-muted uppercase mb-3 flex items-center gap-1.5">
-                      <Calendar size={12} />
-                      Upcoming
-                    </h4>
-                    <ul className="space-y-3">
-                      {upcomingActivities.slice(0, 3).map((a) => (
-                        <li key={a.id} className="group/item">
-                          <div className="flex justify-between items-start mb-0.5">
-                            <span className="text-sm font-semibold text-text-primary group-hover/item:text-lavender-600 transition-colors">
-                              {a.name}
-                            </span>
-                            {!a.isConfirmed && (
-                              <span className="text-[9px] px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded-full font-bold uppercase tracking-tighter border border-amber-100">
-                                Planning
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex flex-wrap items-center gap-2 my-1">
-                            {a.tripCountryId && (
-                              <span className="text-[9px] text-text-muted px-1.5 py-0.5 bg-surface-3 rounded border border-border">
-                                {countryMap[a.tripCountryId]}
-                              </span>
-                            )}
-                            {a.type && (
-                              <Badge
-                                variant="default"
-                                className="text-[9px] h-4 py-0 px-1.5 opacity-80"
-                              >
-                                {ACTIVITY_TAGS.find((t) => t.value === a.type)?.icon}{" "}
-                                {ACTIVITY_TAGS.find((t) => t.value === a.type)?.label}
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 text-[11px] text-text-secondary">
-                            <span>{formatDate(a.date)}</span>
-                            {a.cost !== undefined && a.cost > 0 && (
-                              <span className="flex items-center gap-0.5 text-sage-600 font-medium">
-                                • {formatCurrency(a.cost, a.currency)}
-                              </span>
-                            )}
-                            {a.duration && (
-                              <span className="text-text-muted">
-                                • {formatDuration(a.duration)}
-                              </span>
-                            )}
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <div className="mt-auto">
-                  <p className="text-[11px] text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg font-medium border border-amber-100/50">
-                    {`${unconfirmedActivities?.length > 0 ? unconfirmedActivities?.length : "No"} activit${unconfirmedActivities.length !== 1 ? "ies" : "y"} in planning phase`}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <EmptyState icon={Compass} label="No activities yet" />
-            )}
-          </div>
-        </Card>
+        <OverviewActivitiesCard tripId={trip.id!} countryMap={countryMap} />
 
         {/* Planner Card */}
-        <Card className="p-0 overflow-hidden group hover:shadow-card-hover transition-shadow text-center sm:text-left">
-          <div className="bg-indigo-pastel-50 dark:bg-indigo-pastel-900/10 p-5 border-b border-indigo-pastel-100 dark:border-indigo-pastel-900/20 text-left">
-            <h3 className="font-bold text-lg flex items-center gap-2 text-indigo-pastel-700 dark:text-indigo-pastel-400">
-              <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
-                <Calendar size={18} className="text-indigo-pastel-500" />
-              </div>
-              Planner
-            </h3>
-          </div>
-          <div className="p-5">
-            <p className="text-3xl font-bold text-text-primary">
-              {flights.length + accommodations.length + activities.length}
-            </p>
-            <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">
-              Planned Items
-            </p>
-          </div>
-        </Card>
+        <OverviewPlannerCard
+          plannedItemsCount={flights.length + accommodations.length + activities.length}
+        />
 
         {/* Notes Card */}
-        <Card className="p-0 overflow-hidden group hover:shadow-card-hover transition-shadow h-full">
-          <div className="bg-fuchsia-pastel-50 dark:bg-fuchsia-pastel-900/10 p-5">
-            <h3 className="font-bold text-lg flex items-center gap-2 text-fuchsia-pastel-700 dark:text-fuchsia-pastel-400">
-              <div className="p-1.5 bg-white dark:bg-surface-2 rounded-lg shadow-sm">
-                <StickyNote size={18} className="text-fuchsia-pastel-500" />
-              </div>
-              Notes
-            </h3>
-          </div>
-          <div className="p-5 flex flex-col h-full">
-            {note ? (
-              <div className="relative group/note">
-                <p className="text-sm text-text-secondary leading-relaxed line-clamp-4 italic">
-                  "{note.content}"
-                </p>
-                <div className="mt-4 flex items-center justify-end">
-                  <div className="h-px bg-border grow mr-2" />
-                  <span className="text-[10px] text-text-muted font-medium uppercase tracking-tighter">
-                    Your Notes
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <EmptyState icon={StickyNote} label="No notes yet" />
-            )}
-          </div>
-        </Card>
+        <OverviewNotesCard tripId={trip.id!} />
       </div>
 
       {/* Budget Breakdown Summary */}

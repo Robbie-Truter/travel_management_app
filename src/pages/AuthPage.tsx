@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { Plane, Loader2, Mail, Lock, Eye, EyeOff, SquareArrowOutUpRight } from "lucide-react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
+import { useLogin } from "@/hooks/useLogin";
+import { useSignUp } from "@/hooks/useSignUp";
 
 type Mode = "login" | "signup";
 
@@ -14,9 +16,21 @@ export function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  const { login, isSubmitting: isLoggingIn, error: loginError, setError: setLoginError } = useLogin();
+  const {
+    signUp,
+    isSubmitting: isSigningUp,
+    error: signUpError,
+    setError: setSignUpError,
+  } = useSignUp();
+
+  const { showToast } = useNotification();
+
+  const submitting = isLoggingIn || isSigningUp;
+  const error = mode === "login" ? loginError : signUpError;
+  const setError = mode === "login" ? setLoginError : setSignUpError;
 
   if (loading) {
     return (
@@ -30,25 +44,20 @@ export function AuthPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setSuccess(null);
-    setSubmitting(true);
 
-    try {
-      if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) setError(error.message);
-      } else {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) {
-          setError(error.message);
-        } else {
-          setSuccess("Check your email to confirm your account, then log in.");
-          setMode("login");
-        }
+    if (mode === "login") {
+      const { error: loginError } = await login({ email, password });
+
+      if (!loginError) {
+        showToast("Login successful", "success");
       }
-    } finally {
-      setSubmitting(false);
+    } else {
+      const { error: signUpError } = await signUp({ email, password });
+      if (!signUpError) {
+        setSuccess("If you don't already have an account, check your email for a confirmation link.");
+        setMode("login");
+      }
     }
   };
 

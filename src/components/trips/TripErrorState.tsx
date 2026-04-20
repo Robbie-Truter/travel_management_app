@@ -3,15 +3,12 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 
-interface OverviewErrorStateProps {
-  onRetry: () => void;
+interface TripErrorStateProps {
   message?: string;
+  onRetry: () => void;
 }
 
-export function OverviewErrorState({
-  onRetry,
-  message = "We encountered an error while aggregating your trip overview.",
-}: OverviewErrorStateProps) {
+function TripErrorState({ message, onRetry }: TripErrorStateProps) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -32,11 +29,11 @@ export function OverviewErrorState({
 
           <div className="space-y-2">
             <h3 className="text-xl font-black text-text-primary tracking-tight">
-              Failed to load overview
+              Failed to load trips
             </h3>
             <p className="text-sm text-text-secondary leading-relaxed max-w-xs mx-auto font-medium">
               {message ||
-                "This might be due to a temporary connection drop or our data nodes being refreshed."}
+                "We encountered an error while fetching your journey data. This could be due to a connection issue or a server error."}
             </p>
           </div>
 
@@ -53,3 +50,5 @@ export function OverviewErrorState({
     </motion.div>
   );
 }
+
+export default TripErrorState;

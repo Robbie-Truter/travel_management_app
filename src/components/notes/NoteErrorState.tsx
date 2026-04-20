@@ -2,15 +2,12 @@ import { AlertCircle, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 
-interface DestinationErrorStateProps {
+interface NoteErrorStateProps {
   message?: string;
   onRetry: () => void;
 }
 
-export function DestinationErrorState({
-  message = "Failed to load destination data",
-  onRetry,
-}: DestinationErrorStateProps) {
+export function NoteErrorState({ message = "Failed to load notes", onRetry }: NoteErrorStateProps) {
   return (
     <Card className="border-rose-200 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/10">
       <CardContent className="p-8 flex flex-col items-center text-center">
@@ -18,16 +15,12 @@ export function DestinationErrorState({
           <AlertCircle className="text-rose-600 dark:text-rose-400" size={24} />
         </div>
         <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">
-          Destination Loading Error
+          Notes Loading Error
         </h3>
         <p className="text-sm text-slate-600 dark:text-slate-400 max-w-xs mb-6">
-          {message}. We couldn't retrieve your destinations.
+          {message}. We couldn't retrieve your notes for this trip.
         </p>
-        <Button
-          variant="secondary"
-          onClick={onRetry}
-          className="flex items-center gap-2"
-        >
+        <Button variant="secondary" onClick={onRetry} className="flex items-center gap-2">
           <RefreshCw size={16} />
           Try Again
         </Button>

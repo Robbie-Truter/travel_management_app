@@ -1,4 +1,5 @@
 import { RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 interface CountriesErrorStateProps {
   onRetry: () => void;
@@ -14,12 +15,13 @@ export function CountriesErrorState({ onRetry }: CountriesErrorStateProps) {
       <p className="text-text-secondary text-center max-w-sm mb-6 px-4">
         Something went wrong while fetching your trip's destination info.
       </p>
-      <button
+      <Button
+        variant="secondary"
         onClick={onRetry}
-        className="px-6 py-2 bg-lavender-500 hover:bg-lavender-600 text-white rounded-lg font-bold shadow-lg shadow-lavender-500/20 transition-all active:scale-95 cursor-pointer"
+        className="px-6 font-bold"
       >
         Try Again
-      </button>
+      </Button>
     </div>
   );
 }

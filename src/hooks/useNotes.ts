@@ -6,7 +6,14 @@ export function useNotes(tripId: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: note, isLoading } = useQuery({
+  const {
+    data: note,
+    isLoading,
+    isError,
+    isRefetching,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["notes", tripId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -43,7 +50,7 @@ export function useNotes(tripId: number) {
           content,
           updated_at: now,
         },
-        { onConflict: "user_id,trip_id" }
+        { onConflict: "user_id,trip_id" },
       );
 
       if (error) throw error;
@@ -53,7 +60,11 @@ export function useNotes(tripId: number) {
 
   return {
     note: note || undefined,
-    loading: isLoading,
+    isLoading,
+    isRefetching,
+    isError,
+    error,
+    refetch,
     saving: saveNoteMutation.isPending,
     saveNote: async (content: string) => saveNoteMutation.mutateAsync(content),
   };
