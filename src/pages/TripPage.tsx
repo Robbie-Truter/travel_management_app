@@ -19,7 +19,6 @@ import { AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Badge, statusLabels } from "@/components/ui/Badge";
 import { useTrip } from "@/hooks/useTrips";
-import { useTripCountries } from "@/hooks/useTripCountries";
 import { useDestinations } from "@/hooks/useDestinations";
 import { useFlights } from "@/hooks/useFlights";
 import { useAccommodations } from "@/hooks/useAccommodations";
@@ -71,7 +70,6 @@ export function TripPage() {
   const { trip, isLoading, isError, error, refetch } = useTrip(id);
 
   // Still needed for Hero Header and some tab passing
-  const { tripCountries } = useTripCountries(id);
   const { destinations } = useDestinations(id);
 
   // These are still needed for Planner & TripCountries (until refactored)
@@ -168,8 +166,8 @@ export function TripPage() {
             <div className="flex items-center gap-3 mt-1 text-white/80 text-sm">
               <span className="flex items-center gap-1">
                 <MapPin size={13} />
-                {(trip?.tripCountries || []).length > 0
-                  ? (trip?.tripCountries ?? []).map((tc) => tc.countryName).join(", ")
+                {trip.tripCountries.length > 0
+                  ? trip.tripCountries.map((tc) => tc.countryName).join(", ")
                   : "No countries"}
               </span>
               <span>
@@ -230,7 +228,7 @@ export function TripPage() {
           >
             {/* OVERVIEW */}
             {activeTab === "overview" && (
-              <OverviewTab trip={trip as Trip} tripCountries={tripCountries} />
+              <OverviewTab tripId={id} tripCountries={trip.tripCountries} />
             )}
 
             {/* COUNTRIES */}
@@ -238,14 +236,14 @@ export function TripPage() {
 
             {/* DESTINATIONS (CITIES/TOWNS) */}
             {activeTab === "destinations" && (
-              <DestinationsTab tripId={id} tripCountries={tripCountries} />
+              <DestinationsTab tripId={id} tripCountries={trip.tripCountries} />
             )}
 
             {/* FLIGHTS */}
             {activeTab === "flights" && (
               <FlightsTab
                 tripId={id}
-                tripCountries={tripCountries}
+                tripCountries={trip.tripCountries}
                 tripStartDate={trip.startDate}
                 tripEndDate={trip.endDate}
                 tripCurrency={trip.baseCurrency}
@@ -256,7 +254,7 @@ export function TripPage() {
             {activeTab === "accommodations" && (
               <AccommodationsTab
                 tripId={id}
-                tripCountries={tripCountries}
+                tripCountries={trip.tripCountries}
                 tripStartDate={trip.startDate}
                 tripEndDate={trip.endDate}
                 tripCurrency={trip.baseCurrency}
@@ -267,7 +265,7 @@ export function TripPage() {
             {activeTab === "activities" && (
               <ActivitiesTab
                 tripId={id}
-                tripCountries={tripCountries}
+                tripCountries={trip.tripCountries}
                 destinations={destinations}
                 tripStartDate={trip.startDate}
                 tripEndDate={trip.endDate}

@@ -28,7 +28,7 @@ export function FlightsTab({
 }: FlightsTabProps) {
   const {
     flights,
-    loading,
+    isLoading,
     isRefetching,
     isError,
     refetch,
@@ -45,7 +45,7 @@ export function FlightsTab({
   );
   const [compareOpen, setCompareOpen] = useState(false);
 
-  if (loading && flights.length === 0) {
+  if (isLoading && flights.length === 0) {
     return (
       <div className="space-y-6 max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">

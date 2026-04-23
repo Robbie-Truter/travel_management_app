@@ -165,7 +165,7 @@ export function useActivities(tripId: number) {
 
   return {
     activities: activities ?? [],
-    loading: isLoading,
+    isLoading,
     isRefetching,
     isError,
     refetch,

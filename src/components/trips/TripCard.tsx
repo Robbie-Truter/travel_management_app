@@ -132,14 +132,14 @@ export function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
 
               <div className="flex items-center justify-center gap-2 mt-2">
                 <div className="flex items-center gap-1.5 overflow-hidden justify-center max-w-full px-2">
-                  {trip.tripCountries && trip.tripCountries.length > 0 ? (
+                  {trip.tripCountries.length > 0 ? (
                     trip.tripCountries.map((tc, idx) => (
                       <span key={tc.id} className="flex items-center gap-1 shrink-0">
                         <span className="text-lg">{getFlagEmoji(tc.countryCode)}</span>
                         <span className="text-xs font-bold text-text-secondary truncate">
                           {tc.countryName}
                         </span>
-                        {idx < trip.tripCountries!.length - 1 && (
+                        {idx < trip.tripCountries.length - 1 && (
                           <span className="text-slate-300">•</span>
                         )}
                       </span>

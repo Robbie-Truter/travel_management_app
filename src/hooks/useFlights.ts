@@ -122,7 +122,7 @@ export function useFlights(tripId?: number) {
 
   return {
     flights: flights ?? [],
-    loading: isLoading,
+    isLoading,
     isRefetching,
     isError,
     refetch,

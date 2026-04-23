@@ -146,7 +146,7 @@ export function useDestinations(tripId: number) {
 
   return {
     destinations: destinations ?? [],
-    loading: isLoading,
+    isLoading,
     isRefetching,
     isError,
     refetch,

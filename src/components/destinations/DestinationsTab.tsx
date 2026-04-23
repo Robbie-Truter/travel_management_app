@@ -18,7 +18,7 @@ interface DestinationsTabProps {
 export function DestinationsTab({ tripId, tripCountries }: DestinationsTabProps) {
   const {
     destinations,
-    loading,
+    isLoading,
     isRefetching,
     isError,
     refetch,
@@ -30,7 +30,7 @@ export function DestinationsTab({ tripId, tripCountries }: DestinationsTabProps)
   const [formOpen, setDestFormOpen] = useState(false);
   const [editingDest, setEditingDest] = useState<Destination | undefined>();
 
-  if (loading && destinations.length === 0) {
+  if (isLoading && destinations.length === 0) {
     return (
       <div className="space-y-6 max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">

@@ -1,34 +1,28 @@
-import type { Trip, TripCountry } from "@/db/types";
-/*import { useExchangeRates } from "@/hooks/useExchangeRates";
-import { useFlights } from "@/hooks/useFlights";
-import { useAccommodations } from "@/hooks/useAccommodations";
-import { useActivities } from "@/hooks/useActivities";*/
-
-import { Compass, Files, Hotel, MapPin, Plane, SquareChartGantt } from "lucide-react";
+import type { TripCountry } from "@/db/types";
+import { Compass, Files, Hotel, Plane, SquareChartGantt } from "lucide-react";
 import { Responsive, useContainerWidth } from "react-grid-layout";
 import Widget from "../ui/Widget";
-import { getFlagEmoji } from "@/lib/utils";
+import DestinationsWidget from "./DestinationWidget";
+import ActivitiesWidget from "./ActivitiesWidget";
+import FlightsWidget from "./FlightsWidget";
+import StaysWidget from "./StaysWidget";
+import BudgetWidget from "./BudgetWidget";
 
 interface TripOverviewProps {
-  trip: Trip;
+  tripId: number;
   tripCountries: TripCountry[];
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function OverviewTab({ trip, tripCountries }: TripOverviewProps) {
-  /*const { flights } = useFlights(trip.id!);
-  const { accommodations } = useAccommodations(trip.id!);
-  const { activities } = useActivities(trip.id!);*/
-
+export function OverviewTab({ tripId, tripCountries }: TripOverviewProps) {
   const { width, containerRef, mounted } = useContainerWidth();
 
   const layouts = {
     lg: [
-      { i: "routeExplorer", x: 0, y: 0, w: 8, h: 7 },
-      { i: "destinations", x: 8, y: 0, w: 3, h: 5 },
+      { i: "routeExplorer", x: 0, y: 0, w: 8, h: 6 },
+      { i: "destinations", x: 8, y: 0, w: 3, h: 4 },
       { i: "activities", x: 0, y: 0, w: 4, h: 5 },
-      { i: "flights", x: 4, y: 0, w: 4, h: 4 },
-      { i: "activity", x: 8, y: 0, w: 4, h: 6 },
+      { i: "flights", x: 4, y: 0, w: 4, h: 6 },
+      { i: "activity", x: 8, y: 0, w: 4, h: 5.5 },
       { i: "stats", x: 0, y: 0, w: 4, h: 4 },
       { i: "stays", x: 4, y: 11, w: 4, h: 4 },
       { i: "docs", x: 8, y: 0, w: 3, h: 4 },
@@ -183,121 +177,15 @@ export function OverviewTab({ trip, tripCountries }: TripOverviewProps) {
                   </div>
 
                   <div key="destinations">
-                    <Widget title="Destinations">
-                      <div className="space-y-4">
-                        {[
-                          { country: "United Kingdom", code: "GBR", cities: ["London"] },
-                          { country: "UAE", code: "ARE", cities: ["Dubai", "Abu Dhabi"] },
-                          { country: "Japan", code: "JPN", cities: ["Tokyo", "Kyoto", "Osaka"] },
-                        ].map((c, i) => (
-                          <div key={i} className="flex gap-3">
-                            <div className="text-xl shrink-0 mt-0.5">{getFlagEmoji(c.code)}</div>
-                            <div>
-                              <h5 className="text-[11px] font-bold text-text-primary leading-none mb-1.5">
-                                {c.country}
-                              </h5>
-                              <div className="flex flex-wrap gap-1">
-                                {c.cities.map((city) => (
-                                  <span
-                                    key={city}
-                                    className="text-[9px] px-1.5 py-0.5 bg-surface-2 rounded-md border border-border/40 text-text-secondary uppercase"
-                                  >
-                                    {city}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </Widget>
+                    <DestinationsWidget tripId={tripId} tripCountries={tripCountries} />
                   </div>
 
                   <div key="activities">
-                    <Widget title="Activities">
-                      <div className="space-y-4">
-                        <div>
-                          <div className="flex items-center gap-2 mb-2 pb-1 border-b border-border/30">
-                            <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">
-                              Dubai, UAE
-                            </span>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between group/act">
-                              <span className="text-xs text-text-secondary group-hover/act:text-lavender-600 transition-colors pointer-events-none">
-                                • Burj Khalifa View
-                              </span>
-                              <span className="text-[9px] px-1 bg-surface-3 rounded text-text-muted">
-                                Sightseeing
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between group/act">
-                              <span className="text-xs text-text-secondary group-hover/act:text-lavender-600 transition-colors pointer-events-none">
-                                • Desert Safari
-                              </span>
-                              <span className="text-[9px] px-1 bg-surface-3 rounded text-text-muted">
-                                Adventure
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 mb-2 pb-1 border-b border-border/30">
-                            <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">
-                              Tokyo, Japan
-                            </span>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between group/act">
-                              <span className="text-xs text-text-secondary group-hover/act:text-lavender-600 transition-colors pointer-events-none">
-                                • Sushi Masterclass
-                              </span>
-                              <span className="text-[9px] px-1 bg-surface-3 rounded text-text-muted">
-                                Culinary
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </Widget>
+                    <ActivitiesWidget tripId={tripId} />
                   </div>
 
                   <div key="flights">
-                    <Widget title="Upcoming Flights">
-                      <div className="space-y-3">
-                        <div className="p-3 bg-surface-3/50 rounded-xl border border-border/40">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-[10px] font-bold text-sky-600 uppercase tracking-tighter">
-                              Next Flight
-                            </span>
-                            <span className="text-[9px] text-text-muted font-medium italic">
-                              In 2 days
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="text-center">
-                              <div className="text-lg font-black text-text-primary">LHR</div>
-                              <div className="text-[9px] uppercase font-bold text-text-muted">
-                                London
-                              </div>
-                            </div>
-                            <div className="flex-1 flex flex-col items-center gap-1">
-                              <Plane size={14} className="text-sky-400 rotate-90" />
-                              <div className="w-full h-px bg-linear-to-r from-transparent via-border to-transparent" />
-                              <div className="text-[8px] font-mono text-text-muted tracking-widest uppercase">
-                                Direct
-                              </div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-lg font-black text-text-primary">DXB</div>
-                              <div className="text-[9px] uppercase font-bold text-text-muted">
-                                Dubai
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </Widget>
+                    <FlightsWidget tripId={tripId} />
                   </div>
 
                   <div key="activity">
@@ -346,48 +234,11 @@ export function OverviewTab({ trip, tripCountries }: TripOverviewProps) {
                   </div>
 
                   <div key="stats">
-                    <Widget title="Budget Summary">
-                      <div className="grid grid-cols-3 gap-4 h-full items-center">
-                        <div>
-                          <div className="text-xs text-text-muted mb-1">Spent</div>
-                          <div className="text-lg font-bold text-rose-pastel-500">$1,240</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-text-muted mb-1">Remaining</div>
-                          <div className="text-lg font-bold text-emerald-500">$3,760</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-text-muted mb-1">Expected</div>
-                          <div className="text-lg font-bold text-text-primary">$5,000</div>
-                        </div>
-                      </div>
-                    </Widget>
+                    <BudgetWidget tripId={tripId} />
                   </div>
 
                   <div key="stays">
-                    <Widget title="Current Stay">
-                      <div className="flex gap-4 items-center">
-                        <div className="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center shrink-0 border border-rose-100">
-                          <Hotel size={24} className="text-rose-500" />
-                        </div>
-                        <div className="min-w-0">
-                          <h4 className="font-bold text-sm text-text-primary truncate">
-                            Address Dubai Mall
-                          </h4>
-                          <p className="text-[10px] text-text-muted flex items-center gap-1 mt-0.5">
-                            <MapPin size={10} /> Downtown Dubai, UAE
-                          </p>
-                          <div className="flex gap-2 mt-2">
-                            <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-bold rounded uppercase tracking-wider border border-emerald-100">
-                              Confirmed
-                            </span>
-                            <span className="px-1.5 py-0.5 bg-surface-3 text-text-secondary text-[9px] font-bold rounded uppercase tracking-wider border border-border/50">
-                              3 Nights
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </Widget>
+                    <StaysWidget tripId={tripId} />
                   </div>
 
                   <div key="docs">

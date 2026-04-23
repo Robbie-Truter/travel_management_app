@@ -55,7 +55,7 @@ export interface Trip {
   endDate: string;
   status: TripStatus;
   description?: string;
-  tripCountries?: TripCountry[];
+  tripCountries: TripCountry[];
   budget?: string;
   coverImage?: string;
   baseCurrency: Currency;
@@ -183,10 +183,10 @@ export interface AccommodationRow {
 }
 
 export interface Accommodation {
-  id?: number;
+  id: number;
   tripId: number;
-  tripCountryId?: number;
-  destinationId?: number;
+  tripCountryId: number;
+  destinationId: number;
   name: string;
   type: "hotel" | "airbnb" | "hostel" | "resort" | "other";
   platform?: string;

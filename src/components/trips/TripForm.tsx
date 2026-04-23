@@ -75,6 +75,7 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
         description,
         coverImage,
         baseCurrency,
+        tripCountries: initial?.tripCountries || [],
       });
     } catch (error) {
       console.error("Error saving trip:", error);
