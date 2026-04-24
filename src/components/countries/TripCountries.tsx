@@ -29,7 +29,6 @@ export function TripCountries({
   accommodations,
   activities,
 }: TripCountriesProps) {
-  const { addTripCountry, deleteTripCountry } = useTripCountries(trip.id!);
   const [isAdding, setIsAdding] = useState(false);
   const [countryToDelete, setCountryToDelete] = useState<TripCountry | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -37,6 +36,8 @@ export function TripCountries({
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebounce(searchQuery, 300);
   const { countries, isLoading } = useCountrySearch(debouncedSearch);
+
+  const { addTripCountry, deleteTripCountry } = useTripCountries(trip.id!);
 
   const handleAdd = async () => {
     if (!selectedCountryId) return;

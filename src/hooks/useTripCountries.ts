@@ -65,7 +65,11 @@ export function useTripCountries(tripId: number) {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tripCountries", tripId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tripCountries", tripId] });
+      queryClient.invalidateQueries({ queryKey: ["trip", tripId] });
+      queryClient.invalidateQueries({ queryKey: ["trips"] });
+    },
     onError: (error: Error) => {
       showToast(error.message || "Failed to add country", "error");
     },
@@ -84,7 +88,11 @@ export function useTripCountries(tripId: number) {
       const { error } = await supabase.from("trip_countries").update(dbUpdates).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tripCountries", tripId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tripCountries", tripId] });
+      queryClient.invalidateQueries({ queryKey: ["trip", tripId] });
+      queryClient.invalidateQueries({ queryKey: ["trips"] });
+    },
     onError: (error: Error) => {
       showToast(error.message || "Failed to update country", "error");
     },
@@ -98,6 +106,8 @@ export function useTripCountries(tripId: number) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tripCountries", tripId] });
       queryClient.invalidateQueries({ queryKey: ["destinations", tripId] });
+      queryClient.invalidateQueries({ queryKey: ["trip", tripId] });
+      queryClient.invalidateQueries({ queryKey: ["trips"] });
     },
     onError: (error: Error) => {
       showToast(error.message || "Failed to delete country", "error");
@@ -106,7 +116,7 @@ export function useTripCountries(tripId: number) {
 
   return {
     tripCountries: tripCountries ?? [],
-    loading: isLoading,
+    isLoading,
     isRefetching,
     isError,
     refetch,

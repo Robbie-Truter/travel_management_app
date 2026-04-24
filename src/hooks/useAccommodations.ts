@@ -183,7 +183,7 @@ export function useAccommodations(tripId: number) {
 
   return {
     accommodations: accommodations ?? [],
-    loading: isLoading,
+    isLoading,
     isRefetching,
     isError,
     refetch,

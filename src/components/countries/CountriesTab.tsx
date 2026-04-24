@@ -18,7 +18,7 @@ interface CountriesTabProps {
 export function CountriesTab({ trip }: CountriesTabProps) {
   const {
     tripCountries,
-    loading: countriesLoading,
+    isLoading: countriesLoading,
     isRefetching: countriesRefetching,
     isError: countriesError,
     refetch: refetchCountries,
@@ -26,7 +26,7 @@ export function CountriesTab({ trip }: CountriesTabProps) {
 
   const {
     destinations,
-    loading: destLoading,
+    isLoading: destLoading,
     isRefetching: destRefetching,
     isError: destError,
     refetch: refetchDest,
@@ -34,7 +34,7 @@ export function CountriesTab({ trip }: CountriesTabProps) {
 
   const {
     flights,
-    loading: flightsLoading,
+    isLoading: flightsLoading,
     isRefetching: flightsRefetching,
     isError: flightsError,
     refetch: refetchFlights,
@@ -42,7 +42,7 @@ export function CountriesTab({ trip }: CountriesTabProps) {
 
   const {
     accommodations,
-    loading: accLoading,
+    isLoading: accLoading,
     isRefetching: accRefetching,
     isError: accError,
     refetch: refetchAcc,
@@ -50,7 +50,7 @@ export function CountriesTab({ trip }: CountriesTabProps) {
 
   const {
     activities,
-    loading: actLoading,
+    isLoading: actLoading,
     isRefetching: actRefetching,
     isError: actError,
     refetch: refetchActs,
