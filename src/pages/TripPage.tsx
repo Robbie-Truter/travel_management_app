@@ -29,12 +29,12 @@ import { DestinationsTab } from "@/components/destinations/DestinationsTab";
 import { ActivitiesTab } from "@/components/activities/ActivitiesTab";
 import { PlannerTab } from "@/components/planner/PlannerTab";
 import { NotesTab } from "@/components/notes/NotesTab";
-import { OverviewTab } from "@/components/overview/OverviewTab";
 import { CountriesTab } from "@/components/countries/CountriesTab";
 import { DocumentsTab } from "@/components/documents/DocumentsTab";
 import { formatDate, tripDuration, cn } from "@/lib/utils";
 import type { Trip, TripStatus } from "@/db/types";
 import BudgetBreakdownTab from "@/components/budget_breakdown/BudgetBreakdownTab";
+import OverviewTab from "@/components/overview/OverviewTab";
 
 type Tab =
   | "overview"

@@ -1,6 +1,8 @@
 import Widget from "../ui/Widget";
 import { useActivities } from "@/hooks/useActivities";
 import { useDestinations } from "@/hooks/useDestinations";
+import { useTripCountries } from "@/hooks/useTripCountries";
+import { getFlagEmoji } from "@/lib/utils";
 import { Button } from "../ui/Button";
 import { AlertCircle, Compass, RefreshCcw, CheckCircle2, Circle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,8 +19,9 @@ const ActivitiesWidget = ({ tripId }: ActivitiesWidgetProps) => {
     refetch: refetchActs,
   } = useActivities(tripId);
   const { destinations, isLoading: isLoadingDests } = useDestinations(tripId);
+  const { tripCountries, isLoading: isLoadingCountries } = useTripCountries(tripId);
 
-  const isLoading = isLoadingActs || isLoadingDests;
+  const isLoading = isLoadingActs || isLoadingDests || isLoadingCountries;
   const isError = isErrorActs;
 
   // Group activities by destination
@@ -114,6 +117,9 @@ const ActivitiesWidget = ({ tripId }: ActivitiesWidgetProps) => {
               {Object.entries(groupedActivities).map(([destId, acts], idx) => {
                 const destination = destinations.find((d) => d.id === Number(destId));
                 const destName = destination ? destination.name : "Unassigned";
+                const tripCountry = destination
+                  ? tripCountries.find((tc) => tc.id === destination.tripCountryId)
+                  : null;
 
                 return (
                   <motion.div
@@ -124,6 +130,9 @@ const ActivitiesWidget = ({ tripId }: ActivitiesWidgetProps) => {
                     className="space-y-3"
                   >
                     <div className="flex items-center gap-2 pb-1.5 border-b border-border/30">
+                      {tripCountry && (
+                        <span className="text-[12px]">{getFlagEmoji(tripCountry.countryCode)}</span>
+                      )}
                       <span className="text-[10px] font-black uppercase tracking-widest text-text-muted/80">
                         {destName}
                       </span>

@@ -14,7 +14,7 @@ interface BudgetWidgetProps {
 export default function BudgetWidget({ tripId }: BudgetWidgetProps) {
   const { trip, isLoading: isLoadingTrip } = useTrip(tripId);
   const { flights, isLoading: isLoadingFlights } = useFlights(tripId);
-  const { accommodations, loading: isLoadingAcc } = useAccommodations(tripId);
+  const { accommodations, isLoading: isLoadingAcc } = useAccommodations(tripId);
   const { activities, isLoading: isLoadingAct } = useActivities(tripId);
 
   const isLoading = isLoadingTrip || isLoadingFlights || isLoadingAcc || isLoadingAct;

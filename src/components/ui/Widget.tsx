@@ -33,7 +33,7 @@ const Widget = ({
       onMouseUp={onMouseUp}
       onTouchEnd={onTouchEnd}
     >
-      <div className="flex-1 flex flex-col bg-surface-2 border border-border/50 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden relative">
+      <div className="flex-1 flex flex-col bg-surface-1 border border-border/50 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden relative">
         {/* Header / Drag Handle */}
         <div className="px-4 py-3 border-b border-border/40 bg-surface-3/50 flex items-center justify-between cursor-grab active:cursor-grabbing">
           <div className="flex items-center gap-2.5">

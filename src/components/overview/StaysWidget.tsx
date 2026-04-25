@@ -1,6 +1,8 @@
 import Widget from "../ui/Widget";
 import { useAccommodations } from "@/hooks/useAccommodations";
 import { useDestinations } from "@/hooks/useDestinations";
+import { useTripCountries } from "@/hooks/useTripCountries";
+import { getFlagEmoji } from "@/lib/utils";
 import { Button } from "../ui/Button";
 import { AlertCircle, Hotel, MapPin, RefreshCcw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,13 +17,14 @@ interface StaysWidgetProps {
 const StaysWidget = ({ tripId }: StaysWidgetProps) => {
   const {
     accommodations,
-    loading: isLoadingAcc,
+    isLoading: isLoadingAcc,
     isError: isErrorAcc,
     refetch: refetchAcc,
   } = useAccommodations(tripId);
   const { destinations, isLoading: isLoadingDests } = useDestinations(tripId);
+  const { tripCountries, isLoading: isLoadingCountries } = useTripCountries(tripId);
 
-  const isLoading = isLoadingAcc || isLoadingDests;
+  const isLoading = isLoadingAcc || isLoadingDests || isLoadingCountries;
   const isError = isErrorAcc;
 
   const groupedAccommodations = useMemo(() => {
@@ -119,6 +122,9 @@ const StaysWidget = ({ tripId }: StaysWidgetProps) => {
               {Object.entries(groupedAccommodations).map(([destId, stays], idx) => {
                 const destination = destinations.find((d) => d.id === Number(destId));
                 const destName = destination ? destination.name : "Unassigned";
+                const tripCountry = destination
+                  ? tripCountries.find((tc) => tc.id === destination.tripCountryId)
+                  : null;
 
                 return (
                   <motion.div
@@ -129,6 +135,9 @@ const StaysWidget = ({ tripId }: StaysWidgetProps) => {
                     className="space-y-3"
                   >
                     <div className="flex items-center gap-2 pb-1.5 border-b border-border/30">
+                      {tripCountry && (
+                        <span className="text-[12px]">{getFlagEmoji(tripCountry.countryCode)}</span>
+                      )}
                       <span className="text-[10px] font-black uppercase tracking-widest text-text-muted/80">
                         {destName}
                       </span>
