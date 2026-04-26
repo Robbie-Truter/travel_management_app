@@ -289,6 +289,7 @@ export function AccommodationForm({
             showTime
             value={form.checkIn}
             onChange={(date) => set("checkIn", date ? date.toISOString() : "")}
+            defaultMonth={form.checkIn ? new Date(form.checkIn) : new Date(tripStartDate)}
             disabled={{ before: new Date(tripStartDate), after: new Date(tripEndDate) }}
             error={errors.checkIn}
           />
@@ -297,6 +298,7 @@ export function AccommodationForm({
             showTime
             value={form.checkOut}
             onChange={(date) => set("checkOut", date ? date.toISOString() : "")}
+            defaultMonth={form.checkOut ? new Date(form.checkOut) : new Date(tripStartDate)}
             disabled={{ before: new Date(tripStartDate), after: new Date(tripEndDate) }}
             error={errors.checkOut}
           />

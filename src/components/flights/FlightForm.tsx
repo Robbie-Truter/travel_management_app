@@ -378,6 +378,7 @@ export function FlightForm({
                   if (date)
                     updateSegment(index, "departureTime", format(date, "yyyy-MM-dd'T'HH:mm"));
                 }}
+                defaultMonth={seg.arrivalTime ? new Date(seg.arrivalTime) : new Date(tripStartDate)}
                 disabled={{ before: new Date(tripStartDate), after: new Date(tripEndDate) }}
                 error={errors[`seg-dep-t-${index}`]}
               />
@@ -389,6 +390,9 @@ export function FlightForm({
                 onChange={(date) => {
                   if (date) updateSegment(index, "arrivalTime", format(date, "yyyy-MM-dd'T'HH:mm"));
                 }}
+                defaultMonth={
+                  seg.arrivalTime ? new Date(seg.departureTime) : new Date(tripStartDate)
+                }
                 disabled={[
                   { before: new Date(tripStartDate), after: new Date(tripEndDate) },
                   ...(seg.departureTime

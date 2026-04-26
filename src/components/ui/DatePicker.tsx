@@ -17,6 +17,7 @@ interface DatePickerProps {
   id?: string;
   showTime?: boolean;
   disabled?: Matcher | Matcher[];
+  defaultMonth?: Date;
 }
 
 export function DatePicker({
@@ -29,6 +30,7 @@ export function DatePicker({
   id,
   showTime = false,
   disabled,
+  defaultMonth,
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -92,6 +94,7 @@ export function DatePicker({
                   if (!showTime) setOpen(false);
                 }
               }}
+              defaultMonth={defaultMonth}
               disabled={disabled}
               initialFocus
             />

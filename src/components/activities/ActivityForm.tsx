@@ -242,6 +242,7 @@ export function ActivityForm({
             showTime
             value={form.date}
             onChange={(date) => set("date", date ? date.toISOString() : "")}
+            defaultMonth={form.date ? new Date(form.date) : new Date(tripStartDate)}
             disabled={{ before: new Date(tripStartDate), after: new Date(tripEndDate) }}
             error={errors.date}
           />

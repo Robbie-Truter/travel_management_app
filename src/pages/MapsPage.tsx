@@ -6,7 +6,7 @@ import { ItineraryMap } from "@/components/maps/ItineraryMap";
 
 export function MapsPage() {
   const { trips, loading: tripsLoading } = useTrips();
-  const { flights, loading: flightsLoading } = useFlights();
+  const { flights, isLoading: flightsLoading } = useFlights();
   const { homeCountry } = useSettings();
 
   const loading = tripsLoading || flightsLoading;

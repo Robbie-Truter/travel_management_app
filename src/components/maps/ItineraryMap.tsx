@@ -2,7 +2,6 @@ import {
   ComposableMap,
   Geographies,
   Geography,
-  Line,
   Marker,
   Sphere,
   Graticule,
@@ -43,63 +42,39 @@ function AnimatedConnection({
   to: [number, number];
   index: number;
 }) {
-  const { projection } = useMapContext();
+  const { path, projection } = useMapContext();
 
-  if (!projection) return null;
+  const p1 = projection ? projection(from) : null;
+  const p2 = projection ? projection(to) : null;
 
-  const p1 = projection(from);
-  const p2 = projection(to);
+  const distance = useMemo(() => {
+    if (!p1 || !p2) return 0;
+    return Math.sqrt(Math.pow(p2[0] - p1[0], 2) + Math.pow(p2[1] - p1[1], 2));
+  }, [p1, p2]);
 
-  if (!p1 || !p2) return null;
+  if (!path || !projection) return null;
 
-  const [x1, y1] = p1;
-  const [x2, y2] = p2;
-
-  // Calculate angle for the plane icon
-  const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
-
-  // Calculate duration based on distance
-  const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-  const duration = Math.max(3, distance / 20);
+  const d = path({ type: "LineString", coordinates: [from, to] });
 
   const color = ROUTE_COLORS[index % ROUTE_COLORS.length];
 
   return (
-    <g>
-      <Line
-        from={from}
-        to={to}
-        stroke={color}
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        strokeDasharray="4 4"
-        className="transition-colors cursor-pointer"
-      />
-      <motion.g
-        animate={{
-          transform: [
-            `translate(${x1}px, ${y1}px)`,
-            `translate(${(x1 + x2) / 2}px, ${(y1 + y2) / 2 - 20}px)`,
-            `translate(${x2}px, ${y2}px)`,
-          ],
-        }}
-        transition={{
-          duration,
-          ease: "linear",
-          delay: index * 2,
-        }}
-      >
-        <text
-          fontSize={10}
-          textAnchor="middle"
-          alignmentBaseline="middle"
-          transform={`rotate(${angle + 45})`}
-          className="select-none pointer-events-none drop-shadow-sm"
-        >
-          ✈️
-        </text>
-      </motion.g>
-    </g>
+    <motion.path
+      d={d || ""}
+      fill="transparent"
+      stroke={color}
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeDasharray="4 4"
+      initial={{ strokeDashoffset: distance, opacity: 0 }}
+      animate={{ strokeDashoffset: 0, opacity: 1 }}
+      transition={{
+        duration: 2,
+        delay: index * 0.15,
+        ease: "easeOut",
+      }}
+      className="transition-colors cursor-pointer pointer-events-auto"
+    />
   );
 }
 
