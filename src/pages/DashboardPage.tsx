@@ -8,6 +8,7 @@ import { TripSkeleton, RefetchingIndicator } from "@/components/trips/TripLoadin
 import TripErrorState from "@/components/trips/TripErrorState";
 import { useTrips } from "@/hooks/useTrips";
 import { importTripFromJSON } from "@/lib/export";
+import { useNotification } from "@/hooks/useNotification";
 import type { Trip } from "@/db/types";
 
 export function DashboardPage() {
@@ -17,6 +18,7 @@ export function DashboardPage() {
 
   const { trips, addTrip, updateTrip, deleteTrip, loading, isRefetching, isError, error, refetch } =
     useTrips();
+  const { showToast } = useNotification();
 
   const importRef = useRef<HTMLInputElement>(null);
 
@@ -46,8 +48,11 @@ export function DashboardPage() {
     if (!file) return;
     try {
       await importTripFromJSON(file);
+      showToast("Trip imported successfully", "success");
+      refetch(); // Ensure new trip shows up
     } catch (err) {
       console.error("Import failed", err);
+      showToast(err instanceof Error ? err.message : "Failed to import trip", "error");
     }
     e.target.value = "";
   };

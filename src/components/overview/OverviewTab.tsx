@@ -1,6 +1,7 @@
+import { useState } from "react";
 import type { TripCountry } from "@/db/types";
 import { SquareChartGantt } from "lucide-react";
-import { Responsive, useContainerWidth } from "react-grid-layout";
+import { Responsive, useContainerWidth, type Layout } from "react-grid-layout";
 import DestinationsWidget from "./DestinationWidget";
 import ActivitiesWidget from "./ActivitiesWidget";
 import FlightsWidget from "./FlightsWidget";
@@ -17,6 +18,19 @@ interface TripOverviewProps {
 
 const OverviewTab = ({ tripId, tripCountries }: TripOverviewProps) => {
   const { width, containerRef, mounted } = useContainerWidth();
+
+  const [activeLayouts, setActiveLayouts] = useState(() => {
+    const saved = localStorage.getItem("overviewLayout");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse saved layout", e);
+        return null;
+      }
+    }
+    return null;
+  });
 
   const layouts = {
     lg: [
@@ -61,6 +75,11 @@ const OverviewTab = ({ tripId, tripCountries }: TripOverviewProps) => {
     ],
   };
 
+  const onLayoutChange = (_currentLayout: Layout, allLayouts: Partial<Record<string, Layout>>) => {
+    localStorage.setItem("overviewLayout", JSON.stringify(allLayouts));
+    setActiveLayouts(allLayouts);
+  };
+
   return (
     <div className="relative">
       <div className="bg-surface border border-border rounded-xl overflow-hidden">
@@ -95,7 +114,7 @@ const OverviewTab = ({ tripId, tripCountries }: TripOverviewProps) => {
 
               {mounted && (
                 <Responsive
-                  layouts={layouts}
+                  layouts={activeLayouts || layouts}
                   breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
                   cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
                   width={width}
@@ -103,6 +122,7 @@ const OverviewTab = ({ tripId, tripCountries }: TripOverviewProps) => {
                   dragConfig={{ handle: ".cursor-grab" }}
                   containerPadding={[10, 10]}
                   className="transition-all"
+                  onLayoutChange={onLayoutChange}
                 >
                   <div key="countdown">
                     <CountdownWidget tripId={tripId} />

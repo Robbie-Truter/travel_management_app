@@ -100,16 +100,33 @@ export function useAccommodations(tripId: number) {
       if (!user) throw new Error("Not authenticated");
       const updateData: Record<string, unknown> = {};
 
-      if (changes.image && changes.image.startsWith("data:")) {
-        const fileName = `${Date.now()}_acc.jpg`;
-        const path = await uploadFile(
-          "accommodation-images",
-          `${user.id}/${fileName}`,
-          changes.image,
-        );
-        updateData.image = path;
-      } else if (changes.image !== undefined) {
-        updateData.image = changes.image;
+      if (changes.image !== undefined) {
+        const { data: oldAcc } = await supabase
+          .from("accommodations")
+          .select("image")
+          .eq("id", id)
+          .single();
+
+        if (oldAcc?.image && oldAcc.image !== changes.image && !oldAcc.image.startsWith("http")) {
+          try {
+            await deleteFile("accommodation-images", oldAcc.image);
+          } catch (error) {
+            console.error(error);
+            throw new Error("Could not update accommodation - error deleting old image");
+          }
+        }
+
+        if (changes.image && changes.image.startsWith("data:")) {
+          const fileName = `${Date.now()}_acc.jpg`;
+          const path = await uploadFile(
+            "accommodation-images",
+            `${user.id}/${fileName}`,
+            changes.image,
+          );
+          updateData.image = path;
+        } else {
+          updateData.image = changes.image;
+        }
       }
 
       if (changes.name !== undefined) updateData.name = changes.name;

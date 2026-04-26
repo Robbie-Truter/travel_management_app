@@ -1,205 +1,55 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
-import { supabase } from "@/lib/supabase";
 import { BrochureDocument } from "@/components/brochure/BrochureDocument";
 import { Button } from "@/components/ui/Button";
 import { Check, Download, FileText, Loader2, RefreshCw, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type {
-  Trip,
-  TripCountryRow,
-  Flight,
-  FlightRow,
-  Accommodation,
-  AccommodationRow,
-  Activity,
-  ActivityRow,
-  Destination,
-  DestinationRow,
-  Document,
-  DocumentRow,
-  Note,
-  NoteRow,
-} from "@/db/types";
+
+import { useTrips, useTrip } from "@/hooks/useTrips";
+import { useFlights } from "@/hooks/useFlights";
+import { useAccommodations } from "@/hooks/useAccommodations";
+import { useActivities } from "@/hooks/useActivities";
+import { useDestinations } from "@/hooks/useDestinations";
+import { useDocuments } from "@/hooks/useDocuments";
+import { useNotes } from "@/hooks/useNotes";
 
 export function BrochurePage() {
-  const [trips, setTrips] = useState<Trip[] | undefined>(undefined);
   const [selectedTripId, setSelectedTripId] = useState<number | null>(null);
-  const [tripData, setTripData] = useState<{
-    trip: Trip;
-    flights: Flight[];
-    accommodations: Accommodation[];
-    activities: Activity[];
-    destinations: Destination[];
-    documents: Document[];
-    notes: Note[];
-  } | null>(null);
-  const [loadingPdf, setLoadingPdf] = useState(false);
 
-  // Load all trips for the sidebar
-  useEffect(() => {
-    async function fetchTrips() {
-      const { data } = await supabase
-        .from("trips")
-        .select("*, trip_countries(*)")
-        .order("created_at", { ascending: false });
-      if (data) {
-        setTrips(
-          data.map((d) => ({
-            ...d,
-            startDate: d.start_date,
-            endDate: d.end_date,
-            createdAt: d.created_at,
-            updatedAt: d.updated_at,
-            tripCountries: (d.trip_countries || []).map((tc: TripCountryRow) => ({
-              ...tc,
-              tripId: tc.trip_id,
-              countryName: tc.country_name,
-              countryCode: tc.country_code,
-              budgetLimit: tc.budget_limit,
-              createdAt: tc.created_at,
-            })),
-            coverImage: d.cover_image,
-          })) as Trip[],
-        );
-      } else {
-        setTrips([]);
+  const { trips, loading: tripsLoading } = useTrips();
+  const { trip, isLoading: tripLoading } = useTrip(selectedTripId || undefined);
+
+  const tripIdNum = selectedTripId || 0;
+  const { flights, isLoading: flightsLoading } = useFlights(tripIdNum);
+  const { accommodations, isLoading: accommodationsLoading } = useAccommodations(tripIdNum);
+  const { activities, isLoading: activitiesLoading } = useActivities(tripIdNum);
+  const { destinations, isLoading: destinationsLoading } = useDestinations(tripIdNum);
+  const { documents, isLoading: documentsLoading } = useDocuments(tripIdNum);
+  const { note: tripNote, isLoading: notesLoading } = useNotes(tripIdNum);
+
+  const loadingPdf =
+    selectedTripId !== null &&
+    (tripLoading ||
+      flightsLoading ||
+      accommodationsLoading ||
+      activitiesLoading ||
+      destinationsLoading ||
+      documentsLoading ||
+      notesLoading);
+
+  const tripData = trip
+    ? {
+        trip,
+        flights,
+        accommodations,
+        activities,
+        destinations,
+        documents,
+        notes: tripNote ? [tripNote] : [],
       }
-    }
-    fetchTrips();
-  }, []);
+    : null;
 
-  // Load associated trip data when a trip is selected
-  useEffect(() => {
-    async function loadData() {
-      if (!selectedTripId) {
-        setTripData(null);
-        return;
-      }
-
-      setLoadingPdf(true);
-
-      try {
-        const [tripRes, flightsRes, accRes, actRes, destRes, docRes, notesRes] = await Promise.all([
-          supabase.from("trips").select("*, trip_countries(*)").eq("id", selectedTripId).single(),
-          supabase
-            .from("flights")
-            .select("*")
-            .eq("trip_id", selectedTripId)
-            .order("departure_time", { ascending: true }),
-          supabase
-            .from("accommodations")
-            .select("*")
-            .eq("trip_id", selectedTripId)
-            .order("check_in", { ascending: true }),
-          supabase
-            .from("activities")
-            .select("*")
-            .eq("trip_id", selectedTripId)
-            .order("date", { ascending: true }),
-          supabase
-            .from("destinations")
-            .select("*")
-            .eq("trip_id", selectedTripId)
-            .order("order", { ascending: true }),
-          supabase
-            .from("documents")
-            .select("*")
-            .eq("trip_id", selectedTripId)
-            .order("created_at", { ascending: true }),
-          supabase.from("notes").select("*").eq("trip_id", selectedTripId).order("updated_at", { ascending: false }),
-        ]);
-
-        if (tripRes.data) {
-          const trip = {
-            ...tripRes.data,
-            startDate: tripRes.data.start_date,
-            endDate: tripRes.data.end_date,
-            createdAt: tripRes.data.created_at,
-            updatedAt: tripRes.data.updated_at,
-            tripCountries: (tripRes.data.trip_countries || []).map((tc: TripCountryRow) => ({
-              ...tc,
-              tripId: tc.trip_id,
-              countryName: tc.country_name,
-              countryCode: tc.country_code,
-              budgetLimit: tc.budget_limit,
-              createdAt: tc.created_at,
-            })),
-            coverImage: tripRes.data.cover_image,
-          } as Trip;
-
-          const flights = (flightsRes.data as FlightRow[] || []).map((f) => ({
-            ...f,
-            tripId: f.trip_id,
-            tripCountryId: f.trip_country_id,
-            isConfirmed: f.is_confirmed,
-            bookingLink: f.booking_link,
-            createdAt: f.created_at,
-          })) as Flight[];
-
-          const accommodations = (accRes.data as AccommodationRow[] || []).map((a) => ({
-            ...a,
-            tripId: a.trip_id,
-            tripCountryId: a.trip_country_id,
-            destinationId: a.destination_id,
-            checkIn: a.check_in,
-            checkOut: a.check_out,
-            checkInAfter: a.check_in_after,
-            checkOutBefore: a.check_out_before,
-            bookingLink: a.booking_link,
-            isConfirmed: a.is_confirmed,
-            createdAt: a.created_at,
-          })) as Accommodation[];
-
-          const activities = (actRes.data as ActivityRow[] || []).map((a) => ({
-            ...a,
-            tripId: a.trip_id,
-            tripCountryId: a.trip_country_id,
-            destinationId: a.destination_id,
-            isConfirmed: a.is_confirmed,
-            createdAt: a.created_at,
-          })) as Activity[];
-
-          const destinations = (destRes.data as DestinationRow[] || []).map((d) => ({
-            ...d,
-            tripId: d.trip_id,
-            tripCountryId: d.trip_country_id,
-            cityLookupId: d.city_lookup_id,
-            createdAt: d.created_at,
-          })) as Destination[];
-
-          const documents = (docRes.data as DocumentRow[] || []).map((d) => ({
-            ...d,
-            tripId: d.trip_id,
-            createdAt: d.created_at,
-          })) as Document[];
-
-          const notes = (notesRes.data as NoteRow[] || []).map((n) => ({
-            ...n,
-            tripId: n.trip_id,
-            updatedAt: n.updated_at,
-          })) as Note[];
-
-          setTripData({
-            trip,
-            flights,
-            accommodations,
-            activities,
-            destinations,
-            documents,
-            notes,
-          });
-        }
-      } catch (err) {
-        console.error("Failed to load PDF data", err);
-      } finally {
-        setLoadingPdf(false);
-      }
-    }
-    loadData();
-  }, [selectedTripId]);
-
-  if (trips === undefined) {
+  if (tripsLoading) {
     return (
       <div className="flex items-center justify-center h-full">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />

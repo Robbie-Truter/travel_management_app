@@ -47,8 +47,6 @@ export function AccommodationForm({
     bookingLink: initial?.bookingLink ?? "",
     notes: initial?.notes ?? "",
     image: initial?.image ?? "",
-    checkInAfter: initial?.checkInAfter ?? "",
-    checkOutBefore: initial?.checkOutBefore ?? "",
     isConfirmed: initial?.isConfirmed ?? false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -98,8 +96,6 @@ export function AccommodationForm({
       bookingLink: initial?.bookingLink ?? "",
       notes: initial?.notes ?? "",
       image: initial?.image ?? "",
-      checkInAfter: initial?.checkInAfter ?? "",
-      checkOutBefore: initial?.checkOutBefore ?? "",
       isConfirmed: initial?.isConfirmed ?? false,
     });
     setErrors({});
@@ -122,8 +118,8 @@ export function AccommodationForm({
       await onSave({
         tripId,
         name: form.name,
-        tripCountryId: form.tripCountryId,
-        destinationId: form.destinationId,
+        tripCountryId: form.tripCountryId!,
+        destinationId: form.destinationId!,
         type: form.type as Accommodation["type"],
         platform: form.platform,
         location: form.location.trim() || selectedDest?.name || "Unknown",
@@ -134,8 +130,8 @@ export function AccommodationForm({
         bookingLink: form.bookingLink || undefined,
         notes: form.notes || undefined,
         image: form.image || undefined,
-        checkInAfter: form.checkInAfter || undefined,
-        checkOutBefore: form.checkOutBefore || undefined,
+        checkInAfter: undefined,
+        checkOutBefore: undefined,
         isConfirmed: form.isConfirmed,
       });
 
@@ -306,22 +302,6 @@ export function AccommodationForm({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Input
-            id="acc-check-in-after"
-            type="time"
-            label="Check-in After"
-            value={form.checkInAfter}
-            onChange={(e) => set("checkInAfter", e.target.value)}
-          />
-          <Input
-            id="acc-check-out-before"
-            type="time"
-            label="Check-out Before"
-            value={form.checkOutBefore}
-            onChange={(e) => set("checkOutBefore", e.target.value)}
-          />
-        </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2">
             <Input

@@ -31,7 +31,7 @@ export function AccommodationsTab({
 }: AccommodationsTabProps) {
   const {
     accommodations,
-    loading,
+    isLoading,
     isRefetching,
     isError,
     refetch,
@@ -45,7 +45,7 @@ export function AccommodationsTab({
   const [editingAcc, setEditingAcc] = useState<Accommodation | undefined>();
   const [compareOpen, setCompareOpen] = useState(false);
 
-  if (loading && accommodations.length === 0) {
+  if (isLoading && accommodations.length === 0) {
     return (
       <div className="space-y-6 max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
@@ -179,7 +179,7 @@ export function AccommodationsTab({
                       </p>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
+                  <div className="flex flex-wrap justify-start gap-6">
                     <AnimatePresence mode="popLayout">
                       {otherAccs.map((a) => (
                         <AccommodationCard

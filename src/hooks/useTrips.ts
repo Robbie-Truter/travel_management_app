@@ -111,13 +111,39 @@ export function useTrips() {
       const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
       // Handle image upload if it's a new base64 image
-      if (changes.coverImage && changes.coverImage.startsWith("data:")) {
-        // Optional: delete old image if you have the old path
-        const fileName = `${Date.now()}_cover.jpg`;
-        const path = await uploadFile("trip-covers", `${user.id}/${fileName}`, changes.coverImage);
-        updateData.cover_image = path;
-      } else if (changes.coverImage !== undefined) {
-        updateData.cover_image = changes.coverImage;
+      if (changes.coverImage !== undefined) {
+        // We are updating the image (either to a new base64, a new URL, or clearing it)
+        // First, check if there's an existing image to delete
+        const { data: oldTrip } = await supabase
+          .from("trips")
+          .select("cover_image")
+          .eq("id", id)
+          .single();
+
+        if (
+          oldTrip?.cover_image &&
+          oldTrip.cover_image !== changes.coverImage &&
+          !oldTrip.cover_image.startsWith("http")
+        ) {
+          try {
+            await deleteFile("trip-covers", oldTrip.cover_image);
+          } catch (error) {
+            console.error(error);
+            throw new Error("Could not update trip - error deleting old image");
+          }
+        }
+
+        if (changes.coverImage && changes.coverImage.startsWith("data:")) {
+          const fileName = `${Date.now()}_cover.jpg`;
+          const path = await uploadFile(
+            "trip-covers",
+            `${user.id}/${fileName}`,
+            changes.coverImage,
+          );
+          updateData.cover_image = path;
+        } else {
+          updateData.cover_image = changes.coverImage;
+        }
       }
 
       // Map camelCase keys back to snake_case

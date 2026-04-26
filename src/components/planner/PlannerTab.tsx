@@ -68,24 +68,33 @@ export function PlannerTab({
 
     // Process Accommodations
     accommodations.forEach((a) => {
+      const checkInDate = a.checkIn.split("T")[0];
+      const checkOutDate = a.checkOut.split("T")[0];
+      const checkInTime = a.checkIn.includes("T")
+        ? a.checkIn.split("T")[1].substring(0, 8)
+        : "15:00:00";
+      const checkOutTime = a.checkOut.includes("T")
+        ? a.checkOut.split("T")[1].substring(0, 8)
+        : "11:00:00";
+
       dates.forEach((date) => {
-        if (date === a.checkIn) {
+        if (date === checkInDate) {
           map[date].push({
             id: `acc-${a.id}-in`,
             type: "accommodation",
             subType: "check-in",
-            time: "15:00:00", // Default check-in time
+            time: checkInTime,
             data: a,
           });
-        } else if (date === a.checkOut) {
+        } else if (date === checkOutDate) {
           map[date].push({
             id: `acc-${a.id}-out`,
             type: "accommodation",
             subType: "check-out",
-            time: "11:00:00", // Default check-out time
+            time: checkOutTime,
             data: a,
           });
-        } else if (date > a.checkIn && date < a.checkOut) {
+        } else if (date > checkInDate && date < checkOutDate) {
           map[date].push({
             id: `acc-${a.id}-stay`,
             type: "accommodation",

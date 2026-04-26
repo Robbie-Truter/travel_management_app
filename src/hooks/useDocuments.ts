@@ -135,7 +135,11 @@ export function useDocuments(tripId: number) {
 
       if (updates.file && updates.file.startsWith("data:")) {
         // 1. Get old document to find the old file path
-        const { data: oldDoc } = await supabase.from("documents").select("file").eq("id", id).single();
+        const { data: oldDoc } = await supabase
+          .from("documents")
+          .select("file")
+          .eq("id", id)
+          .single();
 
         // 2. Upload the new file
         const mime = updates.file.split(";")[0].split(":")[1];
@@ -146,7 +150,12 @@ export function useDocuments(tripId: number) {
 
         // 3. Delete the old file from storage
         if (oldDoc?.file && !oldDoc.file.startsWith("http")) {
-          await deleteFile("user-documents", oldDoc.file).catch(console.error);
+          try {
+            await deleteFile("user-documents", oldDoc.file);
+          } catch (error) {
+            console.error(error);
+            throw new Error("Could not update document - error deleting old file");
+          }
         }
       } else if (updates.file !== undefined) {
         dbUpdates.file = updates.file;
@@ -189,7 +198,7 @@ export function useDocuments(tripId: number) {
 
   return {
     documents: documents ?? [],
-    loading: isLoading,
+    isLoading,
     isRefetching,
     isError,
     refetch,
