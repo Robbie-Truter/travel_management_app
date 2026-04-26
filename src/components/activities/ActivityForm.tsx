@@ -8,6 +8,7 @@ import { DatePicker } from "@/components/ui/DatePicker";
 import { fileToBase64, getFlagEmoji } from "@/lib/utils";
 import type { Activity, Currency, TripCountry, Destination } from "@/db/types";
 import { ACTIVITY_TAGS } from "./activity-types";
+import { useTripAvailability } from "@/hooks/useTripAvailability";
 
 interface ActivityFormProps {
   open: boolean;
@@ -51,6 +52,8 @@ export function ActivityForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { disabledDuringFlights } = useTripAvailability(tripId);
 
   const set = (k: string, v: string | boolean | number | undefined) =>
     setForm((prev) => ({ ...prev, [k]: v }));
@@ -243,7 +246,11 @@ export function ActivityForm({
             value={form.date}
             onChange={(date) => set("date", date ? date.toISOString() : "")}
             defaultMonth={form.date ? new Date(form.date) : new Date(tripStartDate)}
-            disabled={{ before: new Date(tripStartDate), after: new Date(tripEndDate) }}
+            disabled={[
+              ...(disabledDuringFlights ? [disabledDuringFlights] : []),
+              { before: new Date(tripStartDate) },
+              { after: new Date(tripEndDate) },
+            ]}
             error={errors.date}
           />
         </div>

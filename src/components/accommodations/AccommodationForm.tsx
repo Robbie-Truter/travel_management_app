@@ -9,6 +9,7 @@ import { SearchableSelect } from "../ui/SearchableSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { TYPE_OPTIONS, PLATFORM_OPTIONS } from "./AccommodationConstants";
 import { useDestinations } from "@/hooks/useDestinations";
+import { useTripAvailability } from "@/hooks/useTripAvailability";
 
 interface AccommodationFormProps {
   open: boolean;
@@ -55,6 +56,7 @@ export function AccommodationForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { destinations } = useDestinations(tripId);
+  const { disabledDuringFlights } = useTripAvailability(tripId);
 
   const set = (k: string, v: string | boolean | number | undefined) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -290,7 +292,11 @@ export function AccommodationForm({
             value={form.checkIn}
             onChange={(date) => set("checkIn", date ? date.toISOString() : "")}
             defaultMonth={form.checkIn ? new Date(form.checkIn) : new Date(tripStartDate)}
-            disabled={{ before: new Date(tripStartDate), after: new Date(tripEndDate) }}
+            disabled={[
+              { before: new Date(tripStartDate) },
+              { after: new Date(tripEndDate) },
+              disabledDuringFlights,
+            ]}
             error={errors.checkIn}
           />
           <DatePicker
@@ -299,7 +305,11 @@ export function AccommodationForm({
             value={form.checkOut}
             onChange={(date) => set("checkOut", date ? date.toISOString() : "")}
             defaultMonth={form.checkOut ? new Date(form.checkOut) : new Date(tripStartDate)}
-            disabled={{ before: new Date(tripStartDate), after: new Date(tripEndDate) }}
+            disabled={[
+              { before: form.checkIn ? new Date(form.checkIn) : new Date(tripStartDate) },
+              { after: new Date(tripEndDate) },
+              disabledDuringFlights,
+            ]}
             error={errors.checkOut}
           />
         </div>

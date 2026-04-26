@@ -379,7 +379,7 @@ export function FlightForm({
                     updateSegment(index, "departureTime", format(date, "yyyy-MM-dd'T'HH:mm"));
                 }}
                 defaultMonth={seg.arrivalTime ? new Date(seg.arrivalTime) : new Date(tripStartDate)}
-                disabled={{ before: new Date(tripStartDate), after: new Date(tripEndDate) }}
+                disabled={[{ before: new Date(tripStartDate) }, { after: new Date(tripEndDate) }]}
                 error={errors[`seg-dep-t-${index}`]}
               />
               <DatePicker
@@ -394,7 +394,8 @@ export function FlightForm({
                   seg.arrivalTime ? new Date(seg.departureTime) : new Date(tripStartDate)
                 }
                 disabled={[
-                  { before: new Date(tripStartDate), after: new Date(tripEndDate) },
+                  { before: new Date(tripStartDate) },
+                  { after: new Date(tripEndDate) },
                   ...(seg.departureTime
                     ? [{ before: new Date(new Date(seg.departureTime).setHours(0, 0, 0, 0)) }]
                     : []),

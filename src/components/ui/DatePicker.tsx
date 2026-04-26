@@ -96,7 +96,7 @@ export function DatePicker({
               }}
               defaultMonth={defaultMonth}
               disabled={disabled}
-              initialFocus
+              autoFocus
             />
             {showTime && (
               <div className="p-3 border-t border-border flex items-center justify-between gap-4">
