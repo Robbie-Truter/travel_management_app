@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Image, X } from "lucide-react";
+import { Image, X, AlertTriangle, Plane, Hotel, Compass } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
@@ -9,6 +9,7 @@ import { fileToBase64, cn } from "@/lib/utils";
 import { parseISO, format } from "date-fns";
 import type { Trip, TripStatus, Currency } from "@/db/types";
 import { CURRENCIES } from "@/constants/currencies";
+import { getOutOfRangeItems, type ConflictItem } from "@/lib/tripDateConflicts";
 
 const STATUS_OPTIONS = [
   { value: "planning", label: "Planning" },
@@ -17,6 +18,12 @@ const STATUS_OPTIONS = [
   { value: "completed", label: "Completed" },
   { value: "cancelled", label: "Cancelled" },
 ];
+
+const CONFLICT_ICONS: Record<ConflictItem["type"], React.ReactNode> = {
+  flight: <Plane size={13} className="text-sky-500 shrink-0" />,
+  accommodation: <Hotel size={13} className="text-rose-500 shrink-0" />,
+  activity: <Compass size={13} className="text-emerald-500 shrink-0" />,
+};
 
 interface TripFormProps {
   open: boolean;
@@ -29,13 +36,18 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
   const [name, setName] = useState(initial?.name ?? "");
   const [startDate, setStartDate] = useState(initial?.startDate ?? "");
   const [endDate, setEndDate] = useState(initial?.endDate ?? "");
-
   const [status, setStatus] = useState<TripStatus>(initial?.status ?? "planning");
   const [baseCurrency, setBaseCurrency] = useState(initial?.baseCurrency ?? "USD");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [coverImage, setCoverImage] = useState<string | undefined>(initial?.coverImage);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [conflicts, setConflicts] = useState<ConflictItem[]>([]);
+  const [pendingSaveData, setPendingSaveData] = useState<Omit<
+    Trip,
+    "id" | "createdAt" | "updatedAt"
+  > | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const dateRange = React.useMemo(
@@ -56,34 +68,67 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
     return e;
   };
 
+  const datesChanged = initial && (startDate !== initial.startDate || endDate !== initial.endDate);
+
   const handleSave = async () => {
     const e = validate();
-
     if (Object.keys(e).length > 0) {
       setErrors(e);
       return;
     }
 
-    setSaving(true);
+    const saveData: Omit<Trip, "id" | "createdAt" | "updatedAt"> = {
+      name,
+      startDate,
+      endDate,
+      status,
+      description,
+      coverImage,
+      baseCurrency,
+      tripCountries: initial?.tripCountries || [],
+    };
 
+    // Only check for conflicts when editing an existing trip with changed dates
+    if (initial?.id && datesChanged) {
+      setSaving(true);
+      try {
+        const outOfRange = await getOutOfRangeItems(initial.id, startDate, endDate);
+        if (outOfRange.length > 0) {
+          setConflicts(outOfRange);
+          setPendingSaveData(saveData);
+          return; // Show confirmation step
+        }
+      } finally {
+        setSaving(false);
+      }
+    }
+
+    await commitSave(saveData);
+  };
+
+  const commitSave = async (data: Omit<Trip, "id" | "createdAt" | "updatedAt">) => {
+    setSaving(true);
     try {
-      await onSave({
-        name,
-        startDate,
-        endDate,
-        status,
-        description,
-        coverImage,
-        baseCurrency,
-        tripCountries: initial?.tripCountries || [],
-      });
+      await onSave(data);
     } catch (error) {
       console.error("Error saving trip:", error);
     } finally {
       setSaving(false);
     }
+    handleClose();
+  };
 
-    onClose();
+  const handleConfirmAnyway = async () => {
+    if (pendingSaveData) {
+      setConflicts([]);
+      await commitSave(pendingSaveData);
+      setPendingSaveData(null);
+    }
+  };
+
+  const handleCancelConflict = () => {
+    setConflicts([]);
+    setPendingSaveData(null);
   };
 
   const handleClose = () => {
@@ -95,6 +140,8 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
     setDescription(initial?.description ?? "");
     setCoverImage(initial?.coverImage);
     setErrors({});
+    setConflicts([]);
+    setPendingSaveData(null);
     onClose();
   };
 
@@ -105,6 +152,61 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
     setCoverImage(uploadedFile.base64);
   };
 
+  // --- Conflict Confirmation View ---
+  if (conflicts.length > 0) {
+    return (
+      <Modal
+        open={open}
+        onClose={handleCancelConflict}
+        title="Date Range Conflict"
+        size="sm"
+        footer={
+          <>
+            <Button variant="secondary" onClick={handleCancelConflict} disabled={saving}>
+              Go Back
+            </Button>
+            <Button variant="danger" onClick={handleConfirmAnyway} disabled={saving}>
+              {saving ? "Saving..." : "Save Anyway"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+            <AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
+            <p className="text-sm text-amber-800 dark:text-amber-300">
+              The new date range{" "}
+              <strong>
+                ({format(parseISO(startDate), "MMM d")} – {format(parseISO(endDate), "MMM d, yyyy")}
+                )
+              </strong>{" "}
+              doesn't cover the following items. They'll remain in the database but will appear
+              outside your trip range.
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            {conflicts.map((item, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-surface-2 border border-border/40"
+              >
+                {CONFLICT_ICONS[item.type]}
+                <div className="min-w-0 flex-1">
+                  <span className="text-sm font-medium text-text-primary truncate block">
+                    {item.name}
+                  </span>
+                  <span className="text-xs text-text-muted">{item.date}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
+  // --- Main Form View ---
   return (
     <Modal
       open={open}
@@ -117,7 +219,7 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
             Cancel
           </Button>
           <Button variant="primary" onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : initial ? "Save Changes" : "Create Trip"}
+            {saving ? "Checking..." : initial ? "Save Changes" : "Create Trip"}
           </Button>
         </>
       }

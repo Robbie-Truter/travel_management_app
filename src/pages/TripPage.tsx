@@ -228,7 +228,11 @@ export function TripPage() {
           >
             {/* OVERVIEW */}
             {activeTab === "overview" && (
-              <OverviewTab tripId={id} tripCountries={trip.tripCountries} />
+              <OverviewTab
+                tripId={id}
+                tripCountries={trip.tripCountries}
+                onNavigate={(tab) => setActiveTab(tab as Tab)}
+              />
             )}
 
             {/* COUNTRIES */}

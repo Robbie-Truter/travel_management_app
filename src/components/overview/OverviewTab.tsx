@@ -10,13 +10,15 @@ import BudgetWidget from "./BudgetWidget";
 import PlannerWidget from "./PlannerWidget";
 import NotesWidget from "./NotesWidget";
 import CountdownWidget from "./CountdownWidget";
+import { TripSetupChecklist } from "./TripSetupChecklist";
 
 interface TripOverviewProps {
   tripId: number;
   tripCountries: TripCountry[];
+  onNavigate: (tab: string) => void;
 }
 
-const OverviewTab = ({ tripId, tripCountries }: TripOverviewProps) => {
+const OverviewTab = ({ tripId, tripCountries, onNavigate }: TripOverviewProps) => {
   const { width, containerRef, mounted } = useContainerWidth();
 
   const [activeLayouts, setActiveLayouts] = useState(() => {
@@ -113,7 +115,13 @@ const OverviewTab = ({ tripId, tripCountries }: TripOverviewProps) => {
               </header>
 
               {mounted && (
-                <Responsive
+                <>
+                  <TripSetupChecklist
+                    tripId={tripId}
+                    tripCountries={tripCountries}
+                    onNavigate={onNavigate}
+                  />
+                  <Responsive
                   layouts={activeLayouts || layouts}
                   breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
                   cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
@@ -155,7 +163,8 @@ const OverviewTab = ({ tripId, tripCountries }: TripOverviewProps) => {
                   <div key="notes">
                     <NotesWidget tripId={tripId} />
                   </div>
-                </Responsive>
+                  </Responsive>
+                </>
               )}
             </div>
           </div>
