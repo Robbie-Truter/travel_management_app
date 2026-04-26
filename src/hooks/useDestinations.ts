@@ -92,16 +92,33 @@ export function useDestinations(tripId: number) {
       if (!user) throw new Error("Not authenticated");
       const dbUpdates: Record<string, unknown> = {};
 
-      if (changes.image && changes.image.startsWith("data:")) {
-        const fileName = `${Date.now()}_dest.jpg`;
-        const path = await uploadFile(
-          "destination-images",
-          `${user.id}/${fileName}`,
-          changes.image,
-        );
-        dbUpdates.image = path;
-      } else if (changes.image !== undefined) {
-        dbUpdates.image = changes.image;
+      if (changes.image !== undefined) {
+        const { data: oldDest } = await supabase
+          .from("destinations")
+          .select("image")
+          .eq("id", id)
+          .single();
+
+        if (oldDest?.image && oldDest.image !== changes.image && !oldDest.image.startsWith("http")) {
+          try {
+            await deleteFile("destination-images", oldDest.image);
+          } catch (error) {
+            console.error(error);
+            throw new Error("Could not update destination - error deleting old image");
+          }
+        }
+
+        if (changes.image && changes.image.startsWith("data:")) {
+          const fileName = `${Date.now()}_dest.jpg`;
+          const path = await uploadFile(
+            "destination-images",
+            `${user.id}/${fileName}`,
+            changes.image,
+          );
+          dbUpdates.image = path;
+        } else {
+          dbUpdates.image = changes.image;
+        }
       }
 
       if (changes.name !== undefined) dbUpdates.name = changes.name;
@@ -111,6 +128,7 @@ export function useDestinations(tripId: number) {
         dbUpdates.city_lookup_id = changes.cityLookupId ?? null;
       if (changes.notes !== undefined) dbUpdates.notes = changes.notes;
       if (changes.order !== undefined) dbUpdates.order = changes.order;
+      if (!changes.image) dbUpdates.image = null;
 
       const { error } = await supabase.from("destinations").update(dbUpdates).eq("id", id);
       if (error) throw error;

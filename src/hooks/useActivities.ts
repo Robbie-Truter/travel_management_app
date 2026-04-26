@@ -93,12 +93,29 @@ export function useActivities(tripId: number) {
       if (!user) throw new Error("Not authenticated");
       const updateData: Record<string, unknown> = {};
 
-      if (changes.image && changes.image.startsWith("data:")) {
-        const fileName = `${Date.now()}_act.jpg`;
-        const path = await uploadFile("activity-images", `${user.id}/${fileName}`, changes.image);
-        updateData.image = path;
-      } else if (changes.image !== undefined) {
-        updateData.image = changes.image;
+      if (changes.image !== undefined) {
+        const { data: oldAct } = await supabase
+          .from("activities")
+          .select("image")
+          .eq("id", id)
+          .single();
+
+        if (oldAct?.image && oldAct.image !== changes.image && !oldAct.image.startsWith("http")) {
+          try {
+            await deleteFile("activity-images", oldAct.image);
+          } catch (error) {
+            console.error(error);
+            throw new Error("Could not update activity - error deleting old image");
+          }
+        }
+
+        if (changes.image && changes.image.startsWith("data:")) {
+          const fileName = `${Date.now()}_act.jpg`;
+          const path = await uploadFile("activity-images", `${user.id}/${fileName}`, changes.image);
+          updateData.image = path;
+        } else {
+          updateData.image = changes.image;
+        }
       }
 
       if (changes.tripId !== undefined) updateData.trip_id = changes.tripId;
@@ -114,6 +131,7 @@ export function useActivities(tripId: number) {
       if (changes.currency !== undefined) updateData.currency = changes.currency;
       if (changes.isConfirmed !== undefined) updateData.is_confirmed = changes.isConfirmed;
       if (changes.order !== undefined) updateData.order = changes.order;
+      if (!changes.image) updateData.image = null;
 
       const { data, error } = await supabase
         .from("activities")

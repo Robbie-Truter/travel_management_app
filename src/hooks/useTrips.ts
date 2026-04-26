@@ -154,6 +154,7 @@ export function useTrips() {
       if (changes.description !== undefined) updateData.description = changes.description;
       if (changes.budget !== undefined) updateData.budget = changes.budget;
       if (changes.baseCurrency !== undefined) updateData.base_currency = changes.baseCurrency;
+      if (!changes.coverImage) updateData.cover_image = null;
 
       const { data, error } = await supabase
         .from("trips")

@@ -165,6 +165,7 @@ export function useDocuments(tripId: number) {
       if (updates.description !== undefined) dbUpdates.description = updates.description;
       if (updates.type !== undefined) dbUpdates.type = updates.type;
       if (updates.mimeType !== undefined) dbUpdates.mime_type = updates.mimeType;
+      if (!updates.file) dbUpdates.file = null;
 
       const { error } = await supabase.from("documents").update(dbUpdates).eq("id", id);
       if (error) throw error;

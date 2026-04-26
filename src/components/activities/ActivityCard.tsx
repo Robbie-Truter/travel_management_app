@@ -135,7 +135,7 @@ export function ActivityCard({
                 {activityType && (
                   <Badge
                     variant="default"
-                    className="shadow-lg backdrop-blur-md bg-white/90 text-text-primary border-none text-[10px] h-6"
+                    className="shadow-lg backdrop-blur-md bg-white/90 dark:bg-black/40 text-text-primary border-none text-[10px] h-6"
                   >
                     {activityType.icon} <span className="ml-1.5">{activityType.label}</span>
                   </Badge>

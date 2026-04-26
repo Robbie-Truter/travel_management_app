@@ -145,6 +145,7 @@ export function useAccommodations(tripId: number) {
       if (changes.bookingLink !== undefined) updateData.booking_link = changes.bookingLink;
       if (changes.notes !== undefined) updateData.notes = changes.notes;
       if (changes.isConfirmed !== undefined) updateData.is_confirmed = changes.isConfirmed;
+      if (!changes.image) updateData.image = null;
 
       const { data, error } = await supabase
         .from("accommodations")
