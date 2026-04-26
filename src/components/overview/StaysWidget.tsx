@@ -151,7 +151,7 @@ const StaysWidget = ({ tripId }: StaysWidgetProps) => {
 
                         return (
                           <div key={stay.id} className="flex gap-4 items-center group/stay">
-                            <div className="w-12 h-12 rounded-xl bg-surface-3 flex items-center justify-center shrink-0 border border-border/50 group-hover/stay:border-lavender-200 transition-colors overflow-hidden">
+                            <div className="w-10 h-10 rounded-lg bg-surface-3 flex items-center justify-center shrink-0 border border-border/50 group-hover/stay:border-lavender-200 transition-colors overflow-hidden">
                               {stay.image ? (
                                 <img
                                   src={stay.image}
@@ -160,7 +160,7 @@ const StaysWidget = ({ tripId }: StaysWidgetProps) => {
                                 />
                               ) : (
                                 <Hotel
-                                  size={24}
+                                  size={20}
                                   className="text-text-muted/50 group-hover/stay:text-lavender-400 transition-colors"
                                 />
                               )}

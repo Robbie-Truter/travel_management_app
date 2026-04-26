@@ -4,7 +4,7 @@ import { useDestinations } from "@/hooks/useDestinations";
 import { useTripCountries } from "@/hooks/useTripCountries";
 import { getFlagEmoji } from "@/lib/utils";
 import { Button } from "../ui/Button";
-import { AlertCircle, Compass, RefreshCcw, CheckCircle2, Circle } from "lucide-react";
+import { AlertCircle, Compass, RefreshCcw, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ActivitiesWidgetProps {
@@ -143,12 +143,26 @@ const ActivitiesWidget = ({ tripId }: ActivitiesWidgetProps) => {
                           key={activity.id}
                           className="flex items-center justify-between group/act"
                         >
-                          <div className="flex items-center gap-2 min-w-0">
-                            {activity.isConfirmed ? (
-                              <CheckCircle2 size={12} className="text-emerald-500 shrink-0" />
-                            ) : (
-                              <Circle size={12} className="text-text-muted/40 shrink-0" />
-                            )}
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="relative flex items-center shrink-0">
+                              {activity.isConfirmed ? (
+                                <CheckCircle2
+                                  size={10}
+                                  className="text-emerald-500 absolute -right-0.5 -bottom-0.5 z-10 bg-white dark:bg-slate-900 rounded-full"
+                                />
+                              ) : null}
+                              <div className="w-6 h-6 rounded-lg bg-surface-3 flex items-center justify-center shrink-0 border border-border/40 overflow-hidden group-hover/act:border-lavender-200 transition-colors">
+                                {activity.image ? (
+                                  <img
+                                    src={activity.image}
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <Compass size={12} className="text-text-muted/40" />
+                                )}
+                              </div>
+                            </div>
                             <span className="text-xs text-text-secondary group-hover/act:text-lavender-600 transition-colors truncate">
                               {activity.name}
                             </span>

@@ -19,6 +19,7 @@ type PlannerItem = {
   title: string;
   sub: string;
   icon: React.ReactNode;
+  image?: string;
 };
 
 export default function PlannerWidget({ tripId }: PlannerWidgetProps) {
@@ -86,6 +87,7 @@ export default function PlannerWidget({ tripId }: PlannerWidgetProps) {
           title: `Check-in: ${acc.name}`,
           sub: acc.location || "Accommodation",
           icon: <Hotel size={12} className="text-rose-500" />,
+          image: acc.image,
         });
       }
 
@@ -97,6 +99,7 @@ export default function PlannerWidget({ tripId }: PlannerWidgetProps) {
           title: `Check-out: ${acc.name}`,
           sub: acc.location || "Accommodation",
           icon: <Hotel size={12} className="text-rose-500 opacity-60" />,
+          image: acc.image,
         });
       }
     });
@@ -112,6 +115,7 @@ export default function PlannerWidget({ tripId }: PlannerWidgetProps) {
           title: act.name,
           sub: `Scheduled • ${format(actDate, "MMM d, h:mm a")}`,
           icon: <Compass size={12} className="text-emerald-500" />,
+          image: act.image,
         });
       }
     });
@@ -200,8 +204,12 @@ export default function PlannerWidget({ tripId }: PlannerWidgetProps) {
                     <div className="absolute left-[11px] top-[26px] bottom-[-14px] w-[2px] bg-border/30 group-hover/item:bg-border/60 transition-colors" />
                   )}
 
-                  <div className="w-6 h-6 rounded-lg bg-surface-3 flex items-center justify-center shrink-0 border border-border/50 group-hover/item:border-lavender-200 transition-colors z-10">
-                    {item.icon}
+                  <div className="w-6 h-6 rounded-lg bg-surface-3 flex items-center justify-center shrink-0 border border-border/50 group-hover/item:border-lavender-200 transition-colors z-10 overflow-hidden">
+                    {item.image ? (
+                      <img src={item.image} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      item.icon
+                    )}
                   </div>
                   <div className="min-w-0 flex-1 pb-1">
                     <div className="text-[11px] font-bold text-text-primary leading-none mb-1 group-hover/item:text-lavender-600 transition-colors">

@@ -115,8 +115,15 @@ const DestinationsWidget = ({ tripId, tripCountries }: DestinationWidgetProps) =
                         {countryDests.map((d) => (
                           <span
                             key={d.id}
-                            className="text-[10px] font-bold px-2 py-1 bg-surface-2 hover:bg-lavender-50 dark:hover:bg-lavender-900/30 rounded-lg border border-border/40 hover:border-lavender-200 dark:hover:border-lavender-800 text-text-secondary hover:text-lavender-600 dark:hover:text-lavender-400 transition-all duration-200 cursor-default"
+                            className="text-[10px] font-bold px-1.5 py-1 bg-surface-2 hover:bg-lavender-50 dark:hover:bg-lavender-900/30 rounded-lg border border-border/40 hover:border-lavender-200 dark:hover:border-lavender-800 text-text-secondary hover:text-lavender-600 dark:hover:text-lavender-400 transition-all duration-200 cursor-default flex items-center gap-1.5"
                           >
+                            {d.image && (
+                              <img
+                                src={d.image}
+                                alt=""
+                                className="w-4 h-4 rounded-md object-cover border border-border/20 shrink-0"
+                              />
+                            )}
                             {d.name}
                           </span>
                         ))}

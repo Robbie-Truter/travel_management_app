@@ -1,19 +1,7 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Map,
-  Moon,
-  Sun,
-  Menu,
-  X,
-  Plane,
-  Plus,
-  Upload,
-  ChevronLeft,
-  ChevronRight,
-  FileText,
-} from "lucide-react";
+import { Map, Moon, Sun, Menu, X, Plane, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { CountrySelector } from "@/components/ui/CountrySelector";
 import { useTheme, useSettings } from "@/hooks/useTrips";
@@ -123,8 +111,6 @@ export function AppShell({
 }
 
 function SidebarContent({
-  onNewTrip,
-  onImport,
   theme,
   toggleTheme,
   onClose,
@@ -138,16 +124,6 @@ function SidebarContent({
   onClose?: () => void;
 }) {
   const navigate = useNavigate();
-
-  const handleNewTrip = () => {
-    onNewTrip();
-    onClose?.();
-  };
-
-  const handleImport = () => {
-    onImport();
-    onClose?.();
-  };
 
   return (
     <div className="flex flex-col h-full">
@@ -262,24 +238,6 @@ function SidebarContent({
 
       {/* Actions */}
       <div className={cn("py-4 space-y-2 border-t border-border", isCollapsed ? "px-2" : "px-3")}>
-        <Button
-          variant="primary"
-          className={cn("w-full transition-all overflow-hidden", isCollapsed ? "px-0" : "")}
-          onClick={handleNewTrip}
-          title={isCollapsed ? "New Trip" : undefined}
-        >
-          <Plus size={16} className="shrink-0" />
-          {!isCollapsed && <span className="ml-2 whitespace-nowrap">New Trip</span>}
-        </Button>
-        <Button
-          variant="secondary"
-          className={cn("w-full transition-all overflow-hidden", isCollapsed ? "px-0" : "")}
-          onClick={handleImport}
-          title={isCollapsed ? "Import Trip" : undefined}
-        >
-          <Upload size={16} className="shrink-0" />
-          {!isCollapsed && <span className="ml-2 whitespace-nowrap">Import Trip</span>}
-        </Button>
         <Button
           variant="ghost"
           className={cn(
