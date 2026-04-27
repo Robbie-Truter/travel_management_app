@@ -21,6 +21,7 @@ export const useTripAvailability = (tripId: number) => {
   const { activities } = useActivities(tripId);
 
   const occupiedRanges = useMemo(() => {
+    if (!tripId) return [];
     const ranges: OccupiedRange[] = [];
 
     flights.forEach((flight) => {
@@ -50,7 +51,7 @@ export const useTripAvailability = (tripId: number) => {
     });
 
     return ranges;
-  }, [flights, accommodations, activities]);
+  }, [tripId, flights, accommodations, activities]);
 
   const flightRanges = useMemo(
     () => occupiedRanges.filter((r) => r.type === "flight"),
@@ -68,9 +69,23 @@ export const useTripAvailability = (tripId: number) => {
     return occupiedRanges.some((range) => range.start <= date && range.end >= date);
   };
 
+  const isDateInOccupiedRangeWithType = (
+    date: Date,
+    type: "flight" | "accommodation" | "activity",
+  ) => {
+    const dStart = startOfDay(date);
+    const dEnd = endOfDay(date);
+
+    return occupiedRanges.some((range) => {
+      if (range.type !== type) return false;
+      return range.start <= dEnd && range.end >= dStart;
+    });
+  };
+
   return {
     occupiedRanges,
     disabledDuringFlights,
     isDateInOccupiedRange,
+    isDateInOccupiedRangeWithType,
   };
 };

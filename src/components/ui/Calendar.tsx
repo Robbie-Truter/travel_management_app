@@ -1,15 +1,55 @@
 import * as React from "react";
-import { DayPicker } from "react-day-picker";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { DayButton, DayPicker, type DayButtonProps } from "react-day-picker";
+import { ChevronLeft, ChevronRight, Plane, Bed, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTripAvailability } from "@/hooks/useTripAvailability";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
-function Calendar({ className, classNames, showOutsideDays = true, ...props }: CalendarProps) {
+type CalendarComponentProps = {
+  tripId?: number;
+} & CalendarProps;
+
+function CustomDay(props: DayButtonProps) {
+  const { day, modifiers, ...buttonProps } = props;
+
+  const hasFlight = modifiers.flight;
+  const hasAccommodation = modifiers.accommodation;
+  const hasActivity = modifiers.activity;
+
+  return (
+    <div className="relative w-full h-full flex items-center justify-center">
+      <DayButton {...buttonProps} day={day} modifiers={modifiers} />
+      <div className="absolute bottom-0 flex gap-0.5 pointer-events-none items-center justify-center w-full">
+        {hasFlight && <Plane size={9} className="text-sky-500" />}
+        {hasAccommodation && <Bed size={9} className="text-emerald-500" />}
+        {hasActivity && <MapPin size={9} className="text-amber-500" />}
+      </div>
+    </div>
+  );
+}
+function Calendar({
+  tripId,
+  className,
+  classNames,
+  showOutsideDays = true,
+  ...props
+}: CalendarComponentProps) {
+  const { isDateInOccupiedRangeWithType } = useTripAvailability(tripId ?? 0);
+
+  const modifiers = React.useMemo(() => {
+    return {
+      flight: (date: Date) => isDateInOccupiedRangeWithType(date, "flight"),
+      accommodation: (date: Date) => isDateInOccupiedRangeWithType(date, "accommodation"),
+      activity: (date: Date) => isDateInOccupiedRangeWithType(date, "activity"),
+    };
+  }, [isDateInOccupiedRangeWithType]);
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
+      modifiers={modifiers}
       classNames={{
         months: "flex flex-col space-y-4",
         month: "space-y-4",
@@ -47,6 +87,7 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
         ...classNames,
       }}
       components={{
+        DayButton: CustomDay,
         Chevron: ({ ...props }) => {
           if (props.orientation === "left") return <ChevronLeft className="h-4 w-4" />;
           return <ChevronRight className="h-4 w-4" />;

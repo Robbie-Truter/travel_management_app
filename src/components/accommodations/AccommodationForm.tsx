@@ -287,6 +287,7 @@ export function AccommodationForm({
         />
         <div className="grid grid-cols-2 gap-3">
           <DatePicker
+            tripId={tripId}
             label="Check-in"
             showTime
             value={form.checkIn}
@@ -300,6 +301,7 @@ export function AccommodationForm({
             error={errors.checkIn}
           />
           <DatePicker
+            tripId={tripId}
             label="Check-out"
             showTime
             value={form.checkOut}

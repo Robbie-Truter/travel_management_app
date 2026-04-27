@@ -13,7 +13,7 @@ export function MapsPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto min-h-full flex flex-col">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-black text-text-primary tracking-tight flex items-center gap-3">
             <div className="p-2 bg-lavender-100 dark:bg-lavender-900/30 rounded-xl text-lavender-600">
@@ -27,7 +27,7 @@ export function MapsPage() {
         </div>
       </div>
 
-      <div className="flex-1 min-h-[500px] bg-surface border border-border rounded-2xl shadow-sm overflow-hidden relative">
+      <div className="flex-1 min-h-[600px] bg-surface border border-border rounded-2xl shadow-sm overflow-hidden relative flex flex-col">
         {loading ? (
           <div className="absolute inset-0 flex items-center justify-center bg-surface/50 backdrop-blur-sm z-10">
             <div className="flex flex-col items-center gap-3">
@@ -52,9 +52,9 @@ export function MapsPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="w-full h-full"
+            className="flex-1 flex flex-col"
           >
-            <ItineraryMap flights={flights} homeCountry={homeCountry} />
+            <ItineraryMap flights={flights} trips={trips} homeCountry={homeCountry} />
           </motion.div>
         )}
       </div>

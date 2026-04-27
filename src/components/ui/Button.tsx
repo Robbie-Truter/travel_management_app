@@ -15,6 +15,7 @@ const buttonVariants = cva(
         danger: "bg-rose-pastel-500 text-white hover:bg-rose-pastel-600 hover:scale-106",
         outline:
           "border border-border bg-transparent hover:bg-surface-3 text-text-primary hover:scale-106",
+        success: "bg-emerald-500 text-white hover:bg-emerald-600 hover:scale-106",
       },
       size: {
         sm: "h-8 px-3 text-sm",

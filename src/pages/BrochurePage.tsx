@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import { BrochureDocument } from "@/components/brochure/BrochureDocument";
 import { Button } from "@/components/ui/Button";
@@ -12,6 +13,10 @@ import { useActivities } from "@/hooks/useActivities";
 import { useDestinations } from "@/hooks/useDestinations";
 import { useDocuments } from "@/hooks/useDocuments";
 import { useNotes } from "@/hooks/useNotes";
+import { VisaDocument } from "@/components/brochure/VisaDocument";
+import { FileCheck, Image as ImageIcon, User, Map as MapIcon, Info } from "lucide-react";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Input";
 
 export function BrochurePage() {
   const [selectedTripId, setSelectedTripId] = useState<number | null>(null);
@@ -26,6 +31,15 @@ export function BrochurePage() {
   const { destinations, isLoading: destinationsLoading } = useDestinations(tripIdNum);
   const { documents, isLoading: documentsLoading } = useDocuments(tripIdNum);
   const { note: tripNote, isLoading: notesLoading } = useNotes(tripIdNum);
+
+  const [mode, setMode] = useState<"brochure" | "visa">("brochure");
+  const [personalInfo, setPersonalInfo] = useState({
+    fullName: "",
+    passportNumber: "",
+    nationality: "",
+    address: "",
+    purpose: "Tourism / Vacation",
+  });
 
   const loadingPdf =
     selectedTripId !== null &&
@@ -74,42 +88,159 @@ export function BrochurePage() {
       </div>
 
       <div className="flex flex-col lg:flex-row flex-1 gap-4 sm:gap-6 min-h-0">
-        {/* Left Side: Selecting Trips */}
-        {!selectedTripId && (
-          <div className="w-full lg:w-1/3 flex flex-col gap-4">
-            <div className="bg-surface rounded-xl p-5 border border-border">
-              <h2 className="text-lg font-semibold mb-4">Select a Trip</h2>
-              <div className="space-y-3">
-                {trips.length === 0 ? (
-                  <div className="text-center py-8 text-text-secondary">
-                    No trips found. Create a trip first!
-                  </div>
-                ) : (
-                  trips.map((trip) => (
-                    <button
-                      key={trip.id}
-                      onClick={() => setSelectedTripId(trip.id!)}
-                      className={`w-full text-left p-4 rounded-lg border transition-all ${
-                        selectedTripId === trip.id
-                          ? "border-primary bg-primary/5 ring-1 ring-primary"
-                          : "border-border hover:border-primary/50 hover:bg-surface-3"
-                      }`}
-                    >
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="font-semibold text-text-primary">{trip.name}</span>
-                        {selectedTripId === trip.id && <Check size={16} className="text-primary" />}
-                      </div>
-                      <span className="text-xs text-text-secondary line-clamp-1">
+        {/* Left Side: Selecting Trips & Configuration */}
+        <div
+          className={cn("w-full lg:w-1/3 flex flex-col gap-4", selectedTripId && "hidden lg:flex")}
+        >
+          <div className="bg-surface rounded-2xl p-6 border border-border shadow-sm">
+            <h2 className="text-lg font-black text-text-primary mb-4 flex items-center gap-2">
+              <MapIcon size={18} className="text-lavender-500" />
+              Select Trip
+            </h2>
+            <div className="space-y-2">
+              {trips.length === 0 ? (
+                <div className="text-center py-8 text-text-secondary bg-surface-2 rounded-xl border border-dashed border-border">
+                  No trips found.
+                </div>
+              ) : (
+                trips.map((trip) => (
+                  <button
+                    key={trip.id}
+                    onClick={() => setSelectedTripId(trip.id!)}
+                    className={`w-full text-left p-3.5 rounded-xl border transition-all ${
+                      selectedTripId === trip.id
+                        ? "border-lavender-500 bg-lavender-50/50 dark:bg-lavender-900/10 ring-1 ring-lavender-500 shadow-sm"
+                        : "border-border hover:border-lavender-300 hover:bg-surface-2"
+                    }`}
+                  >
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-bold text-text-primary">{trip.name}</span>
+                      {selectedTripId === trip.id && (
+                        <div className="w-5 h-5 rounded-full bg-lavender-500 flex items-center justify-center">
+                          <Check size={12} className="text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-text-muted uppercase tracking-wider">
+                      <span>{new Date(trip.startDate).getFullYear()}</span>
+                      <span>•</span>
+                      <span className="truncate">
                         {trip.tripCountries?.map((tc) => tc.countryName).join(", ") ||
                           "No countries"}
                       </span>
-                    </button>
-                  ))
-                )}
-              </div>
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
           </div>
-        )}
+
+          {selectedTripId && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-surface rounded-2xl p-6 border border-border shadow-sm space-y-6"
+            >
+              <div>
+                <h2 className="text-lg font-black text-text-primary mb-4 flex items-center gap-2">
+                  <RefreshCw size={18} className="text-sky-pastel-500" />
+                  Document Type
+                </h2>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setMode("brochure")}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border transition-all text-center",
+                      mode === "brochure"
+                        ? "border-lavender-500 bg-lavender-50 dark:bg-lavender-900/10 text-lavender-600"
+                        : "border-border hover:bg-surface-2 text-text-muted",
+                    )}
+                  >
+                    <ImageIcon size={24} />
+                    <span className="text-xs font-bold uppercase tracking-tight">Brochure</span>
+                  </button>
+                  <button
+                    onClick={() => setMode("visa")}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border transition-all text-center",
+                      mode === "visa"
+                        ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600"
+                        : "border-border hover:bg-surface-2 text-text-muted",
+                    )}
+                  >
+                    <FileCheck size={24} />
+                    <span className="text-xs font-bold uppercase tracking-tight">Visa Export</span>
+                  </button>
+                </div>
+              </div>
+
+              {mode === "visa" && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="space-y-4 pt-4 border-t border-border"
+                >
+                  <h3 className="text-sm font-black text-text-primary flex items-center gap-2">
+                    <User size={14} className="text-emerald-500" />
+                    Applicant Details
+                  </h3>
+                  <div className="space-y-3">
+                    <Input
+                      label="Full Name"
+                      value={personalInfo.fullName}
+                      onChange={(e) =>
+                        setPersonalInfo({ ...personalInfo, fullName: e.target.value })
+                      }
+                      placeholder="As per passport"
+                      className="text-xs"
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input
+                        label="Passport #"
+                        value={personalInfo.passportNumber}
+                        onChange={(e) =>
+                          setPersonalInfo({ ...personalInfo, passportNumber: e.target.value })
+                        }
+                        className="text-xs"
+                      />
+                      <Input
+                        label="Nationality"
+                        value={personalInfo.nationality}
+                        onChange={(e) =>
+                          setPersonalInfo({ ...personalInfo, nationality: e.target.value })
+                        }
+                        className="text-xs"
+                      />
+                    </div>
+                    <Input
+                      label="Purpose"
+                      value={personalInfo.purpose}
+                      onChange={(e) =>
+                        setPersonalInfo({ ...personalInfo, purpose: e.target.value })
+                      }
+                      className="text-xs"
+                    />
+                    <Textarea
+                      label="Home Address"
+                      value={personalInfo.address}
+                      onChange={(e) =>
+                        setPersonalInfo({ ...personalInfo, address: e.target.value })
+                      }
+                      className="text-xs h-20"
+                    />
+                  </div>
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/10 rounded-lg border border-blue-100 dark:border-blue-800 flex gap-2">
+                    <Info size={14} className="text-blue-500 shrink-0 mt-0.5" />
+                    <p className="text-[10px] text-blue-700 dark:text-blue-300 leading-tight">
+                      These details are required for a valid Schengen visa itinerary. They are not
+                      saved and only exist for this session.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+        </div>
 
         {/* Right Side: Preview & Download */}
         <div
@@ -131,45 +262,69 @@ export function BrochurePage() {
               <p className="text-text-secondary">Preparing document...</p>
             </div>
           ) : (
-            <div className="bg-surface rounded-xl border border-border overflow-hidden flex flex-col flex-1 min-h-0">
-              <div className="p-4 border-b border-border flex justify-between items-center bg-surface-2">
+            <div className="bg-surface rounded-2xl border border-border overflow-hidden flex flex-col flex-1 min-h-0 shadow-sm">
+              <div className="p-4 border-b border-border flex justify-between items-center bg-surface">
                 <div className="flex items-center gap-4">
                   <Button
                     variant="ghost"
                     size="icon-sm"
                     onClick={() => setSelectedTripId(null)}
                     title="Change Trip"
+                    className="lg:hidden"
                   >
                     <ArrowLeft size={18} />
                   </Button>
-                  <h3 className="font-semibold text-text-primary underline decoration-primary decoration-2 underline-offset-4">
-                    PDF Preview: {tripData.trip.name}
-                  </h3>
+                  <div className="flex flex-col">
+                    <h3 className="font-black text-text-primary leading-tight">
+                      {mode === "brochure" ? "Travel Brochure" : "Visa Itinerary"}
+                    </h3>
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
+                      Previewing: {tripData.trip.name}
+                    </p>
+                  </div>
                 </div>
                 <PDFDownloadLink
-                  document={<BrochureDocument {...tripData} />}
-                  fileName={`Wanderplan-${tripData.trip.name.replace(/\s+/g, "-")}-Brochure.pdf`}
+                  document={
+                    mode === "brochure" ? (
+                      <BrochureDocument {...tripData} />
+                    ) : (
+                      <VisaDocument {...tripData} personalInfo={personalInfo} />
+                    )
+                  }
+                  fileName={
+                    mode === "brochure"
+                      ? `Wanderplan-${tripData.trip.name.replace(/\s+/g, "-")}-Brochure.pdf`
+                      : `Visa-Itinerary-${personalInfo.fullName.replace(/\s+/g, "-") || "Wanderplan"}.pdf`
+                  }
                 >
                   {({ loading }) => (
-                    <Button variant="primary" disabled={loading}>
+                    <Button
+                      variant={mode === "brochure" ? "primary" : "success"}
+                      disabled={loading}
+                      className="rounded-xl shadow-lg shadow-lavender-500/10"
+                    >
                       {loading ? (
                         <>
                           <Loader2 size={16} className="mr-2 animate-spin" />
-                          Generating PDF...
+                          Generating...
                         </>
                       ) : (
                         <>
                           <Download size={16} className="mr-2" />
-                          Download PDF
+                          Export PDF
                         </>
                       )}
                     </Button>
                   )}
                 </PDFDownloadLink>
               </div>
-              <div className="flex-1 bg-surface-3">
+              <div className="flex-1 bg-surface-3 relative">
                 <PDFViewer width="100%" height="100%" className="border-none">
-                  <BrochureDocument {...tripData} />
+                  {mode === "brochure" ? (
+                    <BrochureDocument {...tripData} />
+                  ) : (
+                    <VisaDocument {...tripData} personalInfo={personalInfo} />
+                  )}
                 </PDFViewer>
               </div>
             </div>

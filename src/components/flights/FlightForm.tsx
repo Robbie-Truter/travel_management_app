@@ -371,6 +371,7 @@ export function FlightForm({
             <div className="grid grid-cols-2 gap-3">
               <DatePicker
                 id={`seg-dep-t-${index}`}
+                tripId={tripId}
                 label="Departure Time"
                 showTime
                 value={seg.departureTime}
@@ -384,6 +385,7 @@ export function FlightForm({
               />
               <DatePicker
                 id={`seg-arr-t-${index}`}
+                tripId={tripId}
                 label="Arrival Time"
                 showTime
                 value={seg.arrivalTime}

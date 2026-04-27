@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Plane, Hotel, Compass, Clock, MapPin, ExternalLink } from "lucide-react";
-import { formatCurrency, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { Flight, Accommodation, Activity } from "@/db/types";
 
 export interface PlannerItem {
@@ -74,7 +74,7 @@ export function PlannerCard({ item }: PlannerCardProps) {
     return { price: act.cost || 0, currency: act.currency, isConfirmed: act.isConfirmed };
   };
 
-  const { price, currency, isConfirmed } = getPriceData();
+  const { isConfirmed } = getPriceData();
 
   const getBookingLink = () => {
     if (item.type === "flight") return (item.data as Flight).bookingLink;
@@ -153,16 +153,11 @@ export function PlannerCard({ item }: PlannerCardProps) {
           </p>
         )}
 
-        {price > 0 && (
-          <div className="mt-3 pt-3 border-t border-border/50 flex items-center justify-between">
-            <span className="text-[11px] font-bold text-text-primary">
-              {formatCurrency(price, currency)}
+        {!isConfirmed && (
+          <div className="mt-3 pt-3 border-t border-border/50">
+            <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100 uppercase inline-block">
+              Unconfirmed
             </span>
-            {!isConfirmed && (
-              <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100 uppercase">
-                Unconfirmed
-              </span>
-            )}
           </div>
         )}
 

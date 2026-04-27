@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import type { Matcher } from "react-day-picker";
 
 interface DatePickerProps {
+  tripId?: number;
   className?: string;
   label?: string;
   value?: Date | string;
@@ -21,6 +22,7 @@ interface DatePickerProps {
 }
 
 export function DatePicker({
+  tripId,
   className,
   label,
   value,
@@ -81,6 +83,7 @@ export function DatePicker({
         >
           <motion.div>
             <Calendar
+              tripId={tripId}
               mode="single"
               selected={dateValue}
               onSelect={(date) => {

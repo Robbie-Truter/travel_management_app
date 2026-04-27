@@ -241,6 +241,7 @@ export function ActivityForm({
             onChange={(val: string) => set("type", val)}
           />
           <DatePicker
+            tripId={tripId}
             label="Date"
             showTime
             value={form.date}
