@@ -191,7 +191,12 @@ export function useTrips() {
 
       // 2. Delete cover image if exists
       if (trip?.cover_image && !trip.cover_image.startsWith("http")) {
-        await deleteFile("trip-covers", trip.cover_image).catch(console.error);
+        try {
+          await deleteFile("trip-covers", trip.cover_image);
+        } catch (error) {
+          console.error("Failed to delete old cover image", error);
+          throw new Error("Could not delete trip - error deleting old image");
+        }
       }
 
       // 3. Delete trip (will cascade to other tables in DB)
