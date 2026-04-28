@@ -123,6 +123,8 @@ export interface FlightSegment {
   arrivalAirport: string;
   departureTime: string;
   arrivalTime: string;
+  departureTimezone?: string;
+  arrivalTimezone?: string;
   coordinates?: {
     departure?: [number, number];
     arrival?: [number, number];

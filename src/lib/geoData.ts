@@ -2,6 +2,7 @@ export interface GeoPoint {
   coordinates: [number, number]; // [longitude, latitude]
   name: string;
   countryCode: string; // ISO 3166-1 alpha-3
+  timezone?: string;
 }
 
 // Minimal hardcoded country-level fallbacks (since airports are specific points)
@@ -18,25 +19,26 @@ const COUNTRY_FALLBACKS: Record<string, [number, number]> = {
   Thailand: [100.9925, 15.87],
 };
 
-let AIRPORT_COORDINATES: Record<string, [number, number]> = {};
+let AIRPORT_DATA: Record<string, { lat: number; lng: number; tz?: string; country: string }> = {};
 const NAME_TO_IATA: Record<string, { iata: string; country: string }> = {};
 const COUNTRY_COORDS: Record<string, [number, number]> = { ...COUNTRY_FALLBACKS };
 
 export async function loadAirportCoordinates() {
-  if (Object.keys(AIRPORT_COORDINATES).length > 0) return;
+  if (Object.keys(AIRPORT_DATA).length > 0) return;
   try {
-    const [coordRes, searchRes, countryRes] = await Promise.all([
-      fetch("/data/airports-coordinates.json"),
-      fetch("/data/airports-search.json"),
+    const [airportRes, countryRes] = await Promise.all([
+      fetch("/data/airports.json"),
       fetch("/data/countries-coordinates.json"),
     ]);
 
-    AIRPORT_COORDINATES = await coordRes.json();
-    const searchData = (await searchRes.json()) as {
+    const airportData = (await airportRes.json()) as {
       iata: string;
       name: string;
       city: string;
       country: string;
+      lat?: number;
+      lng?: number;
+      tz?: string;
     }[];
     const countryData = (await countryRes.json()) as {
       alpha2: string;
@@ -47,11 +49,20 @@ export async function loadAirportCoordinates() {
     }[];
 
     // Build smart lookups
-    searchData.forEach((ap) => {
+    airportData.forEach((ap) => {
       const lowerCity = ap.city.toLowerCase();
       const lowerName = ap.name.toLowerCase();
       const lowerIata = ap.iata.toLowerCase();
       const countryCode = ap.country;
+
+      if (ap.lat !== undefined && ap.lng !== undefined) {
+        AIRPORT_DATA[ap.iata] = {
+          lat: ap.lat,
+          lng: ap.lng,
+          tz: ap.tz,
+          country: ap.country,
+        };
+      }
 
       // 1. Name to IATA mapping
       if (!NAME_TO_IATA[lowerCity])
@@ -62,9 +73,8 @@ export async function loadAirportCoordinates() {
         NAME_TO_IATA[lowerIata] = { iata: ap.iata, country: countryCode };
 
       // 2. Initial Country Coordinate fallback (using airport)
-      if (!COUNTRY_COORDS[countryCode] && AIRPORT_COORDINATES[ap.iata]) {
-        const [lat, lon] = AIRPORT_COORDINATES[ap.iata];
-        COUNTRY_COORDS[countryCode] = [lon, lat]; // Standardize to [lon, lat] for COUNTRY_COORDS
+      if (!COUNTRY_COORDS[countryCode] && ap.lat !== undefined && ap.lng !== undefined) {
+        COUNTRY_COORDS[countryCode] = [ap.lng, ap.lat]; // Standardize to [lon, lat]
       }
     });
 
@@ -98,26 +108,27 @@ export function getPointForDestination(dest: string): GeoPoint | undefined {
   const lower = normalized.toLowerCase();
 
   // 1. Direct IATA code match (fastest)
-  if (normalized.length === 3 && AIRPORT_COORDINATES[normalized.toUpperCase()]) {
+  if (normalized.length === 3 && AIRPORT_DATA[normalized.toUpperCase()]) {
     const iata = normalized.toUpperCase();
-    const [lat, lon] = AIRPORT_COORDINATES[iata];
-    const country = NAME_TO_IATA[iata.toLowerCase()]?.country || "";
+    const info = AIRPORT_DATA[iata];
     return {
-      coordinates: [lon, lat],
+      coordinates: [info.lng, info.lat],
       name: iata,
-      countryCode: country,
+      countryCode: info.country,
+      timezone: info.tz,
     };
   }
 
   // 2. City or Airport Name match
   if (NAME_TO_IATA[lower]) {
     const info = NAME_TO_IATA[lower];
-    const coords = AIRPORT_COORDINATES[info.iata];
-    if (coords) {
+    const data = AIRPORT_DATA[info.iata];
+    if (data) {
       return {
-        coordinates: [coords[1], coords[0]],
+        coordinates: [data.lng, data.lat],
         name: normalized,
         countryCode: info.country,
+        timezone: data.tz,
       };
     }
   }

@@ -3,7 +3,8 @@ import { useFlights } from "@/hooks/useFlights";
 import { Button } from "../ui/Button";
 import { AlertCircle, Plane, RefreshCcw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { formatDistanceToNow, parseISO, format } from "date-fns";
+import { formatDistanceToNow, parseISO } from "date-fns";
+import { calculateDuration } from "@/lib/utils";
 
 interface FlightsWidgetProps {
   tripId: number;
@@ -140,8 +141,11 @@ const FlightsWidget = ({ tripId }: FlightsWidgetProps) => {
                       </div>
 
                       <div className="flex-1 flex flex-col items-center gap-1">
-                        <div className="text-[8px] font-black text-sky-500/80 uppercase tracking-widest">
-                          {format(parseISO(firstSegment.departureTime), "HH:mm")}
+                        <div className="text-[8px] font-black text-sky-500/80 uppercase tracking-widest flex items-center gap-1">
+                          {calculateDuration(firstSegment.departureTime, lastSegment.arrivalTime, {
+                            startTimeZone: firstSegment.departureTimezone || "UTC",
+                            endTimeZone: lastSegment.arrivalTimezone || "UTC",
+                          })}
                         </div>
                         <div className="relative w-full flex items-center justify-center">
                           <div className="absolute inset-0 flex items-center">

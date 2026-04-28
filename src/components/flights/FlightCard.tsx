@@ -4,8 +4,8 @@ import { Plane, ExternalLink, Trash2, CheckCircle, Clock, Edit3 } from "lucide-r
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/Modal";
-import { formatDateTime, formatCurrency, calculateDuration, cn, formatDate } from "@/lib/utils";
-import { format } from "date-fns";
+import { formatDateTime, formatCurrency, calculateDuration, cn, formatDate, getTimezoneAbbr } from "@/lib/utils";
+import { format, parseISO } from "date-fns";
 import type { Flight } from "@/db/types";
 
 interface FlightCardProps {
@@ -78,6 +78,9 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
                   </div>
                   <span className="text-sm font-black text-text-primary mt-2">
                     {format(new Date(firstSeg.departureTime), "HH:mm")}
+                    <span className="ml-1 text-[10px] text-text-muted font-normal">
+                      {getTimezoneAbbr(firstSeg.departureTime, firstSeg.departureTimezone)}
+                    </span>
                   </span>
                   <span className="text-xs font-bold text-lavender-600 uppercase">
                     {firstSeg.departureAirport}
@@ -102,6 +105,9 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
                   </div>
                   <span className="text-sm font-black text-text-primary mt-2">
                     {format(new Date(lastSeg.arrivalTime), "HH:mm")}
+                    <span className="ml-1 text-[10px] text-text-muted font-normal">
+                      {getTimezoneAbbr(lastSeg.arrivalTime, lastSeg.arrivalTimezone)}
+                    </span>
                   </span>
                   <span className="text-xs font-bold text-lavender-600 uppercase">
                     {lastSeg.arrivalAirport}
@@ -114,7 +120,10 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
                 <Clock size={12} className="text-text-muted" />
                 <span className="text-[11px] font-medium text-text-secondary">
                   Total Travel Time:
-                  {calculateDuration(firstSeg.departureTime, lastSeg.arrivalTime)}
+                  {calculateDuration(firstSeg.departureTime, lastSeg.arrivalTime, {
+                    startTimeZone: firstSeg.departureTimezone ?? "UTC",
+                    endTimeZone: lastSeg.arrivalTimezone ?? "UTC",
+                  })}
                 </span>
               </div>
             </div>
@@ -130,16 +139,35 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-text-primary">
-                          {seg.departureAirport}
-                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-text-primary">
+                            {format(parseISO(seg.departureTime), "HH:mm")}
+                            <span className="ml-1 text-[10px] text-text-muted font-normal">
+                              {getTimezoneAbbr(seg.departureTime, seg.departureTimezone)}
+                            </span>
+                          </span>
+                          <span className="text-[10px] text-text-muted font-medium">
+                            {seg.departureAirport}
+                          </span>
+                        </div>
                         <div className="w-4 h-px bg-text-muted/30" />
-                        <span className="text-xs font-bold text-text-primary">
-                          {seg.arrivalAirport}
-                        </span>
+                        <div className="flex flex-col items-end">
+                          <span className="text-sm font-bold text-text-primary">
+                            {format(parseISO(seg.arrivalTime), "HH:mm")}
+                            <span className="ml-1 text-[10px] text-text-muted font-normal">
+                              {getTimezoneAbbr(seg.arrivalTime, seg.arrivalTimezone)}
+                            </span>
+                          </span>
+                          <span className="text-[10px] text-text-muted font-medium text-right">
+                            {seg.arrivalAirport}
+                          </span>
+                        </div>
                       </div>
                       <span className="text-[10px] text-text-muted font-medium">
-                        {calculateDuration(seg.departureTime, seg.arrivalTime)}
+                        {calculateDuration(seg.departureTime, seg.arrivalTime, {
+                          startTimeZone: seg.departureTimezone ?? "UTC",
+                          endTimeZone: seg.arrivalTimezone ?? "UTC",
+                        })}
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider">
@@ -152,7 +180,10 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
                       <div className="mt-2 py-1 px-2 bg-lavender-500/20 rounded-md border border-lavender-900/10 flex items-center gap-2">
                         <Clock size={10} className="text-lavender-500" />
                         <span className="text-[9px] font-bold text-lavender-700 dark:text-lavender-400">
-                          {`Layover: ${calculateDuration(seg.arrivalTime, flight.segments[i + 1].departureTime)} in ${seg.arrivalAirport}`}
+                          {`Layover: ${calculateDuration(seg.arrivalTime, flight.segments[i + 1].departureTime, {
+                            startTimeZone: seg.arrivalTimezone ?? "UTC",
+                            endTimeZone: flight.segments[i + 1].departureTimezone ?? "UTC",
+                          })} in ${seg.arrivalAirport}`}
                         </span>
                       </div>
                     )}

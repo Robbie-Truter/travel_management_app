@@ -1,5 +1,14 @@
 import { Document, Page, Text, View, StyleSheet, Font, Image, Link } from "@react-pdf/renderer";
-import type { Trip, Flight, Accommodation, Activity, Destination, Document as Doc, Note } from "@/db/types";
+import type {
+  Trip,
+  Flight,
+  Accommodation,
+  Activity,
+  Destination,
+  Document as Doc,
+  Note,
+} from "@/db/types";
+import { calculateDuration, getTimezoneAbbr } from "@/lib/utils";
 
 // Register fonts
 Font.register({
@@ -286,15 +295,29 @@ export function BrochureDocument({
     });
   };
 
-  const formatTime = (timeStr: string) => {
-    return new Date(timeStr).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const formatTime = (timeStr: string, timeZone?: string) => {
+    try {
+      const time = new Intl.DateTimeFormat("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+        timeZone: timeZone || "UTC",
+      }).format(new Date(timeStr));
+
+      const abbr = getTimezoneAbbr(timeStr, timeZone);
+      return `${time} ${abbr}`;
+    } catch {
+      return new Date(timeStr).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
   };
 
   const getStatusBadge = (isConfirmed: boolean) => (
-    <View style={[styles.badge, isConfirmed ? styles.statusBadgeConfirmed : styles.statusBadgePlanning]}>
+    <View
+      style={[styles.badge, isConfirmed ? styles.statusBadgeConfirmed : styles.statusBadgePlanning]}
+    >
       <Text>{isConfirmed ? "Confirmed" : "Planning"}</Text>
     </View>
   );
@@ -307,15 +330,24 @@ export function BrochureDocument({
           {trip.coverImage ? (
             <Image src={trip.coverImage} style={styles.coverImage} />
           ) : (
-            <View style={[styles.coverImage, { backgroundColor: colors.surfaceDark, justifyContent: "center", alignItems: "center" }]}>
-               <Text style={{ color: colors.textMuted }}>Wanderplan</Text>
+            <View
+              style={[
+                styles.coverImage,
+                {
+                  backgroundColor: colors.surfaceDark,
+                  justifyContent: "center",
+                  alignItems: "center",
+                },
+              ]}
+            >
+              <Text style={{ color: colors.textMuted }}>Wanderplan</Text>
             </View>
           )}
           <Text style={styles.coverTitle}>{trip.name}</Text>
           <Text style={styles.coverSubtitle}>
             {trip.tripCountries?.map((tc) => tc.countryName).join(" • ") || "Exploring the World"}
           </Text>
-          
+
           <View style={styles.coverInfo}>
             <View style={styles.coverInfoItem}>
               <Text style={styles.coverInfoLabel}>Departure</Text>
@@ -335,40 +367,119 @@ export function BrochureDocument({
         </View>
       </Page>
 
-      {/* 2. Overview & Destinations */}
+      {/* 2. Overview & Flights */}
       <Page size="A4" style={styles.page}>
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Trip Overview</Text>
-          {trip.description && <Text style={[styles.text, { marginBottom: 20 }]}>{trip.description}</Text>}
-          
+          {trip.description && (
+            <View style={[styles.noteBox, { marginBottom: 20 }]}>
+              <Text style={styles.label}>Trip Note</Text>
+              <Text style={styles.text}>{trip.description}</Text>
+            </View>
+          )}
+        </View>
+
+        {flights.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.subSectionHeader}>Flight Itinerary</Text>
+            {flights.map((flight, i) => (
+              <View key={i} style={styles.card} wrap={false}>
+                <View style={styles.cardHeader}>
+                  <View>
+                    <Text style={styles.cardTitle}>
+                      {flight.description ||
+                        `${flight.segments[0].airline} ${flight.segments[0].flightNumber}`}
+                    </Text>
+                    <Text style={styles.textSecondary}>
+                      {formatDate(flight.segments[0].departureTime)}
+                    </Text>
+                  </View>
+                  {getStatusBadge(flight.isConfirmed)}
+                </View>
+
+                {flight.segments.map((seg, j) => (
+                  <View key={j} style={styles.segment}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Text style={[styles.text, { fontWeight: "bold" }]}>
+                        {seg.departureAirport} → {seg.arrivalAirport}
+                      </Text>
+                      <Text style={[styles.text, { color: colors.secondary, fontWeight: "bold" }]}>
+                        {seg.airline} {seg.flightNumber}
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Text style={styles.textSecondary}>
+                        {formatTime(seg.departureTime, seg.departureTimezone)} -{" "}
+                        {formatTime(seg.arrivalTime, seg.arrivalTimezone)}
+                      </Text>
+                      <Text style={[styles.textSecondary, { fontSize: 8 }]}>
+                        Duration:{" "}
+                        {calculateDuration(seg.departureTime, seg.arrivalTime, {
+                          startTimeZone: seg.departureTimezone || "UTC",
+                          endTimeZone: seg.arrivalTimezone || "UTC",
+                        })}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ))}
+          </View>
+        )}
+      </Page>
+
+      {/* 3. Destinations & Accommodations */}
+      <Page size="A4" style={styles.page}>
+        <View style={styles.section}>
+          <Text style={styles.sectionHeader}>Destinations & Stays</Text>
           <View style={styles.grid}>
             {trip.tripCountries?.map((tc) => {
-              const countryDestinations = destinations.filter(d => d.tripCountryId === tc.id);
+              const countryDestinations = destinations.filter((d) => d.tripCountryId === tc.id);
               return (
                 <View key={tc.id} style={styles.gridItem}>
                   <View style={styles.card}>
                     <Text style={[styles.countryName, { marginBottom: 8 }]}>{tc.countryName}</Text>
                     {tc.budgetLimit ? (
-                      <Text style={[styles.textSecondary, { marginBottom: 8 }]}>Budget: {tc.budgetLimit}</Text>
+                      <Text style={[styles.textSecondary, { marginBottom: 8 }]}>
+                        Budget: {tc.budgetLimit}
+                      </Text>
                     ) : null}
-                    
-                    <Text style={styles.label}>Destinations & Stays</Text>
+
+                    <Text style={styles.label}>Destinations</Text>
                     {countryDestinations.length > 0 ? (
                       countryDestinations.map((d, i) => {
-                        const destAccs = accommodations.filter(a => a.destinationId === d.id);
+                        const destAccs = accommodations.filter((a) => a.destinationId === d.id);
                         return (
                           <View key={i} style={{ marginTop: 4 }}>
                             <Text style={styles.text}>• {d.name}</Text>
                             {destAccs.map((a, j) => (
-                              <Text key={j} style={[styles.textSecondary, { marginLeft: 12, color: colors.secondary }]}>
-                                🏠 {a.name}
+                              <Text
+                                key={j}
+                                style={[
+                                  styles.textSecondary,
+                                  { marginLeft: 12, color: colors.secondary },
+                                ]}
+                              >
+                                Stay: {a.name}
                               </Text>
                             ))}
                           </View>
                         );
                       })
                     ) : (
-                      <Text style={[styles.textSecondary, { fontStyle: "italic" }]}>No cities specified</Text>
+                      <Text style={[styles.textSecondary]}>No cities specified</Text>
                     )}
 
                     {tc.notes && (
@@ -383,78 +494,9 @@ export function BrochureDocument({
           </View>
         </View>
 
-        {notes.length > 0 && (
+        {accommodations.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.subSectionHeader}>General Notes</Text>
-            {notes.map((note, i) => (
-              <View key={i} style={styles.noteBox}>
-                <Text style={styles.text}>{note.content}</Text>
-                <Text style={[styles.textSecondary, { marginTop: 5, fontSize: 8 }]}>
-                  Last updated: {formatDate(note.updatedAt)}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
-      </Page>
-
-      {/* 3. Flights */}
-      {flights.length > 0 && (
-        <Page size="A4" style={styles.page}>
-          <View style={styles.section}>
-            <Text style={styles.sectionHeader}>Flight Itinerary</Text>
-            {flights.map((flight, i) => (
-              <View key={i} style={styles.card} wrap={false}>
-                <View style={styles.cardHeader}>
-                  <View>
-                    <Text style={styles.cardTitle}>
-                      {flight.description || `${flight.segments[0].airline} ${flight.segments[0].flightNumber}`}
-                    </Text>
-                    <Text style={styles.textSecondary}>
-                      {formatDate(flight.segments[0].departureTime)}
-                    </Text>
-                  </View>
-                  {getStatusBadge(flight.isConfirmed)}
-                </View>
-
-                {flight.segments.map((seg, j) => (
-                  <View key={j} style={styles.segment}>
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                      <Text style={[styles.text, { fontWeight: "bold" }]}>
-                        {seg.departureAirport} → {seg.arrivalAirport}
-                      </Text>
-                      <Text style={[styles.text, { color: colors.secondary, fontWeight: "bold" }]}>
-                        {seg.airline} {seg.flightNumber}
-                      </Text>
-                    </View>
-                    <Text style={styles.textSecondary}>
-                      {formatTime(seg.departureTime)} - {formatTime(seg.arrivalTime)}
-                    </Text>
-                  </View>
-                ))}
-
-                {(flight.price > 0 || flight.notes || flight.bookingLink) && (
-                  <View style={{ marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.border }}>
-                    {flight.price > 0 && (
-                      <Text style={styles.price}>Cost: {flight.price} {flight.currency}</Text>
-                    )}
-                    {flight.notes && <Text style={[styles.textSecondary, { marginTop: 4 }]}>{flight.notes}</Text>}
-                    {flight.bookingLink && (
-                      <Link src={flight.bookingLink} style={styles.link}>Booking Reference</Link>
-                    )}
-                  </View>
-                )}
-              </View>
-            ))}
-          </View>
-        </Page>
-      )}
-
-      {/* 4. Accommodations */}
-      {accommodations.length > 0 && (
-        <Page size="A4" style={styles.page}>
-          <View style={styles.section}>
-            <Text style={styles.sectionHeader}>Accommodations</Text>
+            <Text style={styles.subSectionHeader}>Accommodation Details</Text>
             <View style={styles.grid}>
               {accommodations.map((acc, i) => (
                 <View key={i} style={styles.gridItem} wrap={false}>
@@ -463,102 +505,112 @@ export function BrochureDocument({
                       <Text style={styles.cardTitle}>{acc.name}</Text>
                       {getStatusBadge(acc.isConfirmed)}
                     </View>
-                    
                     <Text style={[styles.textSecondary, { marginBottom: 8 }]}>{acc.location}</Text>
-                    
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
                       <View>
                         <Text style={styles.label}>Check-in</Text>
                         <Text style={styles.text}>{formatDate(acc.checkIn)}</Text>
-                        {acc.checkInAfter && <Text style={{ fontSize: 8, color: colors.textMuted }}>After {acc.checkInAfter}</Text>}
                       </View>
                       <View>
                         <Text style={styles.label}>Check-out</Text>
                         <Text style={styles.text}>{formatDate(acc.checkOut)}</Text>
-                        {acc.checkOutBefore && <Text style={{ fontSize: 8, color: colors.textMuted }}>Before {acc.checkOutBefore}</Text>}
                       </View>
                     </View>
-
-                    {acc.platform && (
-                      <Text style={styles.textSecondary}>Booked via: <Text style={{ fontWeight: "bold" }}>{acc.platform}</Text></Text>
-                    )}
-
-                    {acc.price > 0 && (
-                      <Text style={styles.price}>Total: {acc.price} {acc.currency}</Text>
-                    )}
-
-                    {acc.notes && <Text style={[styles.textSecondary, { marginTop: 8 }]}>{acc.notes}</Text>}
-                    
-                    {acc.bookingLink && (
-                      <Link src={acc.bookingLink} style={styles.link}>View Confirmation</Link>
-                    )}
-
                     {acc.image && <Image src={acc.image} style={styles.image} />}
                   </View>
                 </View>
               ))}
             </View>
           </View>
-        </Page>
-      )}
+        )}
+      </Page>
 
-      {/* 5. Activities Timeline */}
-      {activities.length > 0 && (
+      {/* 4. Activity Timeline */}
+      {(activities.length > 0 || flights.length > 0) && (
         <Page size="A4" style={styles.page}>
           <View style={styles.section}>
             <Text style={styles.sectionHeader}>Activity Timeline</Text>
-            
-            {/* Grouped by date */}
-            {Array.from(new Set(activities.map(a => a.date))).sort().map(date => (
-              <View key={date} style={{ marginBottom: 20 }}>
-                <Text style={[styles.subSectionHeader, { color: colors.primary, marginTop: 0 }]}>
-                  {formatDate(date)}
-                </Text>
-                
-                {activities
-                  .filter(a => a.date === date)
-                  .sort((a, b) => a.order - b.order)
-                  .map((act, i) => (
-                    <View key={i} style={styles.timelineItem}>
-                      <View style={styles.timelineDot} />
-                      <View style={[styles.card, { marginBottom: 0 }]}>
-                        <View style={styles.cardHeader}>
-                          <View>
-                            <Text style={styles.cardTitle}>{act.name}</Text>
-                            {act.type && <Text style={[styles.textSecondary, { color: colors.secondary }]}>{act.type}</Text>}
+
+            {Array.from(
+              new Set([
+                ...activities.map((a) => a.date),
+                ...flights.flatMap((f) => f.segments.map((s) => s.departureTime.split("T")[0])),
+              ]),
+            )
+              .sort()
+              .map((date) => (
+                <View key={date} style={{ marginBottom: 20 }}>
+                  <Text style={[styles.subSectionHeader, { color: colors.primary, marginTop: 0 }]}>
+                    {formatDate(date)}
+                  </Text>
+
+                  {/* Render Flights for this day */}
+                  {flights
+                    .flatMap((f) =>
+                      f.segments
+                        .filter((s) => s.departureTime.startsWith(date))
+                        .map((s) => ({ ...s, isFlight: true, isConfirmed: f.isConfirmed })),
+                    )
+                    .map((flight, i) => (
+                      <View key={`flight-${i}`} style={styles.timelineItem}>
+                        <View style={[styles.timelineDot, { backgroundColor: colors.secondary }]} />
+                        <View
+                          style={[
+                            styles.card,
+                            {
+                              marginBottom: 0,
+                              borderLeftWidth: 3,
+                              borderLeftColor: colors.secondary,
+                            },
+                          ]}
+                        >
+                          <View style={styles.cardHeader}>
+                            <View>
+                              <Text style={[styles.cardTitle, { color: colors.secondary }]}>
+                                Flight: {flight.departureAirport} → {flight.arrivalAirport}
+                              </Text>
+                              <Text style={styles.textSecondary}>
+                                {flight.airline} {flight.flightNumber} •{" "}
+                                {formatTime(flight.departureTime, flight.departureTimezone)}
+                              </Text>
+                            </View>
+                            {getStatusBadge(flight.isConfirmed)}
                           </View>
-                          {getStatusBadge(act.isConfirmed)}
                         </View>
-
-                        {act.notes && <Text style={styles.textSecondary}>{act.notes}</Text>}
-                        
-                        <View style={{ flexDirection: "row", gap: 15, marginTop: 8 }}>
-                          {act.duration && (
-                            <View>
-                              <Text style={styles.label}>Duration</Text>
-                              <Text style={styles.text}>{act.duration} mins</Text>
-                            </View>
-                          )}
-                          {act.cost !== undefined && act.cost > 0 && (
-                            <View>
-                              <Text style={styles.label}>Cost</Text>
-                              <Text style={styles.text}>{act.cost} {act.currency}</Text>
-                            </View>
-                          )}
-                        </View>
-
-                        {act.link && <Link src={act.link} style={styles.link}>More Details</Link>}
-                        {act.image && <Image src={act.image} style={styles.image} />}
                       </View>
-                    </View>
-                  ))}
-              </View>
-            ))}
+                    ))}
+
+                  {/* Render Activities for this day */}
+                  {activities
+                    .filter((a) => a.date === date)
+                    .sort((a, b) => a.order - b.order)
+                    .map((act, i) => (
+                      <View key={`act-${i}`} style={styles.timelineItem}>
+                        <View style={styles.timelineDot} />
+                        <View style={[styles.card, { marginBottom: 0 }]}>
+                          <View style={styles.cardHeader}>
+                            <View>
+                              <Text style={styles.cardTitle}>{act.name}</Text>
+                              {act.type && (
+                                <Text style={[styles.textSecondary, { color: colors.secondary }]}>
+                                  {act.type}
+                                </Text>
+                              )}
+                            </View>
+                            {getStatusBadge(act.isConfirmed)}
+                          </View>
+                          {act.notes && <Text style={styles.textSecondary}>{act.notes}</Text>}
+                          {act.image && <Image src={act.image} style={styles.image} />}
+                        </View>
+                      </View>
+                    ))}
+                </View>
+              ))}
           </View>
         </Page>
       )}
 
-      {/* 6. Documents */}
+      {/* 5. Documents */}
       {documents.length > 0 && (
         <Page size="A4" style={styles.page}>
           <View style={styles.section}>
@@ -568,17 +620,36 @@ export function BrochureDocument({
                 <View key={i} style={styles.gridItem}>
                   <View style={[styles.card, { flexDirection: "row", alignItems: "center" }]}>
                     <View style={styles.docIcon}>
-                       <Text style={{ fontSize: 12 }}>📄</Text>
+                      <Text style={{ fontSize: 12 }}>📄</Text>
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.cardTitle}>{doc.name}</Text>
                       <Text style={styles.textSecondary}>{doc.type}</Text>
-                      <Link src={doc.file} style={styles.link}>View Document</Link>
+                      <Link src={doc.file} style={styles.link}>
+                        View Document
+                      </Link>
                     </View>
                   </View>
                 </View>
               ))}
             </View>
+          </View>
+        </Page>
+      )}
+
+      {/* 6. General Notes (Last Page) */}
+      {notes.length > 0 && (
+        <Page size="A4" style={styles.page}>
+          <View style={styles.section}>
+            <Text style={styles.sectionHeader}>Important Notes</Text>
+            {notes.map((note, i) => (
+              <View key={i} style={styles.noteBox}>
+                <Text style={styles.text}>{note.content}</Text>
+                <Text style={[styles.textSecondary, { marginTop: 5, fontSize: 8 }]}>
+                  Last updated: {formatDate(note.updatedAt)}
+                </Text>
+              </View>
+            ))}
           </View>
         </Page>
       )}

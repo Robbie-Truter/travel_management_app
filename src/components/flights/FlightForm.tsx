@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Trash2, Plus, ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
@@ -7,6 +7,7 @@ import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { getFlagEmoji } from "@/lib/utils";
 import { format } from "date-fns";
+import { TZDate } from "@date-fns/tz";
 import type { Flight, Currency, TripCountry } from "@/db/types";
 
 interface Airport {
@@ -14,6 +15,9 @@ interface Airport {
   name: string;
   city: string;
   country: string;
+  lat?: number;
+  lng?: number;
+  tz?: string;
 }
 
 interface Airline {
@@ -75,8 +79,8 @@ export function FlightForm({
   const [airports, setAirports] = useState<Airport[]>([]);
   const [airlines, setAirlines] = useState<Airline[]>([]);
 
-  React.useEffect(() => {
-    fetch("/data/airports-search.json")
+  useEffect(() => {
+    fetch("/data/airports.json")
       .then((res) => res.json())
       .then((data) => setAirports(data))
       .catch((err) => console.error("Failed to load airports:", err));
@@ -126,13 +130,28 @@ export function FlightForm({
   const updateSegment = (index: number, k: string, v: string) => {
     setForm((f) => ({
       ...f,
-      segments: f.segments.map((s, i) => (i === index ? { ...s, [k]: v } : s)),
+      segments: f.segments.map((s, i) => {
+        if (i !== index) return s;
+
+        const newSegment = { ...s, [k]: v };
+
+        // Auto-capture timezones when airports change
+        if (k === "departureAirport") {
+          const ap = airports.find((a) => a.iata === v);
+          if (ap?.tz) newSegment.departureTimezone = ap.tz;
+        } else if (k === "arrivalAirport") {
+          const ap = airports.find((a) => a.iata === v);
+          if (ap?.tz) newSegment.arrivalTimezone = ap.tz;
+        }
+
+        return newSegment;
+      }),
     }));
   };
 
   const set = (k: string, v: string | boolean | number) => setForm((f) => ({ ...f, [k]: v }));
 
-  const airportOptions = React.useMemo(() => {
+  const airportOptions = useMemo(() => {
     return airports.map((ap) => ({
       value: ap.iata,
       label: `${ap.iata} - ${ap.name}`,
@@ -142,7 +161,7 @@ export function FlightForm({
     }));
   }, [airports]);
 
-  const airlineOptions = React.useMemo(() => {
+  const airlineOptions = useMemo(() => {
     return airlines.map((al) => ({
       value: al.name,
       label: al.name,
@@ -171,7 +190,9 @@ export function FlightForm({
       if (!seg.arrivalTime) e[`seg-arr-t-${i}`] = "Arrival time is required";
 
       if (seg.departureTime && seg.arrivalTime) {
-        if (new Date(seg.arrivalTime) < new Date(seg.departureTime)) {
+        const depTZ = new TZDate(seg.departureTime, seg.departureTimezone || "UTC");
+        const arrTZ = new TZDate(seg.arrivalTime, seg.arrivalTimezone || "UTC");
+        if (arrTZ < depTZ) {
           e[`seg-arr-t-${i}`] = "Arrival must be after departure";
         }
       }
@@ -179,7 +200,9 @@ export function FlightForm({
       if (i > 0) {
         const prevSeg = form.segments[i - 1];
         if (prevSeg.arrivalTime && seg.departureTime) {
-          if (new Date(seg.departureTime) < new Date(prevSeg.arrivalTime)) {
+          const prevArrTZ = new TZDate(prevSeg.arrivalTime, prevSeg.arrivalTimezone || "UTC");
+          const currDepTZ = new TZDate(seg.departureTime, seg.departureTimezone || "UTC");
+          if (currDepTZ < prevArrTZ) {
             e[`seg-dep-t-${i}`] = "Must be after previous leg's arrival";
           }
         }

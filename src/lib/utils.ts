@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { format, parseISO, differenceInDays, intervalToDuration } from "date-fns";
+import { TZDate } from "@date-fns/tz";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -22,12 +23,34 @@ export function formatDateTime(dateStr: string) {
   }
 }
 
-export function calculateDuration(start: string, end: string) {
+type TimeZone = {
+  startTimeZone: string;
+  endTimeZone: string;
+};
+
+export function calculateDuration(start: string, end: string, timeZones?: TimeZone) {
   try {
-    const { hours, minutes } = intervalToDuration({ start: parseISO(start), end: parseISO(end) });
-    return `${hours ?? 0}h ${minutes ?? 0}m`;
+    const startTZ = new TZDate(start, timeZones?.startTimeZone ?? "UTC");
+    const endTZ = new TZDate(end, timeZones?.endTimeZone ?? "UTC");
+    const duration = intervalToDuration({ start: startTZ, end: endTZ });
+    const totalHours = (duration.days || 0) * 24 + (duration.hours || 0);
+    return `${totalHours}h ${duration.minutes ?? 0}m`;
   } catch {
     return 0;
+  }
+}
+
+export function getTimezoneAbbr(dateStr: string, timeZone?: string) {
+  try {
+    const date = parseISO(dateStr);
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: timeZone || "UTC",
+      timeZoneName: "short",
+    })
+      .format(date)
+      .split(", ")[1];
+  } catch {
+    return "";
   }
 }
 

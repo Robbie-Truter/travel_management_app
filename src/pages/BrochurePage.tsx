@@ -232,8 +232,8 @@ export function BrochurePage() {
                   <div className="p-3 bg-blue-50 dark:bg-blue-900/10 rounded-lg border border-blue-100 dark:border-blue-800 flex gap-2">
                     <Info size={14} className="text-blue-500 shrink-0 mt-0.5" />
                     <p className="text-[10px] text-blue-700 dark:text-blue-300 leading-tight">
-                      These details are required for a valid Schengen visa itinerary. They are not
-                      saved and only exist for this session.
+                      These details are required for a valid visa itinerary. They are not saved and
+                      only exist for this session.
                     </p>
                   </div>
                 </motion.div>

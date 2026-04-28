@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { Trip, Flight, Accommodation, Activity, Destination } from "@/db/types";
+import { getTimezoneAbbr } from "@/lib/utils";
 
 const styles = StyleSheet.create({
   page: {
@@ -133,6 +134,21 @@ export function VisaDocument({
     });
   };
 
+  const formatTime = (timeStr: string, timeZone?: string) => {
+    try {
+      const time = new Intl.DateTimeFormat("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+        timeZone: timeZone || "UTC",
+      }).format(new Date(timeStr));
+      const abbr = getTimezoneAbbr(timeStr, timeZone);
+      return `${time} ${abbr}`;
+    } catch {
+      return "";
+    }
+  };
+
   // Generate a chronological daily itinerary
   const startDate = new Date(trip.startDate);
   const endDate = new Date(trip.endDate);
@@ -141,27 +157,56 @@ export function VisaDocument({
   for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
     const dateStr = d.toISOString().split("T")[0];
 
+    // Find flights on this day
+    const dayFlights = flights.filter((f) =>
+      f.segments.some((seg) => seg.departureTime.startsWith(dateStr)),
+    );
+
     // Find city for this date
-    const dayDest =
-      destinations.find((dest) => {
-        const stay = accommodations.find(
-          (a) => a.destinationId === dest.id && dateStr >= a.checkIn && dateStr < a.checkOut,
-        );
-        return !!stay;
-      }) || destinations[0];
+    let dayCity = "In Transit";
+    const dayDest = destinations.find((dest) => {
+      const stay = accommodations.find(
+        (a) => a.destinationId === dest.id && dateStr >= a.checkIn && dateStr <= a.checkOut,
+      );
+      return !!stay;
+    });
+
+    if (dayDest) {
+      dayCity = dayDest.name;
+    } else if (dayFlights.length > 0) {
+      dayCity = `Transit to ${dayFlights[0].segments[dayFlights[0].segments.length - 1].arrivalAirport}`;
+    } else {
+      // Fallback to first destination or transit
+      dayCity = destinations[0]?.name || "In Transit";
+    }
 
     // Find stay
     const stay = accommodations.find((a) => dateStr >= a.checkIn && dateStr < a.checkOut);
+    // If it's checkout day and no new stay starts, show the old stay
+    const checkoutStay = accommodations.find((a) => dateStr === a.checkOut);
+    const finalStay = stay?.name || checkoutStay?.name || "Confirmed Booking (See Attachment)";
 
-    // Find activity
+    // Combine activities and flights
     const dayActivities = activities.filter((a) => a.date === dateStr);
+    const flightInfo = dayFlights
+      .map((f) => `Flight ${f.segments[0].airline} ${f.segments[0].flightNumber}`)
+      .join(", ");
+
+    const activityList = [
+      flightInfo,
+      ...dayActivities.map((a) => a.name),
+      dayActivities.length === 0 && dayFlights.length === 0
+        ? "City Sightseeing / Personal Itinerary"
+        : "",
+    ]
+      .filter(Boolean)
+      .join(", ");
 
     days.push({
       date: formatDate(dateStr),
-      city: dayDest?.name || "In Transit",
-      activity:
-        dayActivities.map((a) => a.name).join(", ") || "City Sightseeing / Personal Itinerary",
-      stay: stay?.name || "Confirmed Booking (See Attachment)",
+      city: dayCity,
+      activity: activityList,
+      stay: finalStay,
     });
   }
 
@@ -171,7 +216,7 @@ export function VisaDocument({
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <Text style={styles.title}>Detailed Flight & Travel Itinerary</Text>
-          <Text style={styles.subtitle}>For Schengen Visa Application</Text>
+          <Text style={styles.subtitle}>For Visa Application</Text>
         </View>
 
         <View style={styles.section}>
@@ -215,7 +260,7 @@ export function VisaDocument({
         <View style={styles.letterBody}>
           <Text>To Whom It May Concern,</Text>
           <Text style={{ marginTop: 10 }}>
-            I am submitting this detailed itinerary as part of my Schengen visa application for my
+            I am submitting this detailed itinerary as part of my visa application for my
             upcoming trip to {trip.tripCountries.map((tc) => tc.countryName).join(", ")}. This
             document outlines my confirmed flight reservations, accommodation bookings, and planned
             activities during my stay.
@@ -255,8 +300,8 @@ export function VisaDocument({
                 </View>
                 <View style={[styles.tableCol, { width: "30%" }]}>
                   <Text>
-                    {f.segments[0].departureAirport} -{" "}
-                    {f.segments[f.segments.length - 1].arrivalAirport}
+                    {f.segments[0].departureAirport} ({formatTime(f.segments[0].departureTime, f.segments[0].departureTimezone)}) -{" "}
+                    {f.segments[f.segments.length - 1].arrivalAirport} ({formatTime(f.segments[f.segments.length - 1].arrivalTime, f.segments[f.segments.length - 1].arrivalTimezone)})
                   </Text>
                 </View>
                 <View style={[styles.tableCol, { width: "25%", borderRightWidth: 0 }]}>
