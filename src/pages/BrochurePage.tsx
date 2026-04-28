@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import { BrochureDocument } from "@/components/brochure/BrochureDocument";
 import { Button } from "@/components/ui/Button";
-import { Check, Download, FileText, Loader2, RefreshCw, ArrowLeft } from "lucide-react";
+import { Check, Download, FileText, Loader2, RefreshCw, ArrowLeft, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { useTrips, useTrip } from "@/hooks/useTrips";
@@ -40,6 +40,13 @@ export function BrochurePage() {
     address: "",
     purpose: "Tourism / Vacation",
   });
+  const [savedPersonalInfo, setSavedPersonalInfo] = useState({
+    fullName: "",
+    passportNumber: "",
+    nationality: "",
+    address: "",
+    purpose: "Tourism / Vacation",
+  });
 
   const loadingPdf =
     selectedTripId !== null &&
@@ -51,17 +58,18 @@ export function BrochurePage() {
       documentsLoading ||
       notesLoading);
 
-  const tripData = trip
-    ? {
-        trip,
-        flights,
-        accommodations,
-        activities,
-        destinations,
-        documents,
-        notes: tripNote ? [tripNote] : [],
-      }
-    : null;
+  const tripData = useMemo(() => {
+    if (!trip) return null;
+    return {
+      trip,
+      flights,
+      accommodations,
+      activities,
+      destinations,
+      documents,
+      notes: tripNote ? [tripNote] : [],
+    };
+  }, [trip, flights, accommodations, activities, destinations, documents, tripNote]);
 
   if (tripsLoading) {
     return (
@@ -186,7 +194,7 @@ export function BrochurePage() {
                   </h3>
                   <div className="space-y-3">
                     <Input
-                      label="Full Name"
+                      label="Full Name" //
                       value={personalInfo.fullName}
                       onChange={(e) =>
                         setPersonalInfo({ ...personalInfo, fullName: e.target.value })
@@ -229,6 +237,16 @@ export function BrochurePage() {
                       className="text-xs h-20"
                     />
                   </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setSavedPersonalInfo(personalInfo);
+                    }}
+                  >
+                    <Save size={14} />
+                    Save Details
+                  </Button>
                   <div className="p-3 bg-blue-50 dark:bg-blue-900/10 rounded-lg border border-blue-100 dark:border-blue-800 flex gap-2">
                     <Info size={14} className="text-blue-500 shrink-0 mt-0.5" />
                     <p className="text-[10px] text-blue-700 dark:text-blue-300 leading-tight">
@@ -288,13 +306,13 @@ export function BrochurePage() {
                     mode === "brochure" ? (
                       <BrochureDocument {...tripData} />
                     ) : (
-                      <VisaDocument {...tripData} personalInfo={personalInfo} />
+                      <VisaDocument {...tripData} personalInfo={savedPersonalInfo} />
                     )
                   }
                   fileName={
                     mode === "brochure"
                       ? `Wanderplan-${tripData.trip.name.replace(/\s+/g, "-")}-Brochure.pdf`
-                      : `Visa-Itinerary-${personalInfo.fullName.replace(/\s+/g, "-") || "Wanderplan"}.pdf`
+                      : `Visa-Itinerary-${savedPersonalInfo.fullName.replace(/\s+/g, "-") || "Wanderplan"}.pdf`
                   }
                 >
                   {({ loading }) => (
@@ -323,7 +341,7 @@ export function BrochurePage() {
                   {mode === "brochure" ? (
                     <BrochureDocument {...tripData} />
                   ) : (
-                    <VisaDocument {...tripData} personalInfo={personalInfo} />
+                    <VisaDocument {...tripData} personalInfo={savedPersonalInfo} />
                   )}
                 </PDFViewer>
               </div>
