@@ -86,7 +86,7 @@ export function ActivitiesTab({
   const hasFilters = filterName || filterCity !== "all" || filterType !== "all" || filterDate;
 
   return (
-    <div className="bg-surface border border-border rounded-xl overflow-hidden">
+    <div className="bg-surface border border-border rounded-2xl overflow-hidden">
       <div className="bg-fuchsia-pastel-50 dark:bg-fuchsia-pastel-900/10 p-4 border-b border-fuchsia-pastel-100 dark:border-fuchsia-pastel-900/20">
         <div className="flex flex-col gap-6 mb-2">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">

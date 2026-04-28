@@ -68,7 +68,7 @@ export function DestinationsTab({ tripId, tripCountries }: DestinationsTabProps)
   }
 
   return (
-    <div className="bg-surface border border-border rounded-xl overflow-hidden">
+    <div className="bg-surface border border-border rounded-2xl overflow-hidden">
       <div className="bg-sky-pastel-50 dark:bg-sky-pastel-900/10 p-4 border-b border-sky-pastel-100 dark:border-sky-pastel-900/20">
         <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
           <div className="flex items-center gap-4">

@@ -9,7 +9,7 @@ interface DayColumnProps {
 export function DayColumn({ date, items }: DayColumnProps) {
   return (
     <div className="shrink-0 w-80 group">
-      <div className="mb-4 sticky top-0 bg-surface/80 backdrop-blur-sm z-10 p-2 flex rounded items-baseline gap-2 text-left">
+      <div className="mb-4 sticky top-0 bg-surface/80 backdrop-blur-sm z-10 p-2 flex rounded-xl items-baseline gap-2 text-left">
         <h3 className="text-xl font-bold text-text-primary">{formatDate(date, "d")}</h3>
         <span className="text-sm font-medium text-text-secondary">
           {formatDate(date, "EEEE, MMM")}

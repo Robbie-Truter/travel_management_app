@@ -84,7 +84,7 @@ const OverviewTab = ({ tripId, tripCountries, onNavigate }: TripOverviewProps) =
 
   return (
     <div className="relative">
-      <div className="bg-surface border border-border rounded-xl overflow-hidden">
+      <div className="bg-surface border border-border rounded-2xl overflow-hidden">
         <div>
           <div className="bg-indigo-pastel-50 dark:bg-indigo-pastel-900/10 p-4 border-b border-indigo-pastel-100 dark:border-indigo-pastel-900/20">
             <div className="flex items-center gap-3">

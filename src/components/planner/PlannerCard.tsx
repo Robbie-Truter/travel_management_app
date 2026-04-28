@@ -108,7 +108,7 @@ export function PlannerCard({ item }: PlannerCardProps) {
 
       <div
         className={cn(
-          "rounded-xl border p-4 shadow-sm hover:shadow-md transition-all duration-300 bg-surface",
+          "rounded-2xl border p-4 shadow-sm hover:shadow-md transition-all duration-300 bg-surface",
           border,
         )}
       >

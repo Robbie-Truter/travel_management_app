@@ -64,7 +64,7 @@ export function AccommodationsTab({
   }
 
   return (
-    <div className="bg-surface border border-border rounded-xl overflow-hidden">
+    <div className="bg-surface border border-border rounded-2xl overflow-hidden">
       <div className="bg-lavender-50 dark:bg-lavender-900/10 p-4 border-b border-lavender-100 dark:border-lavender-900/20">
         <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
           <div className="flex items-center gap-4">

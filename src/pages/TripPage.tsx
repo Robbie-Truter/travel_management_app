@@ -201,8 +201,19 @@ export function TripPage() {
                     : "text-text-secondary hover:text-text-primary",
                 )}
               >
-                <Icon size={15} />
-                {tab.label}
+                <motion.div
+                  initial={false}
+                  animate={{
+                    scale: isActive ? 1.05 : 1,
+                    backgroundColor: isActive ? "rgb(139, 92, 246)" : "rgba(139, 92, 246, 0)",
+                    color: isActive ? "#ffffff" : "currentColor",
+                  }}
+                  transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl"
+                >
+                  <Icon size={15} />
+                  {tab.label}
+                </motion.div>
                 {isActive && (
                   <motion.div
                     layoutId="activeTabIndicator"

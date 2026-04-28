@@ -61,7 +61,7 @@ export function NotesTab({ tripId }: NotesTabProps) {
         <AnimatePresence>{isRefetching && <NoteRefetchingIndicator />}</AnimatePresence>
       </div>
 
-      <div className="bg-surface border border-border rounded-xl overflow-hidden">
+      <div className="bg-surface border border-border rounded-2xl overflow-hidden">
         <div className="bg-amber-pastel-50 dark:bg-amber-pastel-900/10 p-4 border-b border-amber-pastel-100 dark:border-amber-pastel-900/20">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">

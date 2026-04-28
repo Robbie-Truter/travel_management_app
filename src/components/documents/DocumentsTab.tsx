@@ -17,7 +17,7 @@ export function DocumentsTab({ tripId }: { tripId: number }) {
 
   const {
     documents,
-    loading,
+    isLoading,
     isRefetching,
     isError,
     refetch,
@@ -81,7 +81,7 @@ export function DocumentsTab({ tripId }: { tripId: number }) {
     setModalOpen(true);
   };
 
-  if (loading && documents.length === 0) {
+  if (isLoading && documents.length === 0) {
     return (
       <div className="p-4 bg-surface border border-border rounded-xl">
         <div className="flex items-center justify-between mb-8">
@@ -102,7 +102,7 @@ export function DocumentsTab({ tripId }: { tripId: number }) {
   }
 
   return (
-    <div className="bg-surface border border-border rounded-xl overflow-hidden">
+    <div className="bg-surface border border-border rounded-2xl overflow-hidden">
       <div className="bg-sage-50 dark:bg-sage-900/10 p-4 border-b border-sage-100 dark:border-sage-900/20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-1">
           <div className="flex items-center gap-4">

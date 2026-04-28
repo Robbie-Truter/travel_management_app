@@ -93,7 +93,7 @@ export function DashboardPage() {
               placeholder="Search your adventures..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-11 w-full pl-11 pr-4 rounded-xl border border-border bg-surface/50 backdrop-blur-sm text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-lavender-400 focus:border-transparent transition-all shadow-sm hover:border-border/80"
+              className="h-11 w-full pl-11 pr-4 rounded-2xl border border-border bg-surface/50 backdrop-blur-sm text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-lavender-400 focus:border-transparent transition-all shadow-sm hover:border-border/80"
             />
           </div>
 
@@ -101,7 +101,7 @@ export function DashboardPage() {
           <div className="flex items-center gap-2">
             <Button
               variant="secondary"
-              className="flex-1 md:flex-none h-11 px-6 rounded-xl border-border bg-surface/50 backdrop-blur-sm"
+              className="flex-1 md:flex-none h-11 px-6 rounded-2xl border-border bg-surface/50 backdrop-blur-sm"
               onClick={() => importRef.current?.click()}
             >
               <Upload size={16} className="text-text-secondary" />
@@ -109,7 +109,7 @@ export function DashboardPage() {
             </Button>
             <Button
               variant="primary"
-              className="flex-1 md:flex-none h-11 px-8 rounded-xl"
+              className="flex-1 md:flex-none h-11 px-8 rounded-2xl"
               onClick={() => {
                 setEditingTrip(undefined);
                 setFormOpen(true);
