@@ -99,7 +99,11 @@ export function useDestinations(tripId: number) {
           .eq("id", id)
           .single();
 
-        if (oldDest?.image && oldDest.image !== changes.image && !oldDest.image.startsWith("http")) {
+        if (
+          oldDest?.image &&
+          oldDest.image !== changes.image &&
+          !oldDest.image.startsWith("http")
+        ) {
           try {
             await deleteFile("destination-images", oldDest.image);
           } catch (error) {
@@ -141,22 +145,63 @@ export function useDestinations(tripId: number) {
 
   const deleteDestinationMutation = useMutation({
     mutationFn: async (id: number) => {
-      // 1. Get destination to find image path
-      const { data: dest } = await supabase
-        .from("destinations")
-        .select("image")
-        .eq("id", id)
-        .single();
+      // 1. Get destination and all related items to clean up storage
+      const [destRes, accsRes, actsRes] = await Promise.all([
+        supabase.from("destinations").select("image").eq("id", id).single(),
+        supabase.from("accommodations").select("image").eq("destination_id", id),
+        supabase.from("activities").select("image").eq("destination_id", id),
+      ]);
 
-      // 2. Delete image if exists
-      if (dest?.image && !dest.image.startsWith("http")) {
-        await deleteFile("destination-images", dest.image).catch(console.error);
+      if (destRes.error || accsRes.error || actsRes.error) {
+        throw new Error("Failed to fetch destination items for storage cleanup");
       }
 
+      const dest = destRes.data;
+      const accs = accsRes.data;
+      const acts = actsRes.data;
+
+      // 2. Collect all image paths to delete
+      const imageDeletions: Promise<unknown>[] = [];
+
+      // Destination image
+      if (dest?.image && !dest.image.startsWith("http")) {
+        imageDeletions.push(supabase.storage.from("destination-images").remove([dest.image]));
+      }
+      // Accommodations
+      if (accs) {
+        accs.forEach((a) => {
+          if (a.image && !a.image.startsWith("http")) {
+            imageDeletions.push(supabase.storage.from("accommodation-images").remove([a.image]));
+          }
+        });
+      }
+      // Activities
+      if (acts) {
+        acts.forEach((a) => {
+          if (a.image && !a.image.startsWith("http")) {
+            imageDeletions.push(supabase.storage.from("activity-images").remove([a.image]));
+          }
+        });
+      }
+
+      // 3. Run storage deletions
+      if (imageDeletions.length > 0) {
+        await Promise.all(imageDeletions).catch((err) => {
+          console.error("Storage cleanup failed during destination deletion", err);
+          showToast("Some images could not be deleted from storage", "warning");
+        });
+      }
+
+      // 4. Finally delete the destination (DB cascade handles the rest)
       const { error } = await supabase.from("destinations").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["destinations"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["destinations", tripId] });
+      queryClient.invalidateQueries({ queryKey: ["accommodations", tripId] });
+      queryClient.invalidateQueries({ queryKey: ["activities", tripId] });
+      queryClient.invalidateQueries({ queryKey: ["trip", tripId] });
+    },
     onError: (error: Error) => {
       showToast(error.message || "Failed to delete destination", "error");
     },

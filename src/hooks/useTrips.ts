@@ -182,24 +182,64 @@ export function useTrips() {
     error: deleteError,
   } = useMutation({
     mutationFn: async (id: number) => {
-      // 1. Get trip to find cover image path
-      const { data: trip } = await supabase
-        .from("trips")
-        .select("cover_image")
-        .eq("id", id)
-        .single();
+      // 1. Get all related items for the entire trip to clean up storage
+      const [tripRes, accsRes, actsRes, destsRes] = await Promise.all([
+        supabase.from("trips").select("cover_image").eq("id", id).single(),
+        supabase.from("accommodations").select("image").eq("trip_id", id),
+        supabase.from("activities").select("image").eq("trip_id", id),
+        supabase.from("destinations").select("image").eq("trip_id", id),
+      ]);
 
-      // 2. Delete cover image if exists
-      if (trip?.cover_image && !trip.cover_image.startsWith("http")) {
-        try {
-          await deleteFile("trip-covers", trip.cover_image);
-        } catch (error) {
-          console.error("Failed to delete old cover image", error);
-          throw new Error("Could not delete trip - error deleting old image");
-        }
+      if (tripRes.error || accsRes.error || actsRes.error || destsRes.error) {
+        throw new Error("Failed to fetch trip items for storage cleanup");
       }
 
-      // 3. Delete trip (will cascade to other tables in DB)
+      const trip = tripRes.data;
+      const accs = accsRes.data;
+      const acts = actsRes.data;
+      const dests = destsRes.data;
+
+      // 2. Collect all image paths to delete
+      const imageDeletions: Promise<unknown>[] = [];
+
+      // Trip cover
+      if (trip?.cover_image && !trip.cover_image.startsWith("http")) {
+        imageDeletions.push(supabase.storage.from("trip-covers").remove([trip.cover_image]));
+      }
+      // Accommodations
+      if (accs) {
+        accs.forEach((a) => {
+          if (a.image && !a.image.startsWith("http")) {
+            imageDeletions.push(supabase.storage.from("accommodation-images").remove([a.image]));
+          }
+        });
+      }
+      // Activities
+      if (acts) {
+        acts.forEach((a) => {
+          if (a.image && !a.image.startsWith("http")) {
+            imageDeletions.push(supabase.storage.from("activity-images").remove([a.image]));
+          }
+        });
+      }
+      // Destinations
+      if (dests) {
+        dests.forEach((d) => {
+          if (d.image && !d.image.startsWith("http")) {
+            imageDeletions.push(supabase.storage.from("destination-images").remove([d.image]));
+          }
+        });
+      }
+
+      // 3. Run storage deletions
+      if (imageDeletions.length > 0) {
+        await Promise.all(imageDeletions).catch((err) => {
+          console.error("Storage cleanup failed during trip deletion", err);
+          showToast("Some images could not be deleted from storage", "warning");
+        });
+      }
+
+      // 4. Finally delete the trip (DB cascade handles the rest)
       const { error } = await supabase.from("trips").delete().eq("id", id);
       if (error) throw error;
     },
