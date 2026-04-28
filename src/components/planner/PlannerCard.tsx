@@ -24,7 +24,12 @@ export function PlannerCard({ item }: PlannerCardProps) {
           color: "text-sky-pastel-600",
           bg: "bg-sky-pastel-50 dark:bg-sky-pastel-900/10",
           border: "border-sky-pastel-100 dark:border-sky-pastel-900/20",
-          label: item.subType === "departure" ? "Departure" : "Arrival",
+          label:
+            item.subType === "departure"
+              ? "Departure"
+              : item.subType === "arrival"
+                ? "Arrival"
+                : "In Transit",
         };
       case "accommodation":
         return {

@@ -9,6 +9,12 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatDate(dateStr: string, fmt = "MMM d, yyyy") {
   try {
+    if (!dateStr) return "";
+    // If it's a simple YYYY-MM-DD string, parse it as a local date to avoid TZ shifts
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      const [year, month, day] = dateStr.split("-").map(Number);
+      return format(new Date(year, month - 1, day), fmt);
+    }
     return format(parseISO(dateStr), fmt);
   } catch {
     return dateStr;
@@ -17,6 +23,7 @@ export function formatDate(dateStr: string, fmt = "MMM d, yyyy") {
 
 export function formatDateTime(dateStr: string) {
   try {
+    if (!dateStr) return "";
     return format(parseISO(dateStr), "MMM d, yyyy HH:mm");
   } catch {
     return dateStr;
