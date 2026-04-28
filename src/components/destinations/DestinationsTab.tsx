@@ -3,8 +3,11 @@ import { Plus, MapPin } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { useDestinations } from "@/hooks/useDestinations";
+import { useAccommodations } from "@/hooks/useAccommodations";
+import { useActivities } from "@/hooks/useActivities";
 import { DestinationCard } from "./DestinationCard";
 import { DestinationForm } from "./DestinationForm";
+import { DeleteDestinationModal } from "./DeleteDestinationModal";
 import { DestinationSkeleton, DestinationRefetchingIndicator } from "./DestinationLoadingStates";
 import { DestinationErrorState } from "./DestinationErrorState";
 import { getFlagEmoji } from "@/lib/utils";
@@ -27,8 +30,24 @@ export function DestinationsTab({ tripId, tripCountries }: DestinationsTabProps)
     deleteDestination,
   } = useDestinations(tripId);
 
+  const { accommodations } = useAccommodations(tripId);
+  const { activities } = useActivities(tripId);
+
   const [formOpen, setDestFormOpen] = useState(false);
   const [editingDest, setEditingDest] = useState<Destination | undefined>();
+  const [destToDelete, setDestToDelete] = useState<Destination | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleRemove = async () => {
+    if (!destToDelete) return;
+    setIsDeleting(true);
+    try {
+      await deleteDestination(destToDelete.id!);
+      setDestToDelete(null);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   if (isLoading && destinations.length === 0) {
     return (
@@ -121,7 +140,7 @@ export function DestinationsTab({ tripId, tripCountries }: DestinationsTabProps)
                             setEditingDest(dest);
                             setDestFormOpen(true);
                           }}
-                          onDelete={deleteDestination}
+                          onDelete={() => setDestToDelete(d)}
                         />
                       ))}
                     </AnimatePresence>
@@ -160,7 +179,7 @@ export function DestinationsTab({ tripId, tripCountries }: DestinationsTabProps)
                             setEditingDest(dest);
                             setDestFormOpen(true);
                           }}
-                          onDelete={deleteDestination}
+                          onDelete={() => setDestToDelete(d)}
                         />
                       ))}
                     </AnimatePresence>
@@ -190,6 +209,18 @@ export function DestinationsTab({ tripId, tripCountries }: DestinationsTabProps)
         tripId={tripId}
         tripCountries={tripCountries}
         existingDestinations={destinations}
+      />
+
+      <DeleteDestinationModal
+        isOpen={!!destToDelete}
+        onClose={() => setDestToDelete(null)}
+        onConfirm={handleRemove}
+        destinationName={destToDelete?.name || ""}
+        isDeleting={isDeleting}
+        counts={{
+          stays: accommodations.filter((a) => a.destinationId === destToDelete?.id).length,
+          activities: activities.filter((act) => act.destinationId === destToDelete?.id).length,
+        }}
       />
     </div>
   );
