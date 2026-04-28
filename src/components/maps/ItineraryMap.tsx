@@ -48,9 +48,7 @@ function haversineKm(from: [number, number], to: [number, number]): number {
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) ** 2;
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
@@ -106,7 +104,7 @@ function AnimatedConnection({
         strokeWidth={12}
         className="pointer-events-auto"
       />
-      
+
       {/* Main Path */}
       <motion.path
         d={d || ""}
@@ -139,10 +137,7 @@ function AnimatedConnection({
             className="w-5 h-5 bg-surface border border-border rounded-full flex items-center justify-center shadow-sm"
           >
             <div className="flex flex-col gap-0.5 rotate-90">
-              <div
-                className="w-2.5 h-0.5 rounded-full"
-                style={{ backgroundColor: color }}
-              />
+              <div className="w-2.5 h-0.5 rounded-full" style={{ backgroundColor: color }} />
               <div
                 className="w-2.5 h-0.5 rounded-full opacity-50"
                 style={{ backgroundColor: color }}
@@ -173,10 +168,9 @@ function AnimatedConnection({
 interface ItineraryMapProps {
   flights: Flight[];
   trips: Trip[];
-  homeCountry: string | null;
 }
 
-export function ItineraryMap({ flights, trips, homeCountry }: ItineraryMapProps) {
+export function ItineraryMap({ flights, trips }: ItineraryMapProps) {
   const [tooltipContent, setTooltipContent] = useState("");
   const [coordsLoaded, setCoordsLoaded] = useState(false);
   const [selectedTripId, setSelectedTripId] = useState<number | "all">("all");
@@ -192,8 +186,7 @@ export function ItineraryMap({ flights, trips, homeCountry }: ItineraryMapProps)
   }, []);
 
   useEffect(() => {
-    const check = () =>
-      setIsDark(document.documentElement.classList.contains("dark"));
+    const check = () => setIsDark(document.documentElement.classList.contains("dark"));
     check();
     const observer = new MutationObserver(check);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
@@ -217,16 +210,13 @@ export function ItineraryMap({ flights, trips, homeCountry }: ItineraryMapProps)
   }, [flights, selectedTripId]);
 
   const mapData = useMemo(() => {
-    const homePoint = getPointForDestination(homeCountry || "South Africa");
-
     if (!coordsLoaded) {
-      const fallback = homePoint || {
+      const fallback = {
         coordinates: [24.6727, -28.4793] as [number, number],
         name: "Origin",
         countryCode: "ZAF",
       };
       return {
-        homePoint: fallback,
         displayPoints: [] as GeoPoint[],
         visitedCountryCodes: new Set([fallback.countryCode]),
         connections: [] as ConnectionData[],
@@ -294,32 +284,30 @@ export function ItineraryMap({ flights, trips, homeCountry }: ItineraryMapProps)
     });
 
     const visitedCountryCodes = new Set<string>();
-    if (homePoint) visitedCountryCodes.add(homePoint.countryCode);
     displayPoints.forEach((p) => {
       if (p.countryCode) visitedCountryCodes.add(p.countryCode);
     });
 
     return {
-      homePoint,
       displayPoints,
       visitedCountryCodes,
       connections,
       finalConnections,
       totalDistanceKm: Math.round(totalDistanceKm),
     };
-  }, [filteredFlights, coordsLoaded, homeCountry]);
+  }, [filteredFlights, coordsLoaded]);
 
-  const { homePoint, displayPoints, visitedCountryCodes, connections, finalConnections, totalDistanceKm } = mapData;
+  const { displayPoints, visitedCountryCodes, connections, finalConnections, totalDistanceKm } =
+    mapData;
 
-  const activeConnection = activeConnectionIndex !== null ? finalConnections[activeConnectionIndex] : null;
+  const activeConnection =
+    activeConnectionIndex !== null ? finalConnections[activeConnectionIndex] : null;
 
   const selectedTrip = trips.find((t) => t.id === selectedTripId);
 
   const geoFill = isDark
-    ? (isHome: boolean, isVisited: boolean) =>
-        isHome ? "#7c3aed" : isVisited ? "#3b1f6e" : "#1e293b"
-    : (isHome: boolean, isVisited: boolean) =>
-        isHome ? "#8b5cf6" : isVisited ? "#fda4af" : "#f1f5f9";
+    ? (isVisited: boolean) => (isVisited ? "#3b1f6e" : "#1e293b")
+    : (isVisited: boolean) => (isVisited ? "#fda4af" : "#f1f5f9");
 
   const geoStroke = isDark
     ? (isVisited: boolean) => (isVisited ? "#4c1d95" : "#334155")
@@ -337,7 +325,7 @@ export function ItineraryMap({ flights, trips, homeCountry }: ItineraryMapProps)
           >
             <Globe size={14} className="text-lavender-500 shrink-0" />
             <span className="truncate flex-1 text-left">
-              {selectedTripId === "all" ? "All Trips" : selectedTrip?.name ?? "All Trips"}
+              {selectedTripId === "all" ? "All Trips" : (selectedTrip?.name ?? "All Trips")}
             </span>
             <ChevronDown size={14} className="opacity-50 shrink-0" />
           </button>
@@ -450,15 +438,11 @@ export function ItineraryMap({ flights, trips, homeCountry }: ItineraryMapProps)
                     visitedCountryCodes.has(geo.properties.name) ||
                     visitedCountryCodes.has(geo.properties.iso_a3);
 
-                  const isHome =
-                    geo.id === homePoint?.countryCode ||
-                    geo.properties.iso_a3 === homePoint?.countryCode;
-
                   return (
                     <Geography
                       key={geo.rsmKey}
                       geography={geo}
-                      fill={geoFill(isHome, isVisited)}
+                      fill={geoFill(isVisited)}
                       stroke={geoStroke(isVisited)}
                       strokeWidth={1}
                       className="outline-none transition-colors hover:fill-lavender-200 dark:hover:fill-lavender-800 cursor-pointer"
@@ -483,25 +467,6 @@ export function ItineraryMap({ flights, trips, homeCountry }: ItineraryMapProps)
                 onClick={() => setActiveConnectionIndex((prev) => (prev === i ? null : i))}
               />
             ))}
-
-            {/* Home Marker */}
-            {homePoint && (
-              <Marker coordinates={homePoint.coordinates}>
-                <circle r={5} fill="#8b5cf6" stroke="#fff" strokeWidth={2} className="animate-pulse" />
-                <text
-                  textAnchor="middle"
-                  y={-10}
-                  style={{
-                    fontFamily: "system-ui",
-                    fill: isDark ? "#c4b5fd" : "#5d21b6",
-                    fontSize: "8px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  HOME
-                </text>
-              </Marker>
-            )}
 
             {/* Airport Markers */}
             {displayPoints.map((point, i) => {
@@ -601,7 +566,9 @@ export function ItineraryMap({ flights, trips, homeCountry }: ItineraryMapProps)
                 </div>
               </div>
               <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
-                <span className="text-[10px] text-text-muted uppercase tracking-wider font-bold">Distance</span>
+                <span className="text-[10px] text-text-muted uppercase tracking-wider font-bold">
+                  Distance
+                </span>
                 <span className="text-xs font-black text-lavender-600">
                   ~{activeConnection.distanceKm.toLocaleString()} km
                 </span>
@@ -634,8 +601,8 @@ export function ItineraryMap({ flights, trips, homeCountry }: ItineraryMapProps)
         </div>
         <div className="ml-auto text-text-muted hidden sm:block">
           {visitedCountryCodes.size} {visitedCountryCodes.size === 1 ? "country" : "countries"} •{" "}
-          {connections.length} {connections.length === 1 ? "route" : "routes"} •{" "}
-          ~{totalDistanceKm.toLocaleString()} km total
+          {connections.length} {connections.length === 1 ? "route" : "routes"} • ~
+          {totalDistanceKm.toLocaleString()} km total
         </div>
       </div>
     </div>

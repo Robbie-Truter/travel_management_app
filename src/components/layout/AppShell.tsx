@@ -3,8 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Map, Moon, Sun, Menu, X, Plane, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { CountrySelector } from "@/components/ui/CountrySelector";
-import { useTheme, useSettings } from "@/hooks/useTrips";
+import { useTheme } from "@/hooks/useTrips";
 import { UserProfile } from "@/components/user_profile/UserProfile";
 import { cn } from "@/lib/utils";
 
@@ -13,8 +12,6 @@ interface SidebarProps {
   onImport: () => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  homeCountry: string | null;
-  setHomeCountry: (value: string) => void;
 }
 
 export function AppShell({
@@ -29,7 +26,6 @@ export function AppShell({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { theme, toggleTheme } = useTheme();
-  const { homeCountry, setHomeCountry } = useSettings();
 
   return (
     <div className="flex h-screen overflow-hidden bg-surface-2">
@@ -47,8 +43,6 @@ export function AppShell({
           toggleTheme={toggleTheme}
           isCollapsed={isCollapsed}
           onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
-          homeCountry={homeCountry}
-          setHomeCountry={setHomeCountry}
         />
       </motion.aside>
 
@@ -78,8 +72,6 @@ export function AppShell({
                 onClose={() => setMobileOpen(false)}
                 isCollapsed={false}
                 onToggleCollapse={() => {}}
-                homeCountry={homeCountry}
-                setHomeCountry={setHomeCountry}
               />
             </motion.aside>
           </>
@@ -116,8 +108,6 @@ function SidebarContent({
   onClose,
   isCollapsed,
   onToggleCollapse,
-  homeCountry,
-  setHomeCountry,
 }: SidebarProps & {
   theme: string;
   toggleTheme: () => void;
@@ -231,13 +221,9 @@ function SidebarContent({
         </NavLink>
       </nav>
 
-      {/* Country of Origin */}
-      <div className={cn("border-t border-border", isCollapsed ? "py-2" : "py-1")}>
-        <CountrySelector value={homeCountry} onChange={setHomeCountry} isCollapsed={isCollapsed} />
-      </div>
-
+      <hr className="border-t border-border/50 w-[90%] m-auto" />
       {/* Actions */}
-      <div className={cn("py-4 space-y-2 border-t border-border", isCollapsed ? "px-2" : "px-3")}>
+      <div className={cn("py-2", isCollapsed ? "px-2" : "px-3")}>
         <Button
           variant="ghost"
           className={cn(

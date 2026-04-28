@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNotification } from "@/hooks/useNotification";
 import type { Flight } from "@/db/types";
 
-export function useFlights(tripId: number) {
+export function useFlights(tripId?: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { showToast } = useNotification();

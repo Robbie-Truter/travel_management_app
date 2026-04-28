@@ -1,13 +1,12 @@
 import { motion } from "framer-motion";
 import { Map as MapIcon, Plane } from "lucide-react";
-import { useTrips, useSettings } from "@/hooks/useTrips";
+import { useTrips } from "@/hooks/useTrips";
 import { useFlights } from "@/hooks/useFlights";
 import { ItineraryMap } from "@/components/maps/ItineraryMap";
 
 export function MapsPage() {
   const { trips, loading: tripsLoading } = useTrips();
   const { flights, isLoading: flightsLoading } = useFlights();
-  const { homeCountry } = useSettings();
 
   const loading = tripsLoading || flightsLoading;
 
@@ -54,7 +53,7 @@ export function MapsPage() {
             transition={{ duration: 0.5 }}
             className="flex-1 flex flex-col"
           >
-            <ItineraryMap flights={flights} trips={trips} homeCountry={homeCountry} />
+            <ItineraryMap flights={flights} trips={trips} />
           </motion.div>
         )}
       </div>
