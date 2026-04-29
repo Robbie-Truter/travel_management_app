@@ -32,7 +32,7 @@ export function TripSetupChecklist({ tripId, tripCountries, onNavigate }: TripSe
         description: "Choose the countries you'll be visiting",
         icon: MapPin,
         done: tripCountries.length > 0,
-        navigateTo: "countries",
+        navigateTo: "itinerary",
         cta: "Add Country",
       },
       {
@@ -41,7 +41,7 @@ export function TripSetupChecklist({ tripId, tripCountries, onNavigate }: TripSe
         description: "Add at least one city or town within your countries",
         icon: Navigation,
         done: destinations.length > 0,
-        navigateTo: "destinations",
+        navigateTo: "itinerary",
         cta: "Add Destination",
       },
     ],

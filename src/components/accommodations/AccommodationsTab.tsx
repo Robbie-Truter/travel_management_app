@@ -159,45 +159,6 @@ export function AccommodationsTab({
                 </div>
               );
             })}
-
-            {/* Fallback for items with no country or different country */}
-            {(() => {
-              const otherAccs = accommodations.filter(
-                (a) => !a.tripCountryId || !tripCountries.find((tc) => tc.id === a.tripCountryId),
-              );
-              if (otherAccs.length === 0) return null;
-              return (
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 pb-3 border-b border-border/50">
-                    <div className="w-8 h-8 rounded-lg bg-surface-3 flex items-center justify-center">
-                      <Hotel size={16} className="text-text-muted" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-lg text-text-primary">Other Locations</h3>
-                      <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
-                        {otherAccs.length} {otherAccs.length === 1 ? "Stay" : "Stays"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap justify-start gap-6">
-                    <AnimatePresence mode="popLayout">
-                      {otherAccs.map((a) => (
-                        <AccommodationCard
-                          key={a.id}
-                          acc={a}
-                          onEdit={(ac: Accommodation) => {
-                            setEditingAcc(ac);
-                            setFormOpen(true);
-                          }}
-                          onDelete={deleteAccommodation}
-                          onConfirm={confirmAccommodation}
-                        />
-                      ))}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              );
-            })()}
           </div>
         )}
       </div>

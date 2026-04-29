@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MapPin, Plus, X } from "lucide-react";
+import { MapPin, Plus, X, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
@@ -19,6 +19,9 @@ interface TripCountriesProps {
   flights: Flight[];
   accommodations: Accommodation[];
   activities: Activity[];
+  onAddDestination: (countryId: number) => void;
+  onEditDestination: (dest: Destination) => void;
+  onDeleteDestination: (dest: Destination) => void;
 }
 
 export function TripCountries({
@@ -28,6 +31,9 @@ export function TripCountries({
   flights,
   accommodations,
   activities,
+  onAddDestination,
+  onEditDestination,
+  onDeleteDestination,
 }: TripCountriesProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [countryToDelete, setCountryToDelete] = useState<TripCountry | null>(null);
@@ -194,24 +200,83 @@ export function TripCountries({
                     <div className="p-5 space-y-6">
                       {/* Destinations (Cities/Towns) */}
                       <div>
-                        <h5 className="text-[10px] font-black uppercase tracking-widest text-lavender-600 mb-3 flex items-center gap-1.5">
-                          <MapPin size={12} />
-                          Destinations ({countryDestinations.length})
-                        </h5>
+                        <div className="flex items-center justify-between mb-3 pb-1 border-b border-lavender-100 dark:border-lavender-900/30">
+                          <h5 className="text-[10px] font-black uppercase tracking-widest text-lavender-600 flex items-center gap-1.5">
+                            <MapPin size={12} />
+                            Destinations ({countryDestinations.length})
+                          </h5>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-[10px] font-bold text-lavender-500 hover:text-lavender-600 hover:bg-lavender-50 flex items-center gap-1"
+                            onClick={() => onAddDestination(tc.id!)}
+                          >
+                            <Plus size={10} />
+                            Add
+                          </Button>
+                        </div>
                         {countryDestinations.length > 0 ? (
-                          <ul className="space-y-2">
+                          <ul className="space-y-2.5">
                             {countryDestinations.map((d) => (
                               <li
                                 key={d.id}
-                                className="text-xs flex items-center justify-between text-text-secondary py-1 border-b border-border/30 last:border-0"
+                                className="group/item flex items-center gap-3 p-1.5 rounded-xl border border-transparent hover:border-border hover:bg-surface-2 transition-all"
                               >
-                                <span className="truncate font-medium flex-1">{d.name}</span>
-                                <ChevronRight size={10} className="text-text-muted shrink-0" />
+                                <div className="w-10 h-10 rounded-lg bg-surface-3 border border-border overflow-hidden shrink-0 flex items-center justify-center">
+                                  {d.image ? (
+                                    <img
+                                      src={d.image}
+                                      alt={d.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <MapPin size={14} className="text-text-muted/40" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <span className="text-xs font-bold text-text-primary block truncate">
+                                    {d.name}
+                                  </span>
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    <button
+                                      onClick={() => onEditDestination(d)}
+                                      className="text-[10px] font-medium text-text-muted hover:text-lavender-500 transition-colors flex items-center gap-0.5"
+                                    >
+                                      <Edit size={10} />
+                                      Edit
+                                    </button>
+                                    <div className="w-1 h-1 rounded-full bg-border" />
+                                    <button
+                                      onClick={() => onDeleteDestination(d)}
+                                      className="text-[10px] font-medium text-text-muted hover:text-rose-pastel-500 transition-colors flex items-center gap-0.5"
+                                    >
+                                      <Trash2 size={10} />
+                                      Delete
+                                    </button>
+                                  </div>
+                                </div>
+                                <ChevronRight
+                                  size={12}
+                                  className="text-text-muted opacity-0 group-hover/item:opacity-100 transition-opacity shrink-0"
+                                />
                               </li>
                             ))}
                           </ul>
                         ) : (
-                          <p className="text-[10px] text-text-muted italic">No destinations yet</p>
+                          <div className="py-6 flex flex-col items-center justify-center border-2 border-dashed border-border/40 rounded-xl bg-surface-2/30">
+                            <p className="text-[10px] text-text-muted italic mb-2">
+                              No destinations added yet
+                            </p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-3 text-[10px] font-bold text-lavender-500 hover:bg-lavender-50"
+                              onClick={() => onAddDestination(tc.id!)}
+                            >
+                              <Plus size={12} className="mr-1" />
+                              Add your first city
+                            </Button>
+                          </div>
                         )}
                       </div>
 

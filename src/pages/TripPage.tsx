@@ -25,11 +25,10 @@ import { useAccommodations } from "@/hooks/useAccommodations";
 import { useActivities } from "@/hooks/useActivities";
 import { FlightsTab } from "@/components/flights/FlightsTab";
 import { AccommodationsTab } from "@/components/accommodations/AccommodationsTab";
-import { DestinationsTab } from "@/components/destinations/DestinationsTab";
 import { ActivitiesTab } from "@/components/activities/ActivitiesTab";
 import { PlannerTab } from "@/components/planner/PlannerTab";
 import { NotesTab } from "@/components/notes/NotesTab";
-import { CountriesTab } from "@/components/countries/CountriesTab";
+import { ItineraryTab } from "@/components/itinerary/ItineraryTab";
 import { DocumentsTab } from "@/components/documents/DocumentsTab";
 import { formatDate, tripDuration, cn } from "@/lib/utils";
 import type { Trip, TripStatus } from "@/db/types";
@@ -38,8 +37,7 @@ import OverviewTab from "@/components/overview/OverviewTab";
 
 type Tab =
   | "overview"
-  | "countries"
-  | "destinations"
+  | "itinerary"
   | "flights"
   | "accommodations"
   | "activities"
@@ -50,8 +48,7 @@ type Tab =
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Overview", icon: LayoutGrid },
-  { id: "countries", label: "Countries", icon: MapPin },
-  { id: "destinations", label: "Destinations", icon: MapPin },
+  { id: "itinerary", label: "Itinerary", icon: MapPin },
   { id: "flights", label: "Flights", icon: Plane },
   { id: "accommodations", label: "Stays", icon: Hotel },
   { id: "activities", label: "Activities", icon: Compass },
@@ -246,13 +243,8 @@ export function TripPage() {
               />
             )}
 
-            {/* COUNTRIES */}
-            {activeTab === "countries" && <CountriesTab trip={trip as Trip} />}
-
-            {/* DESTINATIONS (CITIES/TOWNS) */}
-            {activeTab === "destinations" && (
-              <DestinationsTab tripId={id} tripCountries={trip.tripCountries} />
-            )}
+            {/* ITINERARY (COUNTRIES & DESTINATIONS) */}
+            {activeTab === "itinerary" && <ItineraryTab trip={trip as Trip} />}
 
             {/* FLIGHTS */}
             {activeTab === "flights" && (

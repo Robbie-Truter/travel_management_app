@@ -244,47 +244,6 @@ export function ActivitiesTab({
                 </div>
               );
             })}
-
-            {/* Fallback for items with no country or different country */}
-            {(() => {
-              const otherActivities = filteredActivities.filter(
-                (a) => !a.tripCountryId || !tripCountries.find((tc) => tc.id === a.tripCountryId),
-              );
-              if (otherActivities.length === 0) return null;
-              return (
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 pb-3 border-b border-border/50">
-                    <div className="w-8 h-8 rounded-lg bg-surface-3 flex items-center justify-center">
-                      <Compass size={16} className="text-text-muted" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-lg text-text-primary">Other Locations</h3>
-                      <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
-                        {otherActivities.length}{" "}
-                        {otherActivities.length === 1 ? "Activity" : "Activities"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
-                    <AnimatePresence mode="popLayout">
-                      {otherActivities.map((a) => (
-                        <ActivityCard
-                          key={a.id}
-                          activity={a}
-                          destinationName={destinations.find((d) => d.id === a.destinationId)?.name}
-                          onEdit={(act: Activity) => {
-                            setEditingAct(act);
-                            setFormOpen(true);
-                          }}
-                          onDelete={deleteActivity}
-                          onConfirm={(id) => updateActivity(id, { isConfirmed: true })}
-                        />
-                      ))}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              );
-            })()}
           </div>
         )}
       </div>

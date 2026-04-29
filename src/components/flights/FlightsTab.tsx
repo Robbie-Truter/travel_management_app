@@ -158,46 +158,6 @@ export function FlightsTab({
                 </div>
               );
             })}
-
-            {/* Fallback for items with no country or different country */}
-            {(() => {
-              const otherFlights = flights.filter(
-                (f) => !f.tripCountryId || !tripCountries.find((tc) => tc.id === f.tripCountryId),
-              );
-              if (otherFlights.length === 0) return null;
-              return (
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 pb-3 border-b border-border/50">
-                    <div className="w-8 h-8 rounded-lg bg-surface-3 flex items-center justify-center">
-                      <Plane size={16} className="text-text-muted" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-lg text-text-primary">Other Locations</h3>
-                      <p className="text-xs text-text-muted font-medium uppercase tracking-wider">
-                        {otherFlights.length} {otherFlights.length === 1 ? "Flight" : "Flights"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-4">
-                    <AnimatePresence mode="popLayout">
-                      {otherFlights.map((f) => (
-                        <FlightCard
-                          key={f.id}
-                          flight={f}
-                          onEdit={(fl: Flight) => {
-                            setEditingFlight(fl);
-                            setLastInteractedFlight(fl);
-                            setFormOpen(true);
-                          }}
-                          onDelete={deleteFlight}
-                          onConfirm={confirmFlight}
-                        />
-                      ))}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              );
-            })()}
           </div>
         )}
       </div>

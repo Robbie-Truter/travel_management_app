@@ -30,7 +30,7 @@ export function DestinationForm({
 }: DestinationFormProps) {
   const [form, setForm] = useState({
     name: initial?.name ?? "",
-    tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
+    tripCountryId: initial?.tripCountryId ?? undefined,
     cityLookupId: initial?.cityLookupId ?? (undefined as number | undefined),
     notes: initial?.notes ?? "",
     image: initial?.image ?? "",
@@ -144,7 +144,7 @@ export function DestinationForm({
   const handleClose = () => {
     setForm({
       name: initial?.name ?? "",
-      tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
+      tripCountryId: initial?.tripCountryId ?? undefined,
       cityLookupId: initial?.cityLookupId ?? undefined,
       notes: initial?.notes ?? "",
       image: initial?.image ?? "",
@@ -165,7 +165,7 @@ export function DestinationForm({
     <Modal
       open={open}
       onClose={handleClose}
-      title={initial ? "Edit Destination" : "Add Destination"}
+      title={initial?.id ? "Edit Destination" : "Add Destination"}
       size="md"
       footer={
         <>
@@ -179,6 +179,25 @@ export function DestinationForm({
       }
     >
       <div className="space-y-4">
+        {/* Read-only Country Display */}
+        {selectedCountry && (
+          <div className="flex items-center gap-3 p-3 bg-surface-2 rounded-xl border border-border mb-2">
+            <div className="w-10 h-10 rounded-lg bg-surface-3 flex items-center justify-center shrink-0 border border-border shadow-xs">
+              <span className="text-xl" role="img" aria-label={selectedCountry.countryName}>
+                {getFlagEmoji(selectedCountry.countryCode)}
+              </span>
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-0.5">
+                Target Country
+              </p>
+              <p className="text-sm font-bold text-text-primary leading-tight">
+                {selectedCountry.countryName}
+              </p>
+            </div>
+          </div>
+        )}
+
         <div>
           <label className="text-sm font-medium text-text-primary block mb-1.5">
             Destination Image
@@ -221,29 +240,6 @@ export function DestinationForm({
           />
         </div>
 
-        {/* Country must be selected first */}
-        <SearchableSelect
-          id="dest-country"
-          label="Country"
-          placeholder="Select country..."
-          value={form.tripCountryId?.toString() || ""}
-          options={tripCountries.map((tc) => ({
-            value: tc.id!.toString(),
-            label: tc.countryName,
-            icon: <span>{getFlagEmoji(tc.countryCode)}</span>,
-          }))}
-          onChange={(val: string) => {
-            set("tripCountryId", Number(val));
-            // Reset city when country changes
-            set("name", "");
-            set("cityLookupId", undefined);
-            setCitySearchRaw("");
-          }}
-          error={errors.country}
-          includeSearch={false}
-        />
-
-        {/* City / Town search — disabled until country is selected */}
         <SearchableSelect
           id="dest-city"
           label="City / Town"
