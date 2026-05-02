@@ -58,6 +58,16 @@ export function PlannerCard({ item }: PlannerCardProps) {
 
   const { icon: Icon, color, bg, border, label } = getStyles();
 
+  const getTime = (date: Date) => {
+    return (
+      String(date.getHours()).padStart(2, "0") +
+      ":" +
+      String(date.getMinutes()).padStart(2, "0") +
+      ":" +
+      String(date.getSeconds()).padStart(2, "0")
+    );
+  };
+
   const getTitle = () => {
     if (item.type === "flight") {
       const f = item.data as Flight;
@@ -138,8 +148,20 @@ export function PlannerCard({ item }: PlannerCardProps) {
             <div className="flex items-center gap-1.5 text-xs text-text-secondary">
               <MapPin size={12} className="shrink-0" />
               <span className="truncate">
-                {(item.data as Flight).segments[0].departureAirport} →{" "}
-                {(item.data as Flight).segments[0].arrivalAirport}
+                {(item.data as Flight).segments.map((seg) => {
+                  const depDate = new Date(seg.departureTime);
+                  const arrDate = new Date(seg.arrivalTime);
+
+                  const depTime = getTime(depDate);
+                  const arrTime = getTime(arrDate);
+
+                  if (depTime === item.time) {
+                    return `${seg.departureAirport} - ${seg.arrivalAirport}`;
+                  }
+                  if (arrTime === item.time) {
+                    return `${seg.arrivalAirport} - ${seg.departureAirport}`;
+                  }
+                })}
               </span>
             </div>
           </div>
