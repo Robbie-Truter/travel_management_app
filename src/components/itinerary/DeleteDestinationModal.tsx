@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertTriangle, Hotel, Compass } from "lucide-react";
+import { AlertTriangle, Hotel, Compass, Plane } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 interface DeleteDestinationModalProps {
@@ -9,6 +9,7 @@ interface DeleteDestinationModalProps {
   destinationName: string;
   isDeleting: boolean;
   counts: {
+    flights: number;
     stays: number;
     activities: number;
   };
@@ -47,6 +48,12 @@ export function DeleteDestinationModal({
               </p>
 
               <div className="grid grid-cols-2 gap-3 mb-8">
+                <div className="p-3 bg-surface-2 rounded-xl border border-border flex flex-col items-center justify-center text-center">
+                  <Plane size={16} className="text-sky-pastel-500 mb-1" />
+                  <span className="text-xs font-bold text-text-primary">
+                    {counts.flights} Flights
+                  </span>
+                </div>
                 <div className="p-3 bg-surface-2 rounded-xl border border-border flex flex-col items-center justify-center text-center">
                   <Hotel size={16} className="text-rose-pastel-500 mb-1" />
                   <span className="text-xs font-bold text-text-primary">{counts.stays} Stays</span>

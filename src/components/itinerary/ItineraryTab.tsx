@@ -181,6 +181,7 @@ export function ItineraryTab({ trip }: ItineraryTabProps) {
         destinationName={destToDelete?.name || ""}
         isDeleting={isDeleting}
         counts={{
+          flights: flights.filter((f) => f.destinationId === destToDelete?.id).length,
           stays: accommodations.filter((a) => a.destinationId === destToDelete?.id).length,
           activities: activities.filter((act) => act.destinationId === destToDelete?.id).length,
         }}
