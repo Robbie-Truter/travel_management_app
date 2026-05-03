@@ -68,7 +68,6 @@ export function useDestinations(tripId: number) {
         city_lookup_id: destination.cityLookupId ?? null,
         name: destination.name,
         image: imagePath,
-        notes: destination.notes,
         order: destination.order,
         created_at: new Date().toISOString(),
       };
@@ -130,7 +129,6 @@ export function useDestinations(tripId: number) {
       if (changes.countryId !== undefined) dbUpdates.country_id = changes.countryId;
       if (changes.cityLookupId !== undefined)
         dbUpdates.city_lookup_id = changes.cityLookupId ?? null;
-      if (changes.notes !== undefined) dbUpdates.notes = changes.notes;
       if (changes.order !== undefined) dbUpdates.order = changes.order;
       if (!changes.image) dbUpdates.image = null;
 

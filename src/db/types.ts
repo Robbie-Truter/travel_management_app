@@ -97,7 +97,6 @@ export interface DestinationRow {
   city_lookup_id?: number;
   name: string;
   image?: string;
-  notes?: string;
   order?: number;
   created_at: string;
 }
@@ -110,7 +109,6 @@ export interface Destination {
   cityLookupId?: number;
   name: string;
   image?: string;
-  notes?: string;
   order?: number;
   createdAt: string;
 }

@@ -2,7 +2,6 @@ import { useState, useRef } from "react";
 import { Image as ImageIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
-import { Textarea } from "@/components/ui/Input";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { fileToBase64, getFlagEmoji } from "@/lib/utils";
 import type { Destination, TripCountry } from "@/db/types";
@@ -32,7 +31,6 @@ export function DestinationForm({
     name: initial?.name ?? "",
     tripCountryId: initial?.tripCountryId ?? undefined,
     cityLookupId: initial?.cityLookupId ?? (undefined as number | undefined),
-    notes: initial?.notes ?? "",
     image: initial?.image ?? "",
   });
 
@@ -130,7 +128,6 @@ export function DestinationForm({
         tripCountryId: form.tripCountryId!,
         countryId: selectedCountry!.countryId,
         cityLookupId: form.cityLookupId,
-        notes: form.notes || undefined,
         image: form.image || undefined,
         order: initial?.order ?? 0,
       });
@@ -146,7 +143,6 @@ export function DestinationForm({
       name: initial?.name ?? "",
       tripCountryId: initial?.tripCountryId ?? undefined,
       cityLookupId: initial?.cityLookupId ?? undefined,
-      notes: initial?.notes ?? "",
       image: initial?.image ?? "",
     });
     setErrors({});
@@ -262,14 +258,6 @@ export function DestinationForm({
           error={errors.name}
           disabled={!iso2}
           includeSearch
-        />
-
-        <Textarea
-          id="dest-notes"
-          label="Notes (optional)"
-          value={form.notes}
-          onChange={(e) => set("notes", e.target.value)}
-          rows={3}
         />
       </div>
     </Modal>

@@ -79,7 +79,6 @@ create table public.destinations (
   city_lookup_id   numeric,
   name             text not null,
   image            text,
-  notes            text,
   "order"          integer,
   created_at       timestamptz not null default now(),
 
