@@ -11,6 +11,7 @@ import PlannerWidget from "./PlannerWidget";
 import NotesWidget from "./NotesWidget";
 import CountdownWidget from "./CountdownWidget";
 import { TripSetupChecklist } from "./TripSetupChecklist";
+import ConfirmationWidget from "./ConfirmationWidget";
 
 interface TripOverviewProps {
   tripId: number;
@@ -38,8 +39,9 @@ const OverviewTab = ({ tripId, tripCountries, onNavigate }: TripOverviewProps) =
     lg: [
       { i: "countdown", x: 0, y: 0, w: 4, h: 5 },
       { i: "stats", x: 4, y: 0, w: 4, h: 5 },
-      { i: "notes", x: 8, y: 0, w: 4, h: 5 },
-      { i: "flights", x: 0, y: 5, w: 7, h: 6 },
+      { i: "confirmations", x: 8, y: 0, w: 4, h: 5 },
+      { i: "notes", x: 0, y: 5, w: 4, h: 6 },
+      { i: "flights", x: 4, y: 5, w: 3, h: 6 },
       { i: "planner", x: 7, y: 5, w: 5, h: 11 },
       { i: "stays", x: 0, y: 11, w: 7, h: 5 },
       { i: "destinations", x: 0, y: 16, w: 6, h: 6 },
@@ -48,32 +50,35 @@ const OverviewTab = ({ tripId, tripCountries, onNavigate }: TripOverviewProps) =
     md: [
       { i: "countdown", x: 0, y: 0, w: 4, h: 5 },
       { i: "stats", x: 4, y: 0, w: 6, h: 5 },
-      { i: "flights", x: 0, y: 5, w: 6, h: 6 },
-      { i: "planner", x: 6, y: 5, w: 4, h: 11 },
+      { i: "confirmations", x: 0, y: 5, w: 4, h: 5 },
+      { i: "flights", x: 4, y: 5, w: 6, h: 6 },
+      { i: "planner", x: 6, y: 11, w: 4, h: 11 },
       { i: "stays", x: 0, y: 11, w: 6, h: 5 },
       { i: "destinations", x: 0, y: 16, w: 5, h: 6 },
-      { i: "activities", x: 5, y: 16, w: 5, h: 6 },
-      { i: "notes", x: 0, y: 22, w: 10, h: 4 },
+      { i: "activities", x: 5, y: 22, w: 5, h: 6 },
+      { i: "notes", x: 0, y: 22, w: 5, h: 6 },
     ],
     sm: [
       { i: "countdown", x: 0, y: 0, w: 6, h: 5 },
       { i: "stats", x: 0, y: 5, w: 6, h: 5 },
-      { i: "planner", x: 0, y: 10, w: 6, h: 8 },
-      { i: "flights", x: 0, y: 18, w: 6, h: 6 },
-      { i: "stays", x: 0, y: 24, w: 6, h: 5 },
-      { i: "activities", x: 0, y: 29, w: 6, h: 6 },
-      { i: "destinations", x: 0, y: 35, w: 6, h: 6 },
-      { i: "notes", x: 0, y: 41, w: 6, h: 4 },
+      { i: "confirmations", x: 0, y: 10, w: 6, h: 5 },
+      { i: "planner", x: 0, y: 15, w: 6, h: 8 },
+      { i: "flights", x: 0, y: 23, w: 6, h: 6 },
+      { i: "stays", x: 0, y: 29, w: 6, h: 5 },
+      { i: "activities", x: 0, y: 34, w: 6, h: 6 },
+      { i: "destinations", x: 0, y: 40, w: 6, h: 6 },
+      { i: "notes", x: 0, y: 46, w: 6, h: 4 },
     ],
     xs: [
       { i: "countdown", x: 0, y: 0, w: 4, h: 5 },
       { i: "stats", x: 0, y: 5, w: 4, h: 5 },
-      { i: "planner", x: 0, y: 10, w: 4, h: 8 },
-      { i: "flights", x: 0, y: 18, w: 4, h: 6 },
-      { i: "stays", x: 0, y: 24, w: 4, h: 5 },
-      { i: "activities", x: 0, y: 29, w: 4, h: 6 },
-      { i: "destinations", x: 0, y: 35, w: 4, h: 6 },
-      { i: "notes", x: 0, y: 41, w: 4, h: 4 },
+      { i: "confirmations", x: 0, y: 10, w: 4, h: 5 },
+      { i: "planner", x: 0, y: 15, w: 4, h: 8 },
+      { i: "flights", x: 0, y: 23, w: 4, h: 6 },
+      { i: "stays", x: 0, y: 29, w: 4, h: 5 },
+      { i: "activities", x: 0, y: 34, w: 4, h: 6 },
+      { i: "destinations", x: 0, y: 40, w: 4, h: 6 },
+      { i: "notes", x: 0, y: 46, w: 4, h: 4 },
     ],
   };
 
@@ -122,47 +127,51 @@ const OverviewTab = ({ tripId, tripCountries, onNavigate }: TripOverviewProps) =
                     onNavigate={onNavigate}
                   />
                   <Responsive
-                  layouts={activeLayouts || layouts}
-                  breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-                  cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
-                  width={width}
-                  rowHeight={40}
-                  dragConfig={{ handle: ".cursor-grab" }}
-                  containerPadding={[10, 10]}
-                  className="transition-all"
-                  onLayoutChange={onLayoutChange}
-                >
-                  <div key="countdown">
-                    <CountdownWidget tripId={tripId} />
-                  </div>
+                    layouts={activeLayouts || layouts}
+                    breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+                    cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+                    width={width}
+                    rowHeight={40}
+                    dragConfig={{ handle: ".cursor-grab" }}
+                    containerPadding={[10, 10]}
+                    className="transition-all"
+                    onLayoutChange={onLayoutChange}
+                  >
+                    <div key="countdown">
+                      <CountdownWidget tripId={tripId} />
+                    </div>
 
-                  <div key="destinations">
-                    <DestinationsWidget tripId={tripId} tripCountries={tripCountries} />
-                  </div>
+                    <div key="destinations">
+                      <DestinationsWidget tripId={tripId} tripCountries={tripCountries} />
+                    </div>
 
-                  <div key="activities">
-                    <ActivitiesWidget tripId={tripId} />
-                  </div>
+                    <div key="activities">
+                      <ActivitiesWidget tripId={tripId} />
+                    </div>
 
-                  <div key="flights">
-                    <FlightsWidget tripId={tripId} />
-                  </div>
+                    <div key="flights">
+                      <FlightsWidget tripId={tripId} />
+                    </div>
 
-                  <div key="planner">
-                    <PlannerWidget tripId={tripId} />
-                  </div>
+                    <div key="planner">
+                      <PlannerWidget tripId={tripId} />
+                    </div>
 
-                  <div key="stats">
-                    <BudgetWidget tripId={tripId} />
-                  </div>
+                    <div key="stats">
+                      <BudgetWidget tripId={tripId} />
+                    </div>
 
-                  <div key="stays">
-                    <StaysWidget tripId={tripId} />
-                  </div>
+                    <div key="confirmations">
+                      <ConfirmationWidget tripId={tripId} />
+                    </div>
 
-                  <div key="notes">
-                    <NotesWidget tripId={tripId} />
-                  </div>
+                    <div key="stays">
+                      <StaysWidget tripId={tripId} />
+                    </div>
+
+                    <div key="notes">
+                      <NotesWidget tripId={tripId} />
+                    </div>
                   </Responsive>
                 </>
               )}
