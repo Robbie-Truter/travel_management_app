@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Plane, Hotel, Compass, Clock, MapPin, ExternalLink } from "lucide-react";
+import { Plane, Hotel, Compass, Clock, MapPin, ExternalLink, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Flight, Accommodation, Activity } from "@/db/types";
 
@@ -183,13 +183,18 @@ export function PlannerCard({ item }: PlannerCardProps) {
           </p>
         )}
 
-        {!isConfirmed && (
-          <div className="mt-3 pt-3 border-t border-border/50">
+        <div className="mt-3 pt-3 border-t border-border/50">
+          {isConfirmed ? (
+            <span className="text-[9px] font-bold text-sage-600 bg-sage-50 px-1.5 py-0.5 rounded border border-sage-100 uppercase inline-flex items-center gap-1">
+              <CheckCircle size={10} />
+              Confirmed
+            </span>
+          ) : (
             <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100 uppercase inline-block">
               Unconfirmed
             </span>
-          </div>
-        )}
+          )}
+        </div>
 
         {bookingLink && (
           <a
