@@ -20,7 +20,7 @@ function CustomDay(props: DayButtonProps) {
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       <DayButton {...buttonProps} day={day} modifiers={modifiers} />
-      <div className="absolute bottom-0 flex gap-0.5 pointer-events-none items-center justify-center w-full">
+      <div className="absolute bottom-[1.5px] flex gap-0.5 pointer-events-none items-center justify-center w-full">
         {hasFlight && <Plane size={9} className="text-sky-500" />}
         {hasAccommodation && <Bed size={9} className="text-emerald-500" />}
         {hasActivity && <MapPin size={9} className="text-amber-500" />}
@@ -35,15 +35,15 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: CalendarComponentProps) {
-  const { isDateInOccupiedRangeWithType } = useTripAvailability(tripId ?? 0);
+  const { isDateInOccupiedRange } = useTripAvailability(tripId ?? 0);
 
   const modifiers = React.useMemo(() => {
     return {
-      flight: (date: Date) => isDateInOccupiedRangeWithType(date, "flight"),
-      accommodation: (date: Date) => isDateInOccupiedRangeWithType(date, "accommodation"),
-      activity: (date: Date) => isDateInOccupiedRangeWithType(date, "activity"),
+      flight: (date: Date) => isDateInOccupiedRange(date, "flight"),
+      accommodation: (date: Date) => isDateInOccupiedRange(date, "accommodation"),
+      activity: (date: Date) => isDateInOccupiedRange(date, "activity"),
     };
-  }, [isDateInOccupiedRangeWithType]);
+  }, [isDateInOccupiedRange]);
 
   return (
     <DayPicker

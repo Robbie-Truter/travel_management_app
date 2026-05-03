@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { TZDate } from "@date-fns/tz";
 import type { Flight, Currency, TripCountry } from "@/db/types";
 
+
 interface Airport {
   iata: string;
   name: string;
@@ -78,6 +79,8 @@ export function FlightForm({
   const [saving, setSaving] = useState(false);
   const [airports, setAirports] = useState<Airport[]>([]);
   const [airlines, setAirlines] = useState<Airline[]>([]);
+
+
 
   useEffect(() => {
     fetch("/data/airports.json")
@@ -403,7 +406,10 @@ export function FlightForm({
                     updateSegment(index, "departureTime", format(date, "yyyy-MM-dd'T'HH:mm"));
                 }}
                 defaultMonth={seg.arrivalTime ? new Date(seg.arrivalTime) : new Date(tripStartDate)}
-                disabled={[{ before: new Date(tripStartDate) }, { after: new Date(tripEndDate) }]}
+                disabled={[
+                  { before: new Date(tripStartDate) },
+                  { after: new Date(tripEndDate) },
+                ]}
                 error={errors[`seg-dep-t-${index}`]}
               />
               <DatePicker

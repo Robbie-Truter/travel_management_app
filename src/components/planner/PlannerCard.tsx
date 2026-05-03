@@ -155,12 +155,15 @@ export function PlannerCard({ item }: PlannerCardProps) {
                   const depTime = getTime(depDate);
                   const arrTime = getTime(arrDate);
 
-                  if (depTime === item.time) {
+                  if (item.subType === "in-transit") {
                     return `${seg.departureAirport} - ${seg.arrivalAirport}`;
                   }
-                  if (arrTime === item.time) {
-                    return `${seg.arrivalAirport} - ${seg.departureAirport}`;
+
+                  if (depTime === item.time || arrTime === item.time) {
+                    return `${seg.departureAirport} - ${seg.arrivalAirport}`;
                   }
+
+                  return null;
                 })}
               </span>
             </div>

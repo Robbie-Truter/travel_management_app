@@ -10,11 +10,6 @@ export type OccupiedRange = {
   end: Date;
 };
 
-//Returns true if a flight range fully occupies a given calendar day
-function flightFullyBlocksDay(flightStart: Date, flightEnd: Date, day: Date): boolean {
-  return flightStart < startOfDay(day) && flightEnd > endOfDay(day);
-}
-
 export const useTripAvailability = (tripId: number) => {
   const { flights } = useFlights(tripId);
   const { accommodations } = useAccommodations(tripId);
@@ -53,26 +48,7 @@ export const useTripAvailability = (tripId: number) => {
     return ranges;
   }, [tripId, flights, accommodations, activities]);
 
-  const flightRanges = useMemo(
-    () => occupiedRanges.filter((r) => r.type === "flight"),
-    [occupiedRanges],
-  );
-
-  //For ACTIVITIES & ACCOMMODATIONS: disable calendar days that are fully in-flight.
-  //Departure and arrival days are still allowed
-  const disabledDuringFlights = useMemo(() => {
-    return (day: Date): boolean =>
-      flightRanges.some((range) => flightFullyBlocksDay(range.start, range.end, day));
-  }, [flightRanges]);
-
-  const isDateInOccupiedRange = (date: Date) => {
-    return occupiedRanges.some((range) => range.start <= date && range.end >= date);
-  };
-
-  const isDateInOccupiedRangeWithType = (
-    date: Date,
-    type: "flight" | "accommodation" | "activity",
-  ) => {
+  const isDateInOccupiedRange = (date: Date, type: "flight" | "accommodation" | "activity") => {
     const dStart = startOfDay(date);
     const dEnd = endOfDay(date);
 
@@ -83,9 +59,6 @@ export const useTripAvailability = (tripId: number) => {
   };
 
   return {
-    occupiedRanges,
-    disabledDuringFlights,
     isDateInOccupiedRange,
-    isDateInOccupiedRangeWithType,
   };
 };

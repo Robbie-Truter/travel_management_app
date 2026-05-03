@@ -9,7 +9,7 @@ import { SearchableSelect } from "../ui/SearchableSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { TYPE_OPTIONS, PLATFORM_OPTIONS } from "./AccommodationConstants";
 import { useDestinations } from "@/hooks/useDestinations";
-import { useTripAvailability } from "@/hooks/useTripAvailability";
+
 
 interface AccommodationFormProps {
   open: boolean;
@@ -56,7 +56,7 @@ export function AccommodationForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { destinations } = useDestinations(tripId);
-  const { disabledDuringFlights } = useTripAvailability(tripId);
+
 
   const set = (k: string, v: string | boolean | number | undefined) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -296,7 +296,6 @@ export function AccommodationForm({
             disabled={[
               { before: new Date(tripStartDate) },
               { after: new Date(tripEndDate) },
-              disabledDuringFlights,
             ]}
             error={errors.checkIn}
           />
@@ -310,7 +309,6 @@ export function AccommodationForm({
             disabled={[
               { before: form.checkIn ? new Date(form.checkIn) : new Date(tripStartDate) },
               { after: new Date(tripEndDate) },
-              disabledDuringFlights,
             ]}
             error={errors.checkOut}
           />

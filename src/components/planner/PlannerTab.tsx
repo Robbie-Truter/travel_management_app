@@ -77,7 +77,7 @@ export function PlannerTab({
         }
 
         // Add arrival
-        if (arrDate !== depDate && map[arrDate]) {
+        if (map[arrDate]) {
           map[arrDate].push({
             id: `flight-${f.id}-arr-${idx}`,
             type: "flight",
