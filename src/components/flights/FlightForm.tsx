@@ -8,7 +8,9 @@ import { DatePicker } from "@/components/ui/DatePicker";
 import { getFlagEmoji } from "@/lib/utils";
 import { format } from "date-fns";
 import { TZDate } from "@date-fns/tz";
-import type { Flight, Currency, TripCountry } from "@/db/types";
+import type { Flight, Currency, TripCountry, Destination } from "@/db/types";
+import { useDestinations } from "@/hooks/useDestinations";
+import { MapPin, Info } from "lucide-react";
 
 
 interface Airport {
@@ -36,6 +38,7 @@ interface FlightFormProps {
   tripId: number;
   lastFlight?: Flight;
   tripCountries?: TripCountry[];
+  destinations?: Destination[];
   tripStartDate: string;
   tripEndDate: string;
   tripCurrency: Currency;
@@ -49,6 +52,7 @@ export function FlightForm({
   tripId,
   lastFlight,
   tripCountries = [],
+  destinations = [],
   tripStartDate,
   tripEndDate,
   tripCurrency,
@@ -68,6 +72,7 @@ export function FlightForm({
     ],
     description: initial?.description ?? "",
     tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
+    destinationId: initial?.destinationId ?? undefined,
     price: initial?.price?.toString() ?? "",
     currency: initial?.currency ?? tripCurrency,
     bookingLink: initial?.bookingLink ?? "",
@@ -79,6 +84,9 @@ export function FlightForm({
   const [saving, setSaving] = useState(false);
   const [airports, setAirports] = useState<Airport[]>([]);
   const [airlines, setAirlines] = useState<Airline[]>([]);
+
+  const { destinations: allDestinations } = useDestinations(tripId);
+  const actualDestinations = destinations.length > 0 ? destinations : allDestinations;
 
 
 
@@ -152,7 +160,7 @@ export function FlightForm({
     }));
   };
 
-  const set = (k: string, v: string | boolean | number) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: string, v: string | boolean | number | undefined) => setForm((f) => ({ ...f, [k]: v }));
 
   const airportOptions = useMemo(() => {
     return airports.map((ap) => ({
@@ -213,6 +221,7 @@ export function FlightForm({
     });
 
     if (!form.tripCountryId) e.tripCountryId = "Destination country is required";
+    if (!form.destinationId) e.destinationId = "Destination is required";
     return e;
   };
 
@@ -232,6 +241,7 @@ export function FlightForm({
       ],
       description: initial?.description ?? "",
       tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
+      destinationId: initial?.destinationId ?? undefined,
       price: initial?.price?.toString() ?? "",
       currency: initial?.currency ?? tripCurrency,
       bookingLink: initial?.bookingLink ?? "",
@@ -257,6 +267,7 @@ export function FlightForm({
         tripId,
         description: form.description || undefined,
         tripCountryId: form.tripCountryId,
+        destinationId: form.destinationId!,
         segments: form.segments,
         price: Number(form.price),
         currency: form.currency as Currency,
@@ -295,21 +306,51 @@ export function FlightForm({
           value={form.description}
           onChange={(e) => set("description", e.target.value)}
         />
-        <SearchableSelect
-          id="fl-country"
-          label="Country To"
-          searchHint="End destination country"
-          placeholder="Select country.."
-          value={form.tripCountryId?.toString() || ""}
-          options={tripCountries.map((tc) => ({
-            value: tc.id!.toString(),
-            label: tc.countryName,
-            icon: <span>{getFlagEmoji(tc.countryCode)}</span>,
-          }))}
-          onChange={(val: string) => set("tripCountryId", Number(val))}
-          includeSearch={false}
-          error={errors.tripCountryId}
-        />
+        <div className="flex justify-end -mb-2 mt-1">
+          <div className="relative group flex items-center">
+            <Info size={14} className="text-text-muted hover:text-lavender-500 transition-colors cursor-help" />
+            <div className="absolute right-0 bottom-full mb-1.5 w-max max-w-[200px] px-2 py-1.5 bg-surface border border-border rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+              <p className="text-[10px] text-text-primary text-center font-medium">Missing a location? Add it in the Itinerary tab.</p>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <SearchableSelect
+            id="fl-country"
+            label="Country To"
+            searchHint="End destination country"
+            placeholder="Select country.."
+            value={form.tripCountryId?.toString() || ""}
+            options={tripCountries.map((tc) => ({
+              value: tc.id!.toString(),
+              label: tc.countryName,
+              icon: <span>{getFlagEmoji(tc.countryCode)}</span>,
+            }))}
+            onChange={(val: string) => {
+              set("tripCountryId", Number(val));
+              set("destinationId", undefined);
+            }}
+            includeSearch={false}
+            error={errors.tripCountryId}
+          />
+          <SearchableSelect
+            id="fl-dest"
+            label="Destination To"
+            placeholder="Select a destination..."
+            value={form.destinationId?.toString() || ""}
+            options={actualDestinations
+              .filter((d) => d.tripCountryId === form.tripCountryId)
+              .map((dest) => ({
+                value: dest.id!.toString(),
+                label: dest.name,
+                icon: <MapPin size={12} className="text-lavender-500" />,
+              }))}
+            onChange={(val: string) => set("destinationId", Number(val))}
+            error={errors.destinationId}
+            includeSearch={false}
+            disabled={!form.tripCountryId}
+          />
+        </div>
 
         {form.segments.map((seg, index) => (
           <div

@@ -136,6 +136,7 @@ export interface FlightRow {
   user_id: string;
   trip_id: number;
   trip_country_id?: number;
+  destination_id: number;
   description?: string;
   segments: FlightSegment[];
   price: number;
@@ -150,6 +151,7 @@ export interface Flight {
   id?: number;
   tripId: number;
   tripCountryId?: number;
+  destinationId: number;
   description?: string;
   segments: FlightSegment[];
   price: number;

@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Image as ImageIcon, X, MapPin } from "lucide-react";
+import { Image as ImageIcon, X, MapPin, Info } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Input, Textarea } from "@/components/ui/Input";
@@ -200,6 +200,14 @@ export function ActivityForm({
           onChange={(e) => set("name", e.target.value)}
           error={errors.name}
         />
+        <div className="flex justify-end -mb-2 mt-1">
+          <div className="relative group flex items-center">
+            <Info size={14} className="text-text-muted hover:text-lavender-500 transition-colors cursor-help" />
+            <div className="absolute right-0 bottom-full mb-1.5 w-max max-w-[200px] px-2 py-1.5 bg-surface border border-border rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+              <p className="text-[10px] text-text-primary text-center font-medium">Missing a location? Add it in the Itinerary tab.</p>
+            </div>
+          </div>
+        </div>
 
         <div className="grid grid-cols-2 gap-3">
           <SearchableSelect

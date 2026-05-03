@@ -30,6 +30,7 @@ export function useFlights(tripId?: number) {
           ...doc,
           tripId: doc.trip_id,
           tripCountryId: doc.trip_country_id,
+          destinationId: doc.destination_id,
           isConfirmed: doc.is_confirmed,
           bookingLink: doc.booking_link,
           createdAt: doc.created_at,
@@ -51,6 +52,7 @@ export function useFlights(tripId?: number) {
         user_id: user.id,
         trip_id: flight.tripId,
         trip_country_id: flight.tripCountryId,
+        destination_id: flight.destinationId,
         description: flight.description,
         segments: flight.segments,
         price: flight.price,
@@ -75,6 +77,7 @@ export function useFlights(tripId?: number) {
       const updateData: Record<string, unknown> = {};
       if (changes.tripId !== undefined) updateData.trip_id = changes.tripId;
       if (changes.tripCountryId !== undefined) updateData.trip_country_id = changes.tripCountryId;
+      if (changes.destinationId !== undefined) updateData.destination_id = changes.destinationId;
       if (changes.description !== undefined) updateData.description = changes.description;
       if (changes.segments !== undefined) updateData.segments = changes.segments;
       if (changes.price !== undefined) updateData.price = changes.price;

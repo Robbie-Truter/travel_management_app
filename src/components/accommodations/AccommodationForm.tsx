@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Image as ImageIcon, X } from "lucide-react";
+import { Image as ImageIcon, X, Info } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Input, Textarea } from "@/components/ui/Input";
@@ -9,7 +9,6 @@ import { SearchableSelect } from "../ui/SearchableSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { TYPE_OPTIONS, PLATFORM_OPTIONS } from "./AccommodationConstants";
 import { useDestinations } from "@/hooks/useDestinations";
-
 
 interface AccommodationFormProps {
   open: boolean;
@@ -56,7 +55,6 @@ export function AccommodationForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { destinations } = useDestinations(tripId);
-
 
   const set = (k: string, v: string | boolean | number | undefined) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -211,54 +209,69 @@ export function AccommodationForm({
           onChange={(e) => set("name", e.target.value)}
           error={errors.name}
         />
-        <SearchableSelect
-          id="acc-country"
-          label="Country"
-          placeholder="Select country..."
-          value={form.tripCountryId?.toString() || ""}
-          options={tripCountries.map((tc) => ({
-            value: tc.id!.toString(),
-            label: tc.countryName,
-            icon: <span>{getFlagEmoji(tc.countryCode)}</span>,
-          }))}
-          onChange={(val: string) => {
-            const newCountryId = Number(val);
-            set("tripCountryId", newCountryId);
-
-            // Reset destination if it doesn't belong to the new country
-            if (form.destinationId) {
-              const dest = destinations.find((d) => d.id === form.destinationId);
-              if (dest && dest.tripCountryId !== newCountryId) {
-                set("destinationId", undefined);
-                set("location", "");
-              }
-            }
-          }}
-          error={errors.tripCountryId}
-          includeSearch={false}
-        />
-        <SearchableSelect
-          id="acc-location"
-          label="City / Town (Destination)"
-          placeholder="Select a destination..."
-          value={form.destinationId?.toString() || ""}
-          options={destinations
-            .filter((d) => d.tripCountryId === form.tripCountryId)
-            .map((dest) => ({
-              value: dest.id!.toString(),
-              label: dest.name,
+        <div className="flex justify-end -mb-3 mt-1">
+          <div className="relative group flex items-center">
+            <Info
+              size={14}
+              className="text-text-muted hover:text-lavender-500 transition-colors cursor-help"
+            />
+            <div className="absolute right-0 bottom-full mb-1.5 w-max max-w-[200px] px-2 py-1.5 bg-surface border border-border rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+              <p className="text-[10px] text-text-primary text-center font-medium">
+                Missing a location? Add it in the Itinerary tab.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <SearchableSelect
+            id="acc-country"
+            label="Country"
+            placeholder="Select country..."
+            value={form.tripCountryId?.toString() || ""}
+            options={tripCountries.map((tc) => ({
+              value: tc.id!.toString(),
+              label: tc.countryName,
+              icon: <span>{getFlagEmoji(tc.countryCode)}</span>,
             }))}
-          onChange={(val: string) => {
-            const dest = destinations.find((d) => d.id === Number(val));
-            set("destinationId", Number(val));
-            // Auto-fill location if it's empty
-            if (!form.location && dest) {
-              set("location", dest.name);
-            }
-          }}
-          error={errors.destinationId}
-          includeSearch={false}
-        />
+            onChange={(val: string) => {
+              const newCountryId = Number(val);
+              set("tripCountryId", newCountryId);
+
+              // Reset destination if it doesn't belong to the new country
+              if (form.destinationId) {
+                const dest = destinations.find((d) => d.id === form.destinationId);
+                if (dest && dest.tripCountryId !== newCountryId) {
+                  set("destinationId", undefined);
+                  set("location", "");
+                }
+              }
+            }}
+            error={errors.tripCountryId}
+            includeSearch={false}
+          />
+          <SearchableSelect
+            id="acc-location"
+            label="City / Town (Destination)"
+            placeholder="Select a destination..."
+            value={form.destinationId?.toString() || ""}
+            options={destinations
+              .filter((d) => d.tripCountryId === form.tripCountryId)
+              .map((dest) => ({
+                value: dest.id!.toString(),
+                label: dest.name,
+              }))}
+            onChange={(val: string) => {
+              const dest = destinations.find((d) => d.id === Number(val));
+              set("destinationId", Number(val));
+              // Auto-fill location if it's empty
+              if (!form.location && dest) {
+                set("location", dest.name);
+              }
+            }}
+            error={errors.destinationId}
+            includeSearch={false}
+          />
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <SearchableSelect
             id="acc-type"
@@ -293,10 +306,7 @@ export function AccommodationForm({
             value={form.checkIn}
             onChange={(date) => set("checkIn", date ? date.toISOString() : "")}
             defaultMonth={form.checkIn ? new Date(form.checkIn) : new Date(tripStartDate)}
-            disabled={[
-              { before: new Date(tripStartDate) },
-              { after: new Date(tripEndDate) },
-            ]}
+            disabled={[{ before: new Date(tripStartDate) }, { after: new Date(tripEndDate) }]}
             error={errors.checkIn}
           />
           <DatePicker

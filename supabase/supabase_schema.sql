@@ -102,7 +102,8 @@ create table public.flights (
   id              bigserial primary key,
   user_id         uuid references auth.users(id) on delete cascade not null,
   trip_id         bigint references public.trips(id) on delete cascade not null,
-  trip_country_id bigint references public.trip_countries(id) on delete set null,
+  trip_country_id bigint not null references public.trip_countries(id) on delete cascade,
+  destination_id  bigint not null references public.destinations(id) on delete cascade,
   description     text,
   segments        jsonb not null default '[]',
   price           numeric not null default 0,
@@ -110,7 +111,8 @@ create table public.flights (
   booking_link    text,
   notes           text,
   is_confirmed    boolean not null default false,
-  created_at      timestamptz not null default now()
+  created_at      timestamptz not null default now(),
+  foreign key (destination_id, trip_country_id) references public.destinations(id, trip_country_id) on delete cascade
 );
 alter table public.flights enable row level security;
 create policy "Users can manage their own flights" on public.flights for all using (auth.uid() = user_id) with check (auth.uid() = user_id);

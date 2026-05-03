@@ -4,7 +4,14 @@ import { Plane, ExternalLink, Trash2, CheckCircle, Clock, Edit3 } from "lucide-r
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/Modal";
-import { formatDateTime, formatCurrency, calculateDuration, cn, formatDate, getTimezoneAbbr } from "@/lib/utils";
+import {
+  formatDateTime,
+  formatCurrency,
+  calculateDuration,
+  cn,
+  formatDate,
+  getTimezoneAbbr,
+} from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import type { Flight } from "@/db/types";
 
@@ -180,10 +187,14 @@ export function FlightCard({ flight, onEdit, onDelete, onConfirm }: FlightCardPr
                       <div className="mt-2 py-1 px-2 bg-lavender-500/20 rounded-md border border-lavender-900/10 flex items-center gap-2">
                         <Clock size={10} className="text-lavender-500" />
                         <span className="text-[9px] font-bold text-lavender-700 dark:text-lavender-400">
-                          {`Layover: ${calculateDuration(seg.arrivalTime, flight.segments[i + 1].departureTime, {
-                            startTimeZone: seg.arrivalTimezone ?? "UTC",
-                            endTimeZone: flight.segments[i + 1].departureTimezone ?? "UTC",
-                          })} in ${seg.arrivalAirport}`}
+                          {`Layover: ${calculateDuration(
+                            seg.arrivalTime,
+                            flight.segments[i + 1].departureTime,
+                            {
+                              startTimeZone: seg.arrivalTimezone ?? "UTC",
+                              endTimeZone: flight.segments[i + 1].departureTimezone ?? "UTC",
+                            },
+                          )} in ${seg.arrivalAirport}`}
                         </span>
                       </div>
                     )}

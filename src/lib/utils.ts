@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { format, parseISO, differenceInDays } from "date-fns";
+import { format, parseISO, differenceInDays, differenceInMinutes } from "date-fns";
 import { TZDate } from "@date-fns/tz";
 
 export function cn(...inputs: ClassValue[]) {
@@ -41,23 +41,22 @@ export function calculateDuration(start: string, end: string, timeZones?: TimeZo
       // Parse as UTC first, then adjust by the timezone's offset at that instant
       const utcDate = parseISO(wallTime + "Z");
       const tzd = new TZDate(utcDate, tz);
-      const offsetMinutes = tzd.getTimezoneOffset();
-      return new TZDate(utcDate.getTime() + offsetMinutes * 60 * 1000, tz);
+      //const offsetMinutes = tzd.getTimezoneOffset();
+      //return new TZDate(utcDate.getTime() + offsetMinutes * 60 * 1000, tz);
+      return tzd;
     };
 
     const startTZ = getCorrectDate(start, timeZones?.startTimeZone ?? "UTC");
     const endTZ = getCorrectDate(end, timeZones?.endTimeZone ?? "UTC");
 
-    // Get absolute difference in milliseconds
-    const diff = endTZ.getTime() - startTZ.getTime();
-    const totalMinutes = Math.floor(diff / (1000 * 60));
+    // 1. Get total minutes
+    const totalMin = differenceInMinutes(endTZ, startTZ);
 
-    if (totalMinutes < 0) return "0h 0m";
+    // 2. Split into hours and remaining minutes
+    const hours = Math.floor(totalMin / 60);
+    const minutes = totalMin % 60;
 
-    const h = Math.floor(totalMinutes / 60);
-    const m = totalMinutes % 60;
-
-    return `${h}h ${m}m`;
+    return `${hours}h ${minutes}m`;
   } catch {
     return "0h 0m";
   }
