@@ -35,18 +35,20 @@ export async function exportTripAsJSON(tripId: number): Promise<void> {
     coverImage: tripData.cover_image,
   };
 
-  const flights = (flightsRes.data as FlightRow[] || []).map((f) => ({
+  const flights = ((flightsRes.data as FlightRow[]) || []).map((f) => ({
     ...f,
     tripId: f.trip_id,
     tripCountryId: f.trip_country_id,
+    destinationId: f.destination_id,
     isConfirmed: f.is_confirmed,
     bookingLink: f.booking_link,
     createdAt: f.created_at,
   })) as Flight[];
-  const accommodations = (accommodationsRes.data as AccommodationRow[] || []).map((a) => ({
+  const accommodations = ((accommodationsRes.data as AccommodationRow[]) || []).map((a) => ({
     ...a,
     tripId: a.trip_id,
     tripCountryId: a.trip_country_id,
+    destinationId: a.destination_id,
     checkIn: a.check_in,
     checkOut: a.check_out,
     checkInAfter: a.check_in_after,
@@ -55,7 +57,7 @@ export async function exportTripAsJSON(tripId: number): Promise<void> {
     isConfirmed: a.is_confirmed,
     createdAt: a.created_at,
   })) as Accommodation[];
-  const activities = (activitiesRes.data as ActivityRow[] || []).map((a) => ({
+  const activities = ((activitiesRes.data as ActivityRow[]) || []).map((a) => ({
     ...a,
     tripId: a.trip_id,
     tripCountryId: a.trip_country_id,
@@ -63,7 +65,7 @@ export async function exportTripAsJSON(tripId: number): Promise<void> {
     isConfirmed: a.is_confirmed,
     createdAt: a.created_at,
   })) as Activity[];
-  const notes = (notesRes.data as NoteRow[] || []).map((n) => ({
+  const notes = ((notesRes.data as NoteRow[]) || []).map((n) => ({
     ...n,
     tripId: n.trip_id,
     updatedAt: n.updated_at,
