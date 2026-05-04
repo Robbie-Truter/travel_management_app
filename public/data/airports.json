@@ -18828,6 +18828,15 @@
     "tz": "Asia/Bangkok"
   },
   {
+    "iata": "BKK",
+    "name": "Suvarnabhumi International Airport",
+    "city": "Bangkok",
+    "country": "THA",
+    "lat": 13.6811,
+    "lng": 100.747,
+    "tz": "Asia/Bangkok"
+  },
+  {
     "iata": "DMK",
     "name": "Don Mueang International Airport",
     "city": "Bangkok",
