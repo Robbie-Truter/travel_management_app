@@ -1,27 +1,41 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
 
 export function useNotes(tripId: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { showToast } = useNotification();
 
-  const { data: note, isLoading } = useQuery({
+  const {
+    data: note,
+    isLoading,
+    isError,
+    isRefetching,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["notes", tripId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("notes")
         .select("*")
         .eq("trip_id", tripId)
-        .maybeSingle(); // Returns null if not found instead of throwing an error
+        .order("updated_at", { ascending: false })
+        .limit(1);
 
       if (error) throw error;
-      
-      return data ? {
-        ...data,
-        tripId: data.trip_id,
-        updatedAt: data.updated_at,
-      } : undefined;
+
+      const latestNote = data?.[0];
+
+      return latestNote
+        ? {
+            ...latestNote,
+            tripId: latestNote.trip_id,
+            updatedAt: latestNote.updated_at,
+          }
+        : null;
     },
     enabled: !!user && !!tripId,
   });
@@ -29,29 +43,35 @@ export function useNotes(tripId: number) {
   const saveNoteMutation = useMutation({
     mutationFn: async (content: string) => {
       if (!user) throw new Error("Not authenticated");
+
       const now = new Date().toISOString();
-      
-      if (note?.id) {
-        // Update
-        const { error } = await supabase.from("notes").update({ content, updated_at: now }).eq("id", note.id);
-        if (error) throw error;
-      } else {
-        // Insert
-        const { error } = await supabase.from("notes").insert([{
+
+      const { error } = await supabase.from("notes").upsert(
+        {
           user_id: user.id,
           trip_id: tripId,
           content,
-          updated_at: now
-        }]);
-        if (error) throw error;
-      }
+          updated_at: now,
+        },
+        { onConflict: "user_id,trip_id" },
+      );
+
+      if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notes"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to save note", "error");
+    },
   });
 
   return {
     note: note || undefined,
-    loading: isLoading,
+    isLoading,
+    isRefetching,
+    isError,
+    error,
+    refetch,
+    saving: saveNoteMutation.isPending,
     saveNote: async (content: string) => saveNoteMutation.mutateAsync(content),
   };
 }

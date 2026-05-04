@@ -1,12 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
 import { uploadFile, getFileUrl, deleteFile } from "@/lib/storage";
 import type { Accommodation } from "@/db/types";
 
 export function useAccommodations(tripId: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { showToast } = useNotification();
 
   const {
     data: accommodations,
@@ -29,6 +31,7 @@ export function useAccommodations(tripId: number) {
         ...doc,
         tripId: doc.trip_id,
         tripCountryId: doc.trip_country_id,
+        destinationId: doc.destination_id,
         checkIn: doc.check_in,
         checkOut: doc.check_out,
         checkInAfter: doc.check_in_after,
@@ -45,7 +48,6 @@ export function useAccommodations(tripId: number) {
     },
     enabled: !!user && !!tripId,
     retry: 3,
-    refetchOnMount: "always",
   });
 
   const addAccommodationMutation = useMutation({
@@ -62,6 +64,7 @@ export function useAccommodations(tripId: number) {
         user_id: user.id,
         trip_id: acc.tripId,
         trip_country_id: acc.tripCountryId,
+        destination_id: acc.destinationId,
         name: acc.name,
         type: acc.type,
         platform: acc.platform,
@@ -87,6 +90,9 @@ export function useAccommodations(tripId: number) {
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["accommodations"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to add accommodation", "error");
+    },
   });
 
   const updateAccommodationMutation = useMutation({
@@ -94,20 +100,38 @@ export function useAccommodations(tripId: number) {
       if (!user) throw new Error("Not authenticated");
       const updateData: Record<string, unknown> = {};
 
-      if (changes.image && changes.image.startsWith("data:")) {
-        const fileName = `${Date.now()}_acc.jpg`;
-        const path = await uploadFile(
-          "accommodation-images",
-          `${user.id}/${fileName}`,
-          changes.image,
-        );
-        updateData.image = path;
-      } else if (changes.image !== undefined) {
-        updateData.image = changes.image;
+      if (changes.image !== undefined) {
+        const { data: oldAcc } = await supabase
+          .from("accommodations")
+          .select("image")
+          .eq("id", id)
+          .single();
+
+        if (oldAcc?.image && oldAcc.image !== changes.image && !oldAcc.image.startsWith("http")) {
+          try {
+            await deleteFile("accommodation-images", oldAcc.image);
+          } catch (error) {
+            console.error(error);
+            throw new Error("Could not update accommodation - error deleting old image");
+          }
+        }
+
+        if (changes.image && changes.image.startsWith("data:")) {
+          const fileName = `${Date.now()}_acc.jpg`;
+          const path = await uploadFile(
+            "accommodation-images",
+            `${user.id}/${fileName}`,
+            changes.image,
+          );
+          updateData.image = path;
+        } else {
+          updateData.image = changes.image;
+        }
       }
 
       if (changes.name !== undefined) updateData.name = changes.name;
       if (changes.tripCountryId !== undefined) updateData.trip_country_id = changes.tripCountryId;
+      if (changes.destinationId !== undefined) updateData.destination_id = changes.destinationId;
       if (changes.type !== undefined) updateData.type = changes.type;
       if (changes.platform !== undefined) updateData.platform = changes.platform;
       if (changes.location !== undefined) updateData.location = changes.location;
@@ -121,6 +145,7 @@ export function useAccommodations(tripId: number) {
       if (changes.bookingLink !== undefined) updateData.booking_link = changes.bookingLink;
       if (changes.notes !== undefined) updateData.notes = changes.notes;
       if (changes.isConfirmed !== undefined) updateData.is_confirmed = changes.isConfirmed;
+      if (!changes.image) updateData.image = null;
 
       const { data, error } = await supabase
         .from("accommodations")
@@ -132,6 +157,9 @@ export function useAccommodations(tripId: number) {
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["accommodations"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to update accommodation", "error");
+    },
   });
 
   const deleteAccommodationMutation = useMutation({
@@ -152,6 +180,9 @@ export function useAccommodations(tripId: number) {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["accommodations"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to delete accommodation", "error");
+    },
   });
 
   const confirmAccommodationMutation = useMutation({
@@ -163,11 +194,14 @@ export function useAccommodations(tripId: number) {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["accommodations"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to confirm accommodation", "error");
+    },
   });
 
   return {
     accommodations: accommodations ?? [],
-    loading: isLoading,
+    isLoading,
     isRefetching,
     isError,
     refetch,

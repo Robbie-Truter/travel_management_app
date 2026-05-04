@@ -1,12 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
 import { uploadFile, getFileUrl, deleteFile } from "@/lib/storage";
 import type { Activity } from "@/db/types";
 
 export function useActivities(tripId: number) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { showToast } = useNotification();
 
   const {
     data: activities,
@@ -42,7 +44,6 @@ export function useActivities(tripId: number) {
     },
     enabled: !!user && !!tripId,
     retry: 3,
-    refetchOnMount: "always",
   });
 
   const addActivityMutation = useMutation({
@@ -82,6 +83,9 @@ export function useActivities(tripId: number) {
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["activities"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to add activity", "error");
+    },
   });
 
   const updateActivityMutation = useMutation({
@@ -89,12 +93,29 @@ export function useActivities(tripId: number) {
       if (!user) throw new Error("Not authenticated");
       const updateData: Record<string, unknown> = {};
 
-      if (changes.image && changes.image.startsWith("data:")) {
-        const fileName = `${Date.now()}_act.jpg`;
-        const path = await uploadFile("activity-images", `${user.id}/${fileName}`, changes.image);
-        updateData.image = path;
-      } else if (changes.image !== undefined) {
-        updateData.image = changes.image;
+      if (changes.image !== undefined) {
+        const { data: oldAct } = await supabase
+          .from("activities")
+          .select("image")
+          .eq("id", id)
+          .single();
+
+        if (oldAct?.image && oldAct.image !== changes.image && !oldAct.image.startsWith("http")) {
+          try {
+            await deleteFile("activity-images", oldAct.image);
+          } catch (error) {
+            console.error(error);
+            throw new Error("Could not update activity - error deleting old image");
+          }
+        }
+
+        if (changes.image && changes.image.startsWith("data:")) {
+          const fileName = `${Date.now()}_act.jpg`;
+          const path = await uploadFile("activity-images", `${user.id}/${fileName}`, changes.image);
+          updateData.image = path;
+        } else {
+          updateData.image = changes.image;
+        }
       }
 
       if (changes.tripId !== undefined) updateData.trip_id = changes.tripId;
@@ -110,6 +131,7 @@ export function useActivities(tripId: number) {
       if (changes.currency !== undefined) updateData.currency = changes.currency;
       if (changes.isConfirmed !== undefined) updateData.is_confirmed = changes.isConfirmed;
       if (changes.order !== undefined) updateData.order = changes.order;
+      if (!changes.image) updateData.image = null;
 
       const { data, error } = await supabase
         .from("activities")
@@ -121,6 +143,9 @@ export function useActivities(tripId: number) {
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["activities"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to update activity", "error");
+    },
   });
 
   const deleteActivityMutation = useMutation({
@@ -137,6 +162,9 @@ export function useActivities(tripId: number) {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["activities"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to delete activity", "error");
+    },
   });
 
   const reorderActivitiesMutation = useMutation({
@@ -148,11 +176,14 @@ export function useActivities(tripId: number) {
       }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["activities"] }),
+    onError: (error: Error) => {
+      showToast(error.message || "Failed to reorder activities", "error");
+    },
   });
 
   return {
     activities: activities ?? [],
-    loading: isLoading,
+    isLoading,
     isRefetching,
     isError,
     refetch,

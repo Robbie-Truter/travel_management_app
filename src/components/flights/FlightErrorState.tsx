@@ -7,7 +7,10 @@ interface FlightErrorStateProps {
   onRetry: () => void;
 }
 
-export function FlightErrorState({ message = "Failed to load flight data", onRetry }: FlightErrorStateProps) {
+export function FlightErrorState({
+  message = "Failed to load flight data",
+  onRetry,
+}: FlightErrorStateProps) {
   return (
     <Card className="border-rose-200 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/10">
       <CardContent className="p-8 flex flex-col items-center text-center">
@@ -20,12 +23,12 @@ export function FlightErrorState({ message = "Failed to load flight data", onRet
         <p className="text-sm text-slate-600 dark:text-slate-400 max-w-xs mb-6">
           {message}. This could be due to a temporary connection issue.
         </p>
-        <Button 
-          variant="primary" 
+        <Button
+          variant="secondary"
           onClick={onRetry}
-          className="bg-rose-600 hover:bg-rose-700 text-white border-none shadow-lg shadow-rose-200 dark:shadow-none"
+          className="flex items-center gap-2"
         >
-          <RefreshCw size={16} className="mr-2" />
+          <RefreshCw size={16} />
           Try Again
         </Button>
       </CardContent>

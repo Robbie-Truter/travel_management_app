@@ -1,24 +1,10 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Map,
-  Moon,
-  Sun,
-  Menu,
-  X,
-  Plane,
-  Plus,
-  Upload,
-  ChevronLeft,
-  ChevronRight,
-  FileText,
-  LogOut,
-} from "lucide-react";
+import { Map, Moon, Sun, Menu, X, Plane, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { CountrySelector } from "@/components/ui/CountrySelector";
-import { useTheme, useSettings } from "@/hooks/useTrips";
-import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTrips";
+import { UserProfile } from "@/components/user_profile/UserProfile";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
@@ -26,8 +12,6 @@ interface SidebarProps {
   onImport: () => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  homeCountry: string | null;
-  setHomeCountry: (value: string) => void;
 }
 
 export function AppShell({
@@ -42,7 +26,6 @@ export function AppShell({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { theme, toggleTheme } = useTheme();
-  const { homeCountry, setHomeCountry } = useSettings();
 
   return (
     <div className="flex h-screen overflow-hidden bg-surface-2">
@@ -60,8 +43,6 @@ export function AppShell({
           toggleTheme={toggleTheme}
           isCollapsed={isCollapsed}
           onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
-          homeCountry={homeCountry}
-          setHomeCountry={setHomeCountry}
         />
       </motion.aside>
 
@@ -91,8 +72,6 @@ export function AppShell({
                 onClose={() => setMobileOpen(false)}
                 isCollapsed={false}
                 onToggleCollapse={() => {}}
-                homeCountry={homeCountry}
-                setHomeCountry={setHomeCountry}
               />
             </motion.aside>
           </>
@@ -124,37 +103,17 @@ export function AppShell({
 }
 
 function SidebarContent({
-  onNewTrip,
-  onImport,
   theme,
   toggleTheme,
   onClose,
   isCollapsed,
   onToggleCollapse,
-  homeCountry,
-  setHomeCountry,
 }: SidebarProps & {
   theme: string;
   toggleTheme: () => void;
   onClose?: () => void;
 }) {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
-
-  const handleNewTrip = () => {
-    onNewTrip();
-    onClose?.();
-  };
-
-  const handleImport = () => {
-    onImport();
-    onClose?.();
-  };
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/auth");
-  };
 
   return (
     <div className="flex flex-col h-full">
@@ -165,18 +124,38 @@ function SidebarContent({
           isCollapsed ? "justify-center px-0" : "justify-between px-5 py-5",
         )}
       >
-        <button
+        <motion.button
           onClick={() => {
             navigate("/");
             onClose?.();
           }}
-          className="flex items-center gap-2.5 cursor-pointer overflow-hidden whitespace-nowrap"
+          className="cursor-pointer overflow-hidden whitespace-nowrap"
         >
-          <div className="w-8 h-8 rounded-lg bg-lavender-500 flex items-center justify-center shrink-0">
-            <Plane size={16} className="text-white" />
-          </div>
-          {!isCollapsed && <span className="font-bold text-lg text-text-primary">Wanderplan</span>}
-        </button>
+          <AnimatePresence mode="wait">
+            {isCollapsed ? (
+              <motion.img
+                src="/SideBarLogo.svg"
+                alt="Logo"
+                initial={{ opacity: 0, filter: "blur(4px)", scale: 0.5 }}
+                animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
+                exit={{ opacity: 0, filter: "blur(4px)", scale: 0.5 }}
+                transition={{ duration: 0.2, delay: 0.1 }}
+              />
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, filter: "blur(4px)", scale: 0.5 }}
+                animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
+                exit={{ opacity: 0, filter: "blur(4px)", scale: 0.5 }}
+                transition={{ duration: 0.2, delay: 0.1 }}
+                className="flex items-center gap-2"
+              >
+                <img src="/SideBarLogo.svg" alt="Side Quest Plan Logo" />
+                <p className="font-bold text-lg text-text-primary">Side Quest Plan</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.button>
+
         {onClose && (
           <Button variant="ghost" size="icon-sm" onClick={onClose}>
             <X size={16} />
@@ -185,7 +164,12 @@ function SidebarContent({
       </div>
 
       {/* Nav */}
-      <nav className={cn("flex-1 py-4 space-y-1 overflow-y-auto min-h-0 scrollbar-hide", isCollapsed ? "px-2" : "px-3")}>
+      <nav
+        className={cn(
+          "flex-1 py-4 space-y-1 overflow-y-auto min-h-0 scrollbar-hide",
+          isCollapsed ? "px-2" : "px-3",
+        )}
+      >
         <NavLink
           to="/"
           onClick={onClose}
@@ -237,35 +221,13 @@ function SidebarContent({
         </NavLink>
       </nav>
 
-      {/* Country of Origin */}
-      <div className={cn("border-t border-border", isCollapsed ? "py-2" : "py-1")}>
-        <CountrySelector value={homeCountry} onChange={setHomeCountry} isCollapsed={isCollapsed} />
-      </div>
-
+      <hr className="border-t border-border/50 w-[90%] m-auto" />
       {/* Actions */}
-      <div className={cn("py-4 space-y-2 border-t border-border", isCollapsed ? "px-2" : "px-3")}>
-        <Button
-          variant="primary"
-          className={cn("w-full transition-all overflow-hidden", isCollapsed ? "px-0" : "")}
-          onClick={handleNewTrip}
-          title={isCollapsed ? "New Trip" : undefined}
-        >
-          <Plus size={16} className="shrink-0" />
-          {!isCollapsed && <span className="ml-2 whitespace-nowrap">New Trip</span>}
-        </Button>
-        <Button
-          variant="secondary"
-          className={cn("w-full transition-all overflow-hidden", isCollapsed ? "px-0" : "")}
-          onClick={handleImport}
-          title={isCollapsed ? "Import Trip" : undefined}
-        >
-          <Upload size={16} className="shrink-0" />
-          {!isCollapsed && <span className="ml-2 whitespace-nowrap">Import Trip</span>}
-        </Button>
+      <div className={cn("py-2", isCollapsed ? "px-2" : "px-3")}>
         <Button
           variant="ghost"
           className={cn(
-            "w-full justify-start transition-all overflow-hidden",
+            "w-full justify-start transition-all overflow-hidden mb-2",
             isCollapsed ? "px-0 justify-center" : "",
           )}
           onClick={toggleTheme}
@@ -283,25 +245,17 @@ function SidebarContent({
           )}
         </Button>
 
-        <Button
-          variant="ghost"
-          className={cn(
-            "w-full justify-start transition-all overflow-hidden text-rose-pastel-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-950/30 dark:hover:text-rose-400",
-            isCollapsed ? "px-0 justify-center" : "",
-          )}
-          onClick={handleSignOut}
-          title={isCollapsed ? "Sign Out" : undefined}
-        >
-          <LogOut size={16} className="shrink-0" />
-          {!isCollapsed && <span className="ml-2 whitespace-nowrap">Sign Out</span>}
-        </Button>
+        {/* User Profile Popover */}
+        <div className="pt-2 border-t border-border/50">
+          <UserProfile isCollapsed={isCollapsed} />
+        </div>
 
         {/* Collapse Toggle Button (Desktop only) */}
         {!onClose && (
           <Button
             variant="ghost"
             size="icon"
-            className="w-full mt-4 flex items-center justify-center text-text-secondary hover:text-text-primary"
+            className="w-full mt-2 flex items-center justify-center text-text-secondary hover:text-text-primary"
             onClick={onToggleCollapse}
           >
             {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}

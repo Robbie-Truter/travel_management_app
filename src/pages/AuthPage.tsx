@@ -1,20 +1,36 @@
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { Plane, Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { Navigate } from "react-router-dom";
+import { Plane, Loader2, Mail, Lock, Eye, EyeOff, SquareArrowOutUpRight } from "lucide-react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
+import { useLogin } from "@/hooks/useLogin";
+import { useSignUp } from "@/hooks/useSignUp";
 
 type Mode = "login" | "signup";
 
 export function AuthPage() {
   const { session, loading } = useAuth();
+  const navigate = useNavigate();
+
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  const { login, isSubmitting: isLoggingIn, error: loginError, setError: setLoginError } = useLogin();
+  const {
+    signUp,
+    isSubmitting: isSigningUp,
+    error: signUpError,
+    setError: setSignUpError,
+  } = useSignUp();
+
+  const { showToast } = useNotification();
+
+  const submitting = isLoggingIn || isSigningUp;
+  const error = mode === "login" ? loginError : signUpError;
+  const setError = mode === "login" ? setLoginError : setSignUpError;
 
   if (loading) {
     return (
@@ -28,25 +44,20 @@ export function AuthPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setSuccess(null);
-    setSubmitting(true);
 
-    try {
-      if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) setError(error.message);
-      } else {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) {
-          setError(error.message);
-        } else {
-          setSuccess("Check your email to confirm your account, then log in.");
-          setMode("login");
-        }
+    if (mode === "login") {
+      const { error: loginError } = await login({ email, password });
+
+      if (!loginError) {
+        showToast("Login successful", "success");
       }
-    } finally {
-      setSubmitting(false);
+    } else {
+      const { error: signUpError } = await signUp({ email, password });
+      if (!signUpError) {
+        setSuccess("If you don't already have an account, check your email for a confirmation link.");
+        setMode("login");
+      }
     }
   };
 
@@ -74,7 +85,7 @@ export function AuthPage() {
                   setError(null);
                   setSuccess(null);
                 }}
-                className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all capitalize ${
+                className={`flex-1 py-2 text-sm font-medium rounded-xl transition-all capitalize ${
                   mode === tab
                     ? "bg-surface-2 text-text-primary shadow-sm"
                     : "text-text-secondary hover:text-text-primary"
@@ -100,11 +111,10 @@ export function AuthPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full pl-9 pr-4 py-2.5 bg-surface border border-border rounded-lg text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                  className="w-full pl-9 pr-4 py-2.5 bg-surface border border-border rounded-xl text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
                 />
               </div>
             </div>
-
             {/* Password */}
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-1.5">
@@ -122,7 +132,7 @@ export function AuthPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-9 pr-10 py-2.5 bg-surface border border-border rounded-lg text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                  className="w-full pl-9 pr-10 py-2.5 bg-surface border border-border rounded-xl text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
                 />
                 <button
                   type="button"
@@ -133,7 +143,6 @@ export function AuthPage() {
                 </button>
               </div>
             </div>
-
             {/* Error / Success */}
             {error && (
               <div className="text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">
@@ -146,11 +155,19 @@ export function AuthPage() {
               </div>
             )}
 
+            <div
+              className="flex items-center gap-2 text-lavender-500 cursor-pointer hover:opacity-80"
+              onClick={() => navigate("/forgot-password")}
+            >
+              <p className="text-sm">Forgot Password?</p>
+              <SquareArrowOutUpRight size={12} />
+            </div>
+
             {/* Submit */}
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
+              className="w-full py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary/90 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
             >
               {submitting ? (
                 <>

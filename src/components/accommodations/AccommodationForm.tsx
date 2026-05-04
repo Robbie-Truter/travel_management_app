@@ -1,0 +1,365 @@
+import { useState, useRef } from "react";
+import { Image as ImageIcon, X, Info } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
+import { Input, Textarea } from "@/components/ui/Input";
+import { fileToBase64, getFlagEmoji } from "@/lib/utils";
+import type { Accommodation, Currency, TripCountry } from "@/db/types";
+import { SearchableSelect } from "../ui/SearchableSelect";
+import { DatePicker } from "@/components/ui/DatePicker";
+import { TYPE_OPTIONS, PLATFORM_OPTIONS } from "./AccommodationConstants";
+import { useDestinations } from "@/hooks/useDestinations";
+
+interface AccommodationFormProps {
+  open: boolean;
+  onClose: () => void;
+  onSave: (data: Omit<Accommodation, "id" | "createdAt">) => Promise<void>;
+  initial?: Accommodation;
+  tripId: number;
+  tripCountries?: TripCountry[];
+  tripStartDate: string;
+  tripEndDate: string;
+  tripCurrency: Currency;
+}
+
+export function AccommodationForm({
+  open,
+  onClose,
+  onSave,
+  initial,
+  tripId,
+  tripCountries = [],
+  tripStartDate,
+  tripEndDate,
+  tripCurrency,
+}: AccommodationFormProps) {
+  const [form, setForm] = useState({
+    name: initial?.name ?? "",
+    tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
+    destinationId: initial?.destinationId ?? undefined,
+    type: initial?.type ?? "hotel",
+    platform: initial?.platform ?? "booking",
+    location: initial?.location ?? "",
+    checkIn: initial?.checkIn ?? tripStartDate,
+    checkOut: initial?.checkOut ?? tripStartDate,
+    price: initial?.price?.toString() ?? "",
+    currency: initial?.currency ?? tripCurrency,
+    bookingLink: initial?.bookingLink ?? "",
+    notes: initial?.notes ?? "",
+    image: initial?.image ?? "",
+    isConfirmed: initial?.isConfirmed ?? false,
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { destinations } = useDestinations(tripId);
+
+  const set = (k: string, v: string | boolean | number | undefined) =>
+    setForm((f) => ({ ...f, [k]: v }));
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const uploadedFile = await fileToBase64(file);
+    set("image", uploadedFile.base64);
+  };
+
+  const validate = () => {
+    const e: Record<string, string> = {};
+    if (!form.name.trim()) e.name = "Accommodation name is required";
+    if (!form.tripCountryId) e.tripCountryId = "Country is required";
+    if (!form.destinationId) e.destinationId = "City / Town is required";
+    if (!form.checkIn) e.checkIn = "Check-in date is required";
+    if (!form.checkOut) e.checkOut = "Check-out date is required";
+
+    if (form.checkIn && form.checkOut && new Date(form.checkIn) > new Date(form.checkOut)) {
+      e.checkOut = "Check-out must be after check-in";
+    }
+
+    return e;
+  };
+
+  const handleClose = () => {
+    setForm({
+      name: initial?.name ?? "",
+      tripCountryId: initial?.tripCountryId ?? tripCountries[0]?.id ?? undefined,
+      destinationId: initial?.destinationId ?? undefined,
+      type: initial?.type ?? "hotel",
+      platform: initial?.platform ?? "booking",
+      location: initial?.location ?? "",
+      checkIn: initial?.checkIn ?? tripStartDate,
+      checkOut: initial?.checkOut ?? tripStartDate,
+      price: initial?.price?.toString() ?? "",
+      currency: initial?.currency ?? tripCurrency,
+      bookingLink: initial?.bookingLink ?? "",
+      notes: initial?.notes ?? "",
+      image: initial?.image ?? "",
+      isConfirmed: initial?.isConfirmed ?? false,
+    });
+    setErrors({});
+    onClose();
+  };
+
+  const handleSave = async () => {
+    const e = validate();
+
+    if (Object.keys(e).length > 0) {
+      setErrors(e);
+      return;
+    }
+
+    const selectedDest = destinations.find((d) => d.id === form.destinationId);
+
+    setSaving(true);
+
+    try {
+      await onSave({
+        tripId,
+        name: form.name,
+        tripCountryId: form.tripCountryId!,
+        destinationId: form.destinationId!,
+        type: form.type as Accommodation["type"],
+        platform: form.platform,
+        location: form.location.trim() || selectedDest?.name || "Unknown",
+        checkIn: form.checkIn,
+        checkOut: form.checkOut,
+        price: Number(form.price),
+        currency: form.currency as Currency,
+        bookingLink: form.bookingLink || undefined,
+        notes: form.notes || undefined,
+        image: form.image || undefined,
+        checkInAfter: undefined,
+        checkOutBefore: undefined,
+        isConfirmed: form.isConfirmed,
+      });
+
+      handleClose();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Modal
+      open={open}
+      onClose={handleClose}
+      title={initial ? "Edit Accommodation" : "Add Accommodation"}
+      size="md"
+      footer={
+        <>
+          <Button variant="secondary" onClick={handleClose} disabled={saving}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleSave} disabled={saving}>
+            {saving ? "Saving..." : "Save"}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <div>
+          <label className="text-sm font-medium text-text-primary block mb-1.5">
+            Accommodation Image
+          </label>
+          <div
+            className="relative h-32 rounded-xl border-2 border-dashed border-border overflow-hidden cursor-pointer hover:border-lavender-400 transition-colors group"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {form.image ? (
+              <>
+                <img src={form.image} alt="Accommodation" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                  <span className="opacity-0 group-hover:opacity-100 text-white text-sm font-medium">
+                    Change Image
+                  </span>
+                </div>
+                <button
+                  className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    set("image", "");
+                  }}
+                >
+                  <X size={12} />
+                </button>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full gap-2 text-text-muted">
+                <ImageIcon size={24} />
+                <span className="text-sm">Click to upload an image</span>
+              </div>
+            )}
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageUpload}
+          />
+        </div>
+
+        <Input
+          id="acc-name"
+          label="Name"
+          placeholder="e.g. Park Hyatt Tokyo"
+          value={form.name}
+          onChange={(e) => set("name", e.target.value)}
+          error={errors.name}
+        />
+        <div className="flex justify-end -mb-3 mt-1">
+          <div className="relative group flex items-center">
+            <Info
+              size={14}
+              className="text-text-muted hover:text-lavender-500 transition-colors cursor-help"
+            />
+            <div className="absolute right-0 bottom-full mb-1.5 w-max max-w-[200px] px-2 py-1.5 bg-surface border border-border rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+              <p className="text-[10px] text-text-primary text-center font-medium">
+                Missing a location? Add it in the Itinerary tab.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <SearchableSelect
+            id="acc-country"
+            label="Country"
+            placeholder="Select country..."
+            value={form.tripCountryId?.toString() || ""}
+            options={tripCountries.map((tc) => ({
+              value: tc.id!.toString(),
+              label: tc.countryName,
+              icon: <span>{getFlagEmoji(tc.countryCode)}</span>,
+            }))}
+            onChange={(val: string) => {
+              const newCountryId = Number(val);
+              set("tripCountryId", newCountryId);
+
+              // Reset destination if it doesn't belong to the new country
+              if (form.destinationId) {
+                const dest = destinations.find((d) => d.id === form.destinationId);
+                if (dest && dest.tripCountryId !== newCountryId) {
+                  set("destinationId", undefined);
+                  set("location", "");
+                }
+              }
+            }}
+            error={errors.tripCountryId}
+            includeSearch={false}
+          />
+          <SearchableSelect
+            id="acc-location"
+            label="City / Town (Destination)"
+            placeholder="Select a destination..."
+            value={form.destinationId?.toString() || ""}
+            options={destinations
+              .filter((d) => d.tripCountryId === form.tripCountryId)
+              .map((dest) => ({
+                value: dest.id!.toString(),
+                label: dest.name,
+              }))}
+            onChange={(val: string) => {
+              const dest = destinations.find((d) => d.id === Number(val));
+              set("destinationId", Number(val));
+              // Auto-fill location if it's empty
+              if (!form.location && dest) {
+                set("location", dest.name);
+              }
+            }}
+            error={errors.destinationId}
+            includeSearch={false}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <SearchableSelect
+            id="acc-type"
+            label="Type"
+            placeholder="Select type..."
+            value={form.type}
+            options={TYPE_OPTIONS}
+            onChange={(val: string) => set("type", val)}
+          />
+          <SearchableSelect
+            id="acc-platform"
+            label="Platform"
+            placeholder="Select platform..."
+            value={form.platform}
+            options={PLATFORM_OPTIONS}
+            onChange={(val: string) => set("platform", val)}
+          />
+        </div>
+
+        <Input
+          id="acc-address"
+          label="Address / Specific Area (optional)"
+          placeholder="e.g. 123 Main St, Shinjuku"
+          value={form.location}
+          onChange={(e) => set("location", e.target.value)}
+        />
+        <div className="grid grid-cols-2 gap-3">
+          <DatePicker
+            tripId={tripId}
+            label="Check-in"
+            showTime
+            value={form.checkIn}
+            onChange={(date) => set("checkIn", date ? date.toISOString() : "")}
+            defaultMonth={form.checkIn ? new Date(form.checkIn) : new Date(tripStartDate)}
+            disabled={[{ before: new Date(tripStartDate) }, { after: new Date(tripEndDate) }]}
+            error={errors.checkIn}
+          />
+          <DatePicker
+            tripId={tripId}
+            label="Check-out"
+            showTime
+            value={form.checkOut}
+            onChange={(date) => set("checkOut", date ? date.toISOString() : "")}
+            defaultMonth={form.checkOut ? new Date(form.checkOut) : new Date(tripStartDate)}
+            disabled={[
+              { before: form.checkIn ? new Date(form.checkIn) : new Date(tripStartDate) },
+              { after: new Date(tripEndDate) },
+            ]}
+            error={errors.checkOut}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="col-span-2">
+            <Input
+              id="acc-price"
+              label={`Total Price (${tripCurrency})`}
+              type="number"
+              placeholder="0.00"
+              value={form.price}
+              onChange={(e) => set("price", e.target.value)}
+            />
+          </div>
+        </div>
+        <Input
+          id="acc-link"
+          label="Booking Link (optional)"
+          placeholder="https://..."
+          value={form.bookingLink}
+          onChange={(e) => set("bookingLink", e.target.value)}
+        />
+        <Textarea
+          id="acc-notes"
+          label="Notes (optional)"
+          value={form.notes}
+          onChange={(e) => set("notes", e.target.value)}
+          rows={2}
+        />
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={form.isConfirmed}
+            onChange={(e) => set("isConfirmed", e.target.checked)}
+            className="rounded"
+          />
+          <span className="text-sm text-text-primary">Mark as confirmed</span>
+        </label>
+      </div>
+    </Modal>
+  );
+}

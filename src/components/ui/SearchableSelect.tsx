@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as Popover from "@radix-ui/react-popover";
-import { Check, ChevronsUpDown, Search } from "lucide-react";
+import { Check, ChevronsUpDown, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface SearchableOption {
@@ -21,6 +21,21 @@ interface SearchableSelectProps {
   className?: string;
   displayLimit?: number;
   includeSearch?: boolean;
+  disabled?: boolean;
+  /** When provided, search input changes are forwarded to the parent instead of filtering internally. Use for async/server-driven searches. */
+  onSearchChange?: (query: string) => void;
+  /** Shows a loading spinner in the dropdown list when true */
+  isSearchLoading?: boolean;
+  /** Text shown as a hint inside the trigger button when no country/context is selected yet */
+  searchHint?: string;
+  /** An option to ensure is always in the list (e.g. the currently saved value) */
+  selectedOption?: SearchableOption;
+  /** Whether to show an "Add manually" option when the search query doesn't match */
+  allowManual?: boolean;
+  /** Size of the select trigger */
+  size?: "sm" | "md";
+  /** Whether the value can be cleared */
+  isClearable?: boolean;
 }
 
 export function SearchableSelect({
@@ -34,34 +49,72 @@ export function SearchableSelect({
   className,
   displayLimit = 100,
   includeSearch = true,
+  disabled = false,
+  onSearchChange,
+  isSearchLoading = false,
+  searchHint,
+  selectedOption: activeOption,
+  allowManual = false,
+  size = "md",
+  isClearable = false,
 }: SearchableSelectProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
 
-  const normalizedOptions = React.useMemo(() => {
-    return options.map((opt) => {
+  const sourceOptions = React.useMemo(() => {
+    const list = options.map((opt) => {
       if (typeof opt === "string") {
         return { value: opt, label: opt } as SearchableOption;
       }
       return opt;
     });
-  }, [options]);
 
+    // If we have an active selection that isn't in the provided options, add it
+    if (activeOption && !list.find((opt) => opt.value === activeOption.value)) {
+      list.unshift(activeOption);
+    }
+
+    return list;
+  }, [options, activeOption]);
+
+  // When onSearchChange is provided, options are already server-filtered — skip internal filtering
   const filteredOptions = React.useMemo(() => {
-    const query = searchQuery.toLowerCase();
-    return normalizedOptions.filter(
-      (opt) =>
-        opt.label.toLowerCase().includes(query) ||
-        opt.value.toLowerCase().includes(query) ||
-        opt.sublabel?.toLowerCase().includes(query),
-    );
-  }, [normalizedOptions, searchQuery]);
+    const query = searchQuery.toLowerCase().trim();
+
+    let list = sourceOptions;
+    if (!onSearchChange && query) {
+      list = sourceOptions.filter(
+        (opt) =>
+          opt.label.toLowerCase().includes(query) ||
+          opt.value.toLowerCase().includes(query) ||
+          opt.sublabel?.toLowerCase().includes(query),
+      );
+    }
+
+    // Add manual option if allowed and no exact match exists
+    if (allowManual && query.length >= 2) {
+      const hasExactMatch = list.some((opt) => opt.label.toLowerCase() === query);
+      const isSelectedManual = value.startsWith("__manual__") && value.toLowerCase().replace("__manual__", "") === query;
+
+      if (!hasExactMatch && !isSelectedManual) {
+        list = [
+          ...list,
+          {
+            value: `__manual__${searchQuery.trim()}`,
+            label: `Add manually: "${searchQuery.trim()}"`,
+          },
+        ];
+      }
+    }
+
+    return list;
+  }, [sourceOptions, searchQuery, onSearchChange, allowManual, value]);
 
   const displayedOptions = React.useMemo(() => {
     return filteredOptions.slice(0, displayLimit);
   }, [filteredOptions, displayLimit]);
 
-  const selectedOption = normalizedOptions.find((opt) => opt.value === value);
+  const displayOption = sourceOptions.find((opt) => opt.value === value) || activeOption;
 
   return (
     <div className={cn("flex flex-col gap-1.5 w-full", className)}>
@@ -70,23 +123,45 @@ export function SearchableSelect({
           {label}
         </label>
       )}
-      <Popover.Root open={open} onOpenChange={setOpen}>
-        <Popover.Trigger asChild>
+      <Popover.Root open={disabled ? false : open} onOpenChange={setOpen}>
+        <Popover.Trigger asChild disabled={disabled}>
           <button
             id={id}
             type="button"
             role="combobox"
             aria-expanded={open}
             className={cn(
-              "flex h-9 w-full items-center justify-between rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-lavender-400 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50",
+              "flex w-full items-center justify-between rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-lavender-400 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50",
+              size === "sm" ? "h-8 text-xs px-2" : "h-9",
               error && "border-rose-pastel-400 focus:ring-rose-pastel-400",
             )}
           >
             <span className={cn("truncate flex items-center gap-2", !value && "text-text-muted")}>
-              {selectedOption?.icon && <span>{selectedOption.icon}</span>}
-              {selectedOption ? selectedOption.label : placeholder}
+              {displayOption?.icon && <span>{displayOption.icon}</span>}
+              {displayOption ? displayOption.label : placeholder}
             </span>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <div className="flex items-center gap-1.5 shrink-0 opacity-50">
+              {isClearable && value && (
+                <div
+                  role="button"
+                  tabIndex={0}
+                  className="p-0.5 hover:bg-black/5 dark:hover:bg-white/10 rounded-sm transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onChange("");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.stopPropagation();
+                      onChange("");
+                    }
+                  }}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </div>
+              )}
+              <ChevronsUpDown className="h-4 w-4" />
+            </div>
           </button>
         </Popover.Trigger>
         <Popover.Content
@@ -100,14 +175,19 @@ export function SearchableSelect({
                 className="flex h-8 w-full rounded-md bg-transparent px-3 py-2 text-sm outline-none placeholder:text-text-muted focus:ring-2 focus:ring-lavender-400 focus:border-transparent transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="Search..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  onSearchChange?.(e.target.value);
+                }}
                 autoFocus
               />
             </div>
           )}
           <div className="space-y-1 max-h-60 overflow-y-auto pt-1">
-            {filteredOptions.length === 0 ? (
-              <div className="text-center py-4 text-sm text-text-muted">No options found.</div>
+            {isSearchLoading ? (
+              <div className="text-center py-4 text-sm text-text-muted">Searching...</div>
+            ) : filteredOptions.length === 0 ? (
+              <div className="text-center py-4 text-sm text-text-muted">{searchHint ?? "No options found."}</div>
             ) : (
               <>
                 {displayedOptions.map((option) => (

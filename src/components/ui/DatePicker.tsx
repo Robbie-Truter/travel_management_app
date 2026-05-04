@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import type { Matcher } from "react-day-picker";
 
 interface DatePickerProps {
+  tripId?: number;
   className?: string;
   label?: string;
   value?: Date | string;
@@ -17,9 +18,11 @@ interface DatePickerProps {
   id?: string;
   showTime?: boolean;
   disabled?: Matcher | Matcher[];
+  defaultMonth?: Date;
 }
 
 export function DatePicker({
+  tripId,
   className,
   label,
   value,
@@ -29,6 +32,7 @@ export function DatePicker({
   id,
   showTime = false,
   disabled,
+  defaultMonth,
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -79,6 +83,7 @@ export function DatePicker({
         >
           <motion.div>
             <Calendar
+              tripId={tripId}
               mode="single"
               selected={dateValue}
               onSelect={(date) => {
@@ -92,8 +97,9 @@ export function DatePicker({
                   if (!showTime) setOpen(false);
                 }
               }}
+              defaultMonth={defaultMonth}
               disabled={disabled}
-              initialFocus
+              autoFocus
             />
             {showTime && (
               <div className="p-3 border-t border-border flex items-center justify-between gap-4">

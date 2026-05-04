@@ -1,6 +1,35 @@
 // Common Shared Types
 export type TripStatus = "planning" | "booked" | "ongoing" | "completed" | "cancelled";
-export type Currency = "USD" | "EUR" | "ZAR";
+export type Currency = string;
+
+// --- City Lookup ---
+export interface CityLookupRow {
+  id: number;
+  city: string;
+  city_ascii: string;
+  lat: number;
+  lng: number;
+  country: string;
+  iso2: string;
+  iso3: string;
+  admin_name?: string;
+  capital?: string;
+}
+
+// --- Country Lookup ---
+export interface CountryLookupRow {
+  id: number;
+  name: string;
+  demonym?: string;
+  iso2: string;
+  iso3?: string;
+  tld?: string;
+  currency?: string;
+  calling_code?: string;
+  language?: string;
+  website?: string;
+  continent?: string;
+}
 
 // --- Trips ---
 export interface TripRow {
@@ -13,6 +42,7 @@ export interface TripRow {
   description?: string;
   budget?: string;
   cover_image?: string;
+  base_currency: Currency;
   created_at: string;
   updated_at: string;
   trip_countries?: TripCountryRow[];
@@ -25,9 +55,10 @@ export interface Trip {
   endDate: string;
   status: TripStatus;
   description?: string;
-  tripCountries?: TripCountry[];
+  tripCountries: TripCountry[];
   budget?: string;
   coverImage?: string;
+  baseCurrency: Currency;
   createdAt: string;
   updatedAt: string;
 }
@@ -36,6 +67,7 @@ export interface Trip {
 export interface TripCountryRow {
   id: number;
   trip_id: number;
+  country_id: number;
   country_name: string;
   country_code: string;
   budget_limit?: number;
@@ -47,6 +79,7 @@ export interface TripCountryRow {
 export interface TripCountry {
   id?: number;
   tripId: number;
+  countryId: number;
   countryName: string;
   countryCode: string;
   budgetLimit?: number;
@@ -60,9 +93,10 @@ export interface DestinationRow {
   id: number;
   trip_id: number;
   trip_country_id: number;
+  country_id: number;
+  city_lookup_id?: number;
   name: string;
   image?: string;
-  notes?: string;
   order?: number;
   created_at: string;
 }
@@ -71,9 +105,10 @@ export interface Destination {
   id?: number;
   tripId: number;
   tripCountryId: number;
+  countryId: number;
+  cityLookupId?: number;
   name: string;
   image?: string;
-  notes?: string;
   order?: number;
   createdAt: string;
 }
@@ -86,6 +121,8 @@ export interface FlightSegment {
   arrivalAirport: string;
   departureTime: string;
   arrivalTime: string;
+  departureTimezone?: string;
+  arrivalTimezone?: string;
   coordinates?: {
     departure?: [number, number];
     arrival?: [number, number];
@@ -97,6 +134,7 @@ export interface FlightRow {
   user_id: string;
   trip_id: number;
   trip_country_id?: number;
+  destination_id: number;
   description?: string;
   segments: FlightSegment[];
   price: number;
@@ -111,6 +149,7 @@ export interface Flight {
   id?: number;
   tripId: number;
   tripCountryId?: number;
+  destinationId: number;
   description?: string;
   segments: FlightSegment[];
   price: number;
@@ -127,6 +166,7 @@ export interface AccommodationRow {
   user_id: string;
   trip_id: number;
   trip_country_id?: number;
+  destination_id?: number;
   name: string;
   type: "hotel" | "airbnb" | "hostel" | "resort" | "other";
   platform?: string;
@@ -145,9 +185,10 @@ export interface AccommodationRow {
 }
 
 export interface Accommodation {
-  id?: number;
+  id: number;
   tripId: number;
-  tripCountryId?: number;
+  tripCountryId: number;
+  destinationId: number;
   name: string;
   type: "hotel" | "airbnb" | "hostel" | "resort" | "other";
   platform?: string;
@@ -229,6 +270,7 @@ export interface DocumentRow {
   name: string;
   description?: string;
   type: string;
+  mime_type?: string;
   file: string;
   created_at: string;
 }
@@ -239,6 +281,7 @@ export interface Document {
   name: string;
   description?: string;
   type: string;
+  mimeType?: string;
   file: string;
   createdAt: string;
 }

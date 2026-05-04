@@ -11,49 +11,51 @@ import {
   File,
   MapPin,
   LayoutGrid,
+  Loader2,
+  PiggyBank,
+  AlertCircle,
 } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Badge, statusLabels } from "@/components/ui/Badge";
 import { useTrip } from "@/hooks/useTrips";
-import { useTripCountries } from "@/hooks/useTripCountries";
 import { useDestinations } from "@/hooks/useDestinations";
 import { useFlights } from "@/hooks/useFlights";
 import { useAccommodations } from "@/hooks/useAccommodations";
 import { useActivities } from "@/hooks/useActivities";
 import { FlightsTab } from "@/components/flights/FlightsTab";
 import { AccommodationsTab } from "@/components/accommodations/AccommodationsTab";
-import { DestinationsTab } from "@/components/destinations/DestinationsTab";
 import { ActivitiesTab } from "@/components/activities/ActivitiesTab";
-import { PlannerTimeline } from "@/components/planner/PlannerTimeline";
-import { NoteEditor } from "@/components/notes/NoteEditor";
-import { TripOverview } from "@/components/overview/TripOverview";
-import { TripDestinations } from "@/components/trips/TripDestinations";
+import { PlannerTab } from "@/components/planner/PlannerTab";
+import { NotesTab } from "@/components/notes/NotesTab";
+import { ItineraryTab } from "@/components/itinerary/ItineraryTab";
+import { DocumentsTab } from "@/components/documents/DocumentsTab";
 import { formatDate, tripDuration, cn } from "@/lib/utils";
 import type { Trip, TripStatus } from "@/db/types";
-import { DocumentUpload } from "@/components/documents/DocumentsPage";
+import BudgetBreakdownTab from "@/components/budget_breakdown/BudgetBreakdownTab";
+import OverviewTab from "@/components/overview/OverviewTab";
 
 type Tab =
   | "overview"
-  | "countries"
-  | "destinations"
+  | "itinerary"
   | "flights"
   | "accommodations"
   | "activities"
   | "planner"
   | "notes"
-  | "documents";
+  | "documents"
+  | "budget_breakdown";
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Overview", icon: LayoutGrid },
-  { id: "countries", label: "Countries", icon: MapPin },
-  { id: "destinations", label: "Destinations", icon: MapPin },
+  { id: "itinerary", label: "Itinerary", icon: MapPin },
   { id: "flights", label: "Flights", icon: Plane },
   { id: "accommodations", label: "Stays", icon: Hotel },
   { id: "activities", label: "Activities", icon: Compass },
   { id: "planner", label: "Planner", icon: Calendar },
   { id: "notes", label: "Notes", icon: StickyNote },
   { id: "documents", label: "Documents", icon: File },
+  { id: "budget_breakdown", label: "Budget Breakdown", icon: PiggyBank },
 ];
 
 export function TripPage() {
@@ -61,18 +63,56 @@ export function TripPage() {
   const navigate = useNavigate();
 
   const id = Number(tripId);
-  const trip = useTrip(id);
+
+  const { trip, isLoading, isError, error, refetch } = useTrip(id);
 
   // Still needed for Hero Header and some tab passing
-  const { tripCountries } = useTripCountries(id);
   const { destinations } = useDestinations(id);
-  
-  // These are still needed for Planner & TripDestinations (until refactored)
+
+  // These are still needed for Planner & TripCountries (until refactored)
   const { flights } = useFlights(id);
   const { accommodations } = useAccommodations(id);
   const { activities } = useActivities(id);
 
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full min-h-[400px] p-6 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-rose-pastel-50 dark:bg-rose-pastel-900/30 flex items-center justify-center text-rose-pastel-500 border border-rose-pastel-200 dark:border-rose-pastel-800 mb-6 mx-auto">
+          <AlertCircle size={32} />
+        </div>
+        <h3 className="text-xl font-bold text-text-primary tracking-tight">Failed to load trip</h3>
+        <p className="text-sm text-text-secondary mb-8 max-w-xs mx-auto font-medium">
+          {error instanceof Error
+            ? error.message
+            : "We encountered an issue fetching your trip details. Please check your connection and try again."}
+        </p>
+        <Button
+          variant="secondary"
+          onClick={() => refetch()}
+          className="h-11 px-8 rounded-xl font-bold"
+        >
+          Try Again
+        </Button>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full min-h-[400px]">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+          className="text-lavender-500 mb-4"
+        >
+          <Loader2 size={40} />
+        </motion.div>
+        <p className="text-text-secondary font-medium animate-pulse">Loading your trip...</p>
+      </div>
+    );
+  }
 
   if (!trip) {
     return (
@@ -123,8 +163,8 @@ export function TripPage() {
             <div className="flex items-center gap-3 mt-1 text-white/80 text-sm">
               <span className="flex items-center gap-1">
                 <MapPin size={13} />
-                {(trip?.tripCountries || []).length > 0
-                  ? (trip?.tripCountries ?? []).map((tc) => tc.countryName).join(", ")
+                {trip.tripCountries.length > 0
+                  ? trip.tripCountries.map((tc) => tc.countryName).join(", ")
                   : "No countries"}
               </span>
               <span>
@@ -158,8 +198,19 @@ export function TripPage() {
                     : "text-text-secondary hover:text-text-primary",
                 )}
               >
-                <Icon size={15} />
-                {tab.label}
+                <motion.div
+                  initial={false}
+                  animate={{
+                    scale: isActive ? 1.05 : 1,
+                    backgroundColor: isActive ? "rgb(139, 92, 246)" : "rgba(139, 92, 246, 0)",
+                    color: isActive ? "#ffffff" : "currentColor",
+                  }}
+                  transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl"
+                >
+                  <Icon size={15} />
+                  {tab.label}
+                </motion.div>
                 {isActive && (
                   <motion.div
                     layoutId="activeTabIndicator"
@@ -185,54 +236,47 @@ export function TripPage() {
           >
             {/* OVERVIEW */}
             {activeTab === "overview" && (
-              <TripOverview
-                trip={trip as Trip}
-                tripCountries={tripCountries}
+              <OverviewTab
+                tripId={id}
+                tripCountries={trip.tripCountries}
+                onNavigate={(tab) => setActiveTab(tab as Tab)}
               />
             )}
 
-            {/* COUNTRIES */}
-            {activeTab === "countries" && (
-              <div className="p-4 bg-surface border border-border rounded-xl">
-                <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
-                  <MapPin size={20} className="text-lavender-500" />
-                  Trip Countries
-                </h2>
-                <p className="text-sm text-text-secondary mb-6">
-                  Manage the countries you'll be visiting during this trip.
-                </p>
-                <TripDestinations
-                  trip={trip as Trip}
-                  tripCountries={tripCountries}
-                  destinations={destinations}
-                  flights={flights}
-                  accommodations={accommodations}
-                  activities={activities}
-                />
-              </div>
-            )}
-
-            {/* DESTINATIONS (CITIES/TOWNS) */}
-            {activeTab === "destinations" && (
-              <DestinationsTab tripId={id} tripCountries={tripCountries} />
-            )}
+            {/* ITINERARY (COUNTRIES & DESTINATIONS) */}
+            {activeTab === "itinerary" && <ItineraryTab trip={trip as Trip} />}
 
             {/* FLIGHTS */}
             {activeTab === "flights" && (
-              <FlightsTab tripId={id} tripCountries={tripCountries} />
+              <FlightsTab
+                tripId={id}
+                tripCountries={trip.tripCountries}
+                tripStartDate={trip.startDate}
+                tripEndDate={trip.endDate}
+                tripCurrency={trip.baseCurrency}
+              />
             )}
 
             {/* ACCOMMODATIONS */}
             {activeTab === "accommodations" && (
-              <AccommodationsTab tripId={id} tripCountries={tripCountries} />
+              <AccommodationsTab
+                tripId={id}
+                tripCountries={trip.tripCountries}
+                tripStartDate={trip.startDate}
+                tripEndDate={trip.endDate}
+                tripCurrency={trip.baseCurrency}
+              />
             )}
 
             {/* ACTIVITIES */}
             {activeTab === "activities" && (
-              <ActivitiesTab 
-                tripId={id} 
-                tripCountries={tripCountries} 
-                destinations={destinations} 
+              <ActivitiesTab
+                tripId={id}
+                tripCountries={trip.tripCountries}
+                destinations={destinations}
+                tripStartDate={trip.startDate}
+                tripEndDate={trip.endDate}
+                tripCurrency={trip.baseCurrency}
               />
             )}
 
@@ -240,12 +284,11 @@ export function TripPage() {
             {activeTab === "planner" && (
               <div>
                 <div className="mb-4">
-                  <h2 className="font-semibold text-text-primary">Trip Planner</h2>
                   <p className="text-sm text-text-secondary mt-0.5">
                     Drag activities between days to reorganize your itinerary.
                   </p>
                 </div>
-                <PlannerTimeline
+                <PlannerTab
                   flights={flights}
                   accommodations={accommodations}
                   activities={activities}
@@ -258,20 +301,22 @@ export function TripPage() {
             {/* NOTES */}
             {activeTab === "notes" && (
               <div>
-                <div className="mb-4">
-                  <h2 className="font-semibold text-text-primary">Notes & Tips</h2>
-                </div>
-                <NoteEditor tripId={id} />
+                <NotesTab tripId={id} />
               </div>
             )}
 
             {/* DOCUMENTS */}
             {activeTab === "documents" && (
               <div>
-                <div className="mb-4">
-                  <h2 className="font-semibold text-text-primary">Documents</h2>
-                </div>
-                <DocumentUpload tripId={id} />
+                <div className="mb-4"></div>
+                <DocumentsTab tripId={id} />
+              </div>
+            )}
+
+            {/* BUDGET BREAKDOWN */}
+            {activeTab === "budget_breakdown" && (
+              <div>
+                <BudgetBreakdownTab trip={trip as Trip} />
               </div>
             )}
           </motion.div>
