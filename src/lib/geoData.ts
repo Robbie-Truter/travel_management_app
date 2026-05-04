@@ -19,7 +19,7 @@ const COUNTRY_FALLBACKS: Record<string, [number, number]> = {
   Thailand: [100.9925, 15.87],
 };
 
-let AIRPORT_DATA: Record<string, { lat: number; lng: number; tz?: string; country: string }> = {};
+const AIRPORT_DATA: Record<string, { lat: number; lng: number; tz?: string; country: string }> = {};
 const NAME_TO_IATA: Record<string, { iata: string; country: string }> = {};
 const COUNTRY_COORDS: Record<string, [number, number]> = { ...COUNTRY_FALLBACKS };
 
@@ -93,7 +93,7 @@ export function getPointForDestination(dest: string): GeoPoint | undefined {
   if (!dest) return undefined;
 
   let normalized = dest.trim();
-  
+
   // Try to extract IATA code from brackets if present (e.g. "London (LHR)")
   const iataMatch = normalized.match(/\(([A-Z]{3})\)/);
   if (iataMatch) {
@@ -148,7 +148,7 @@ export function getPointForDestination(dest: string): GeoPoint | undefined {
     return {
       coordinates: [coords[0], coords[1]],
       name: normalized,
-      countryCode: "", 
+      countryCode: "",
     };
   }
 
