@@ -12,7 +12,6 @@ import type { Flight, Currency, TripCountry, Destination } from "@/db/types";
 import { useDestinations } from "@/hooks/useDestinations";
 import { MapPin, Info } from "lucide-react";
 
-
 interface Airport {
   iata: string;
   name: string;
@@ -88,8 +87,6 @@ export function FlightForm({
   const { destinations: allDestinations } = useDestinations(tripId);
   const actualDestinations = destinations.length > 0 ? destinations : allDestinations;
 
-
-
   useEffect(() => {
     fetch("/data/airports.json")
       .then((res) => res.json())
@@ -160,7 +157,8 @@ export function FlightForm({
     }));
   };
 
-  const set = (k: string, v: string | boolean | number | undefined) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: string, v: string | boolean | number | undefined) =>
+    setForm((f) => ({ ...f, [k]: v }));
 
   const airportOptions = useMemo(() => {
     return airports.map((ap) => ({
@@ -308,9 +306,14 @@ export function FlightForm({
         />
         <div className="flex justify-end -mb-2 mt-1">
           <div className="relative group flex items-center">
-            <Info size={14} className="text-text-muted hover:text-lavender-500 transition-colors cursor-help" />
+            <Info
+              size={14}
+              className="text-text-muted hover:text-lavender-500 transition-colors cursor-help"
+            />
             <div className="absolute right-0 bottom-full mb-1.5 w-max max-w-[200px] px-2 py-1.5 bg-surface border border-border rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-              <p className="text-[10px] text-text-primary text-center font-medium">Missing a location? Add it in the Itinerary tab.</p>
+              <p className="text-[10px] text-text-primary text-center font-medium">
+                Missing a location? Add it in the Itinerary tab.
+              </p>
             </div>
           </div>
         </div>
@@ -447,10 +450,7 @@ export function FlightForm({
                     updateSegment(index, "departureTime", format(date, "yyyy-MM-dd'T'HH:mm"));
                 }}
                 defaultMonth={seg.arrivalTime ? new Date(seg.arrivalTime) : new Date(tripStartDate)}
-                disabled={[
-                  { before: new Date(tripStartDate) },
-                  { after: new Date(tripEndDate) },
-                ]}
+                disabled={[{ before: new Date(tripStartDate) }, { after: new Date(tripEndDate) }]}
                 error={errors[`seg-dep-t-${index}`]}
               />
               <DatePicker

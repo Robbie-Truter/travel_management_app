@@ -23,11 +23,7 @@ export function FlightErrorState({
         <p className="text-sm text-slate-600 dark:text-slate-400 max-w-xs mb-6">
           {message}. This could be due to a temporary connection issue.
         </p>
-        <Button
-          variant="secondary"
-          onClick={onRetry}
-          className="flex items-center gap-2"
-        >
+        <Button variant="secondary" onClick={onRetry} className="flex items-center gap-2">
           <RefreshCw size={16} />
           Try Again
         </Button>
