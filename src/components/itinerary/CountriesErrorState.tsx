@@ -15,11 +15,7 @@ export function CountriesErrorState({ onRetry }: CountriesErrorStateProps) {
       <p className="text-text-secondary text-center max-w-sm mb-6 px-4">
         Something went wrong while fetching your trip's destination info.
       </p>
-      <Button
-        variant="secondary"
-        onClick={onRetry}
-        className="px-6 font-bold"
-      >
+      <Button variant="secondary" onClick={onRetry} className="px-6 font-bold">
         Try Again
       </Button>
     </div>
