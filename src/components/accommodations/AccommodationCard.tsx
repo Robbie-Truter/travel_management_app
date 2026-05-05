@@ -33,7 +33,7 @@ export function AccommodationCard({ acc, onEdit, onDelete, onConfirm }: Accommod
     Math.round((new Date(acc.checkOut).getTime() - new Date(acc.checkIn).getTime()) / 86400000),
   );
 
-  let platform = PLATFORM_OPTIONS.find((p) => p.value === acc.platform);
+  const platform = PLATFORM_OPTIONS.find((p) => p.value === acc.platform);
 
   return (
     <>
