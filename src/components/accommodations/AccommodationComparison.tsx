@@ -1,9 +1,6 @@
 import { Modal } from "@/components/ui/Modal";
 import { Image as ImageIcon } from "lucide-react";
-import {
-  formatDateTime,
-  formatCurrency,
-} from "@/lib/utils";
+import { formatDateTime, formatCurrency } from "@/lib/utils";
 import type { Accommodation, TripCountry } from "@/db/types";
 import { PLATFORM_OPTIONS } from "./AccommodationConstants";
 
