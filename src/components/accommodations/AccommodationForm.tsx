@@ -46,7 +46,7 @@ export function AccommodationForm({
     currency: initial?.currency ?? tripCurrency,
     bookingLink: initial?.bookingLink ?? "",
     notes: initial?.notes ?? "",
-    image: initial?.image ?? "",
+    image: initial?.image ?? null,
     isConfirmed: initial?.isConfirmed ?? false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -95,7 +95,7 @@ export function AccommodationForm({
       currency: initial?.currency ?? tripCurrency,
       bookingLink: initial?.bookingLink ?? "",
       notes: initial?.notes ?? "",
-      image: initial?.image ?? "",
+      image: initial?.image ?? null,
       isConfirmed: initial?.isConfirmed ?? false,
     });
     setErrors({});
@@ -129,7 +129,7 @@ export function AccommodationForm({
         currency: form.currency as Currency,
         bookingLink: form.bookingLink || undefined,
         notes: form.notes || undefined,
-        image: form.image || undefined,
+        image: form.image || null,
         checkInAfter: undefined,
         checkOutBefore: undefined,
         isConfirmed: form.isConfirmed,

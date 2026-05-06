@@ -625,7 +625,7 @@ export function BrochureDocument({
                     <View style={{ flex: 1 }}>
                       <Text style={styles.cardTitle}>{doc.name}</Text>
                       <Text style={styles.textSecondary}>{doc.type}</Text>
-                      <Link src={doc.file} style={styles.link}>
+                      <Link src={doc.file ?? undefined} style={styles.link}>
                         View Document
                       </Link>
                     </View>

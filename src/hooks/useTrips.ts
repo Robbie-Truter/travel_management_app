@@ -30,31 +30,30 @@ export function useTrips() {
       if (!data) return [];
 
       // Map snake_case from DB to camelCase for the frontend
-      return (data as TripRow[]).map(
-        (d) =>
-          ({
-            ...d,
-            startDate: d.start_date,
-            endDate: d.end_date,
-            createdAt: d.created_at,
-            updatedAt: d.updated_at,
-            tripCountries: (d.trip_countries || []).map((tc: TripCountryRow) => ({
-              ...tc,
-              tripId: tc.trip_id,
-              countryId: tc.country_id,
-              countryName: tc.country_name,
-              countryCode: tc.country_code,
-              budgetLimit: tc.budget_limit,
-              createdAt: tc.created_at,
-            })),
-            coverImage: d.cover_image
-              ? d.cover_image.startsWith("data:") || d.cover_image.startsWith("http")
-                ? d.cover_image
-                : getFileUrl("trip-covers", d.cover_image)
-              : undefined,
-            baseCurrency: d.base_currency || "USD",
-          }) as Trip,
-      );
+      return Promise.all(
+        (data as TripRow[]).map(async (d) => ({
+          ...d,
+          startDate: d.start_date,
+          endDate: d.end_date,
+          createdAt: d.created_at,
+          updatedAt: d.updated_at,
+          tripCountries: (d.trip_countries || []).map((tc: TripCountryRow) => ({
+            ...tc,
+            tripId: tc.trip_id,
+            countryId: tc.country_id,
+            countryName: tc.country_name,
+            countryCode: tc.country_code,
+            budgetLimit: tc.budget_limit,
+            createdAt: tc.created_at,
+          })),
+          coverImage: d.cover_image
+            ? d.cover_image.startsWith("data:") || d.cover_image.startsWith("http")
+              ? d.cover_image
+              : await getFileUrl("trip-covers", d.cover_image)
+            : undefined,
+          baseCurrency: d.base_currency || "USD",
+        })),
+      ) as Promise<Trip[]>;
     },
     enabled: !!user,
   });
@@ -112,24 +111,25 @@ export function useTrips() {
 
       // Handle image upload if it's a new base64 image
       if (changes.coverImage !== undefined) {
-        // We are updating the image (either to a new base64, a new URL, or clearing it)
-        // First, check if there's an existing image to delete
+        // Check if there's an existing image to delete
         const { data: oldTrip } = await supabase
           .from("trips")
           .select("cover_image")
           .eq("id", id)
           .single();
 
+        const isRemoved = changes.coverImage === null;
+        const isNewUpload = changes.coverImage?.startsWith("data:");
+
         if (
           oldTrip?.cover_image &&
-          oldTrip.cover_image !== changes.coverImage &&
-          !oldTrip.cover_image.startsWith("http")
+          !oldTrip.cover_image.startsWith("http") &&
+          (isRemoved || isNewUpload)
         ) {
           try {
             await deleteFile("trip-covers", oldTrip.cover_image);
           } catch (error) {
             console.error(error);
-            throw new Error("Could not update trip - error deleting old image");
           }
         }
 
@@ -154,7 +154,6 @@ export function useTrips() {
       if (changes.description !== undefined) updateData.description = changes.description;
       if (changes.budget !== undefined) updateData.budget = changes.budget;
       if (changes.baseCurrency !== undefined) updateData.base_currency = changes.baseCurrency;
-      if (!changes.coverImage) updateData.cover_image = null;
 
       const { data, error } = await supabase
         .from("trips")
@@ -183,14 +182,15 @@ export function useTrips() {
   } = useMutation({
     mutationFn: async (id: number) => {
       // 1. Get all related items for the entire trip to clean up storage
-      const [tripRes, accsRes, actsRes, destsRes] = await Promise.all([
+      const [tripRes, accsRes, actsRes, destsRes, docsRes] = await Promise.all([
         supabase.from("trips").select("cover_image").eq("id", id).single(),
         supabase.from("accommodations").select("image").eq("trip_id", id),
         supabase.from("activities").select("image").eq("trip_id", id),
         supabase.from("destinations").select("image").eq("trip_id", id),
+        supabase.from("documents").select("file").eq("trip_id", id),
       ]);
 
-      if (tripRes.error || accsRes.error || actsRes.error || destsRes.error) {
+      if (tripRes.error || accsRes.error || actsRes.error || destsRes.error || docsRes.error) {
         throw new Error("Failed to fetch trip items for storage cleanup");
       }
 
@@ -198,6 +198,7 @@ export function useTrips() {
       const accs = accsRes.data;
       const acts = actsRes.data;
       const dests = destsRes.data;
+      const docs = docsRes.data;
 
       // 2. Collect all image paths to delete
       const imageDeletions: Promise<unknown>[] = [];
@@ -227,6 +228,14 @@ export function useTrips() {
         dests.forEach((d) => {
           if (d.image && !d.image.startsWith("http")) {
             imageDeletions.push(supabase.storage.from("destination-images").remove([d.image]));
+          }
+        });
+      }
+      // Documents
+      if (docs) {
+        docs.forEach((doc) => {
+          if (doc.file && !doc.file.startsWith("http") && !doc.file.startsWith("data:")) {
+            imageDeletions.push(supabase.storage.from("user-documents").remove([doc.file]));
           }
         });
       }
@@ -275,7 +284,7 @@ export function useTrips() {
       coverImage: tripRow.cover_image
         ? tripRow.cover_image.startsWith("data:") || tripRow.cover_image.startsWith("http")
           ? tripRow.cover_image
-          : getFileUrl("trip-covers", tripRow.cover_image)
+          : await getFileUrl("trip-covers", tripRow.cover_image)
         : undefined,
       baseCurrency: tripRow.base_currency || "USD",
     } as Trip;
@@ -345,7 +354,7 @@ export function useTrip(id: number | undefined) {
         coverImage: tripRow.cover_image
           ? tripRow.cover_image.startsWith("data:") || tripRow.cover_image.startsWith("http")
             ? tripRow.cover_image
-            : getFileUrl("trip-covers", tripRow.cover_image)
+            : await getFileUrl("trip-covers", tripRow.cover_image)
           : undefined,
         baseCurrency: tripRow.base_currency || "USD",
       } as Trip;

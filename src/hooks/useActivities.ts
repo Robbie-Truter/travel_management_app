@@ -28,19 +28,21 @@ export function useActivities(tripId: number) {
 
       if (error) throw error;
 
-      return data.map((doc) => ({
-        ...doc,
-        tripId: doc.trip_id,
-        tripCountryId: doc.trip_country_id,
-        destinationId: doc.destination_id,
-        isConfirmed: doc.is_confirmed,
-        createdAt: doc.created_at,
-        image: doc.image
-          ? doc.image.startsWith("data:") || doc.image.startsWith("http")
-            ? doc.image
-            : getFileUrl("activity-images", doc.image)
-          : undefined,
-      })) as Activity[];
+      return Promise.all(
+        data.map(async (doc) => ({
+          ...doc,
+          tripId: doc.trip_id,
+          tripCountryId: doc.trip_country_id,
+          destinationId: doc.destination_id,
+          isConfirmed: doc.is_confirmed,
+          createdAt: doc.created_at,
+          image: doc.image
+            ? doc.image.startsWith("data:") || doc.image.startsWith("http")
+              ? doc.image
+              : await getFileUrl("activity-images", doc.image)
+            : undefined,
+        }))
+      ) as Promise<Activity[]>;
     },
     enabled: !!user && !!tripId,
     retry: 3,
@@ -100,12 +102,14 @@ export function useActivities(tripId: number) {
           .eq("id", id)
           .single();
 
-        if (oldAct?.image && oldAct.image !== changes.image && !oldAct.image.startsWith("http")) {
+        const isRemoved = changes.image === null;
+        const isNewUpload = changes.image?.startsWith("data:");
+
+        if (oldAct?.image && !oldAct.image.startsWith("http") && (isRemoved || isNewUpload)) {
           try {
             await deleteFile("activity-images", oldAct.image);
           } catch (error) {
             console.error(error);
-            throw new Error("Could not update activity - error deleting old image");
           }
         }
 
@@ -131,7 +135,6 @@ export function useActivities(tripId: number) {
       if (changes.currency !== undefined) updateData.currency = changes.currency;
       if (changes.isConfirmed !== undefined) updateData.is_confirmed = changes.isConfirmed;
       if (changes.order !== undefined) updateData.order = changes.order;
-      if (!changes.image) updateData.image = null;
 
       const { data, error } = await supabase
         .from("activities")

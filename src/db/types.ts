@@ -49,7 +49,7 @@ export interface TripRow {
 }
 
 export interface Trip {
-  id?: number;
+  id: number;
   name: string;
   startDate: string;
   endDate: string;
@@ -57,7 +57,7 @@ export interface Trip {
   description?: string;
   tripCountries: TripCountry[];
   budget?: string;
-  coverImage?: string;
+  coverImage: string | null;
   baseCurrency: Currency;
   createdAt: string;
   updatedAt: string;
@@ -108,7 +108,7 @@ export interface Destination {
   countryId: number;
   cityLookupId?: number;
   name: string;
-  image?: string;
+  image: string | null;
   order?: number;
   createdAt: string;
 }
@@ -199,7 +199,7 @@ export interface Accommodation {
   currency: Currency;
   bookingLink?: string;
   notes?: string;
-  image?: string;
+  image: string | null;
   checkInAfter?: string;
   checkOutBefore?: string;
   isConfirmed: boolean;
@@ -241,7 +241,7 @@ export interface Activity {
   cost?: number;
   currency: Currency;
   isConfirmed: boolean;
-  image?: string;
+  image: string | null;
   order: number;
   createdAt: string;
 }
@@ -282,7 +282,7 @@ export interface Document {
   description?: string;
   type: string;
   mimeType?: string;
-  file: string;
+  file: string | null;
   createdAt: string;
 }
 

@@ -133,7 +133,7 @@ export function useDocuments(tripId: number) {
       if (!user) throw new Error("Not authenticated");
       const dbUpdates: Record<string, unknown> = {};
 
-      if (updates.file && updates.file.startsWith("data:")) {
+      if (updates.file !== undefined) {
         // 1. Get old document to find the old file path
         const { data: oldDoc } = await supabase
           .from("documents")
@@ -141,31 +141,38 @@ export function useDocuments(tripId: number) {
           .eq("id", id)
           .single();
 
-        // 2. Upload the new file
-        const mime = updates.file.split(";")[0].split(":")[1];
-        const extension = getExtensionFromMime(mime);
-        const fileName = `${Date.now()}_doc.${extension}`;
-        const newPath = await uploadFile("user-documents", `${user.id}/${fileName}`, updates.file);
-        dbUpdates.file = newPath;
+        // 2. Delete the old file from storage ONLY if it's being explicitly removed or replaced by a new upload
+        const isRemoved = updates.file === null;
+        const isNewUpload = updates.file?.startsWith("data:");
 
-        // 3. Delete the old file from storage
-        if (oldDoc?.file && !oldDoc.file.startsWith("http")) {
+        if (oldDoc?.file && !oldDoc.file.startsWith("http") && (isRemoved || isNewUpload)) {
           try {
             await deleteFile("user-documents", oldDoc.file);
           } catch (error) {
-            console.error(error);
-            throw new Error("Could not update document - error deleting old file");
+            console.error("Failed to delete old document file:", error);
           }
         }
-      } else if (updates.file !== undefined) {
-        dbUpdates.file = updates.file;
+
+        // 3. Handle new file upload if it's a data URI
+        if (updates.file && updates.file.startsWith("data:")) {
+          const mime = updates.file.split(";")[0].split(":")[1];
+          const extension = getExtensionFromMime(mime);
+          const fileName = `${Date.now()}_doc.${extension}`;
+          const newPath = await uploadFile(
+            "user-documents",
+            `${user.id}/${fileName}`,
+            updates.file,
+          );
+          dbUpdates.file = newPath;
+        } else {
+          dbUpdates.file = updates.file;
+        }
       }
 
       if (updates.name !== undefined) dbUpdates.name = updates.name;
       if (updates.description !== undefined) dbUpdates.description = updates.description;
       if (updates.type !== undefined) dbUpdates.type = updates.type;
       if (updates.mimeType !== undefined) dbUpdates.mime_type = updates.mimeType;
-      if (!updates.file) dbUpdates.file = null;
 
       const { error } = await supabase.from("documents").update(dbUpdates).eq("id", id);
       if (error) throw error;

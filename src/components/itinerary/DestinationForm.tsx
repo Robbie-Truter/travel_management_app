@@ -31,7 +31,7 @@ export function DestinationForm({
     name: initial?.name ?? "",
     tripCountryId: initial?.tripCountryId ?? undefined,
     cityLookupId: initial?.cityLookupId ?? (undefined as number | undefined),
-    image: initial?.image ?? "",
+    image: initial?.image ?? null,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -128,7 +128,7 @@ export function DestinationForm({
         tripCountryId: form.tripCountryId!,
         countryId: selectedCountry!.countryId,
         cityLookupId: form.cityLookupId,
-        image: form.image || undefined,
+        image: form.image || null,
         order: initial?.order ?? 0,
       });
 
@@ -143,7 +143,7 @@ export function DestinationForm({
       name: initial?.name ?? "",
       tripCountryId: initial?.tripCountryId ?? undefined,
       cityLookupId: initial?.cityLookupId ?? undefined,
-      image: initial?.image ?? "",
+      image: initial?.image ?? null,
     });
     setErrors({});
     setCitySearchRaw("");
