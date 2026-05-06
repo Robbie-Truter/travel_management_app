@@ -128,8 +128,8 @@ export function useTrips() {
         ) {
           try {
             await deleteFile("trip-covers", oldTrip.cover_image);
-          } catch (error) {
-            console.error(error);
+          } catch (error: unknown) {
+            console.error("deleteFile error", error);
           }
         }
 
@@ -161,6 +161,7 @@ export function useTrips() {
         .eq("id", id)
         .select()
         .single();
+
       if (error) throw error;
 
       return data;
@@ -170,6 +171,7 @@ export function useTrips() {
       queryClient.invalidateQueries({ queryKey: ["trip"] });
     },
     onError: (error: Error) => {
+      console.log(error);
       showToast(error.message || "Failed to update trip", "error");
     },
   });
@@ -244,7 +246,6 @@ export function useTrips() {
       if (imageDeletions.length > 0) {
         await Promise.all(imageDeletions).catch((err) => {
           console.error("Storage cleanup failed during trip deletion", err);
-          showToast("Some images could not be deleted from storage", "warning");
         });
       }
 

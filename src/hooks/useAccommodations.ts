@@ -45,7 +45,7 @@ export function useAccommodations(tripId: number) {
               ? doc.image
               : await getFileUrl("accommodation-images", doc.image)
             : undefined,
-        }))
+        })),
       ) as Promise<Accommodation[]>;
     },
     enabled: !!user && !!tripId,
@@ -116,7 +116,7 @@ export function useAccommodations(tripId: number) {
           try {
             await deleteFile("accommodation-images", oldAcc.image);
           } catch (error) {
-            console.error(error);
+            console.error("Storage cleanup failed for accommodation:", error);
           }
         }
 
@@ -156,7 +156,9 @@ export function useAccommodations(tripId: number) {
         .eq("id", id)
         .select()
         .single();
+
       if (error) throw error;
+
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["accommodations"] }),
@@ -180,6 +182,7 @@ export function useAccommodations(tripId: number) {
       }
 
       const { error } = await supabase.from("accommodations").delete().eq("id", id);
+
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["accommodations"] }),

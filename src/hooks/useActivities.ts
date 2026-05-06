@@ -41,7 +41,7 @@ export function useActivities(tripId: number) {
               ? doc.image
               : await getFileUrl("activity-images", doc.image)
             : undefined,
-        }))
+        })),
       ) as Promise<Activity[]>;
     },
     enabled: !!user && !!tripId,
@@ -81,7 +81,9 @@ export function useActivities(tripId: number) {
         .insert([dbActivity])
         .select()
         .single();
+
       if (error) throw error;
+
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["activities"] }),
@@ -106,11 +108,9 @@ export function useActivities(tripId: number) {
         const isNewUpload = changes.image?.startsWith("data:");
 
         if (oldAct?.image && !oldAct.image.startsWith("http") && (isRemoved || isNewUpload)) {
-          try {
-            await deleteFile("activity-images", oldAct.image);
-          } catch (error) {
-            console.error(error);
-          }
+          await deleteFile("activity-images", oldAct.image).catch((error) =>
+            console.error("Storage cleanup failed for activity update", error),
+          );
         }
 
         if (changes.image && changes.image.startsWith("data:")) {
@@ -142,7 +142,9 @@ export function useActivities(tripId: number) {
         .eq("id", id)
         .select()
         .single();
+
       if (error) throw error;
+
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["activities"] }),
@@ -156,12 +158,15 @@ export function useActivities(tripId: number) {
       // 1. Get activity to find image path
       const { data: act } = await supabase.from("activities").select("image").eq("id", id).single();
 
-      // 2. Delete image if exists
+      // 2. Delete image silently if exists
       if (act?.image && !act.image.startsWith("http")) {
-        await deleteFile("activity-images", act.image).catch(console.error);
+        await deleteFile("activity-images", act.image).catch((err) =>
+          console.error("Storage cleanup failed for activity deletion", err),
+        );
       }
 
       const { error } = await supabase.from("activities").delete().eq("id", id);
+
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["activities"] }),
