@@ -29,7 +29,7 @@ async function compressImage(file: File | Blob, maxWidth = 1200, quality = 0.8):
           else reject(new Error("Canvas toBlob failed"));
         },
         "image/jpeg",
-        quality
+        quality,
       );
     };
     img.onerror = reject;
@@ -39,7 +39,7 @@ async function compressImage(file: File | Blob, maxWidth = 1200, quality = 0.8):
 export async function uploadFile(
   bucket: string,
   path: string,
-  file: File | Blob | string // string for base64
+  file: File | Blob | string, // string for base64
 ): Promise<string> {
   let fileToUpload: File | Blob;
 
@@ -68,9 +68,10 @@ export async function uploadFile(
   return data.path;
 }
 
-export function getFileUrl(bucket: string, path: string): string {
-  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-  return data.publicUrl;
+export async function getFileUrl(bucket: string, path: string): Promise<string> {
+  const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 3600); // expires in 1 hour
+  if (error) throw error;
+  return data.signedUrl;
 }
 
 export async function deleteFile(bucket: string, path: string): Promise<void> {

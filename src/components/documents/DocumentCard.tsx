@@ -105,7 +105,7 @@ export function DocumentCard({ document, onDelete, onEdit }: DocumentsCardProps)
                 if (document.mimeType?.startsWith("image/")) {
                   return (
                     <img
-                      src={document.file}
+                      src={document.file ?? undefined}
                       alt={document.name}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />

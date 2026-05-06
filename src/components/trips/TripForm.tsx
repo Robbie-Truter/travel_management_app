@@ -39,7 +39,7 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
   const [status, setStatus] = useState<TripStatus>(initial?.status ?? "planning");
   const [baseCurrency, setBaseCurrency] = useState(initial?.baseCurrency ?? "USD");
   const [description, setDescription] = useState(initial?.description ?? "");
-  const [coverImage, setCoverImage] = useState<string | undefined>(initial?.coverImage);
+  const [coverImage, setCoverImage] = useState<string | null>(initial?.coverImage ?? null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [conflicts, setConflicts] = useState<ConflictItem[]>([]);
@@ -138,7 +138,7 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
     setStatus(initial?.status ?? "planning");
     setBaseCurrency(initial?.baseCurrency ?? "USD");
     setDescription(initial?.description ?? "");
-    setCoverImage(initial?.coverImage);
+    setCoverImage(initial?.coverImage || null);
     setErrors({});
     setConflicts([]);
     setPendingSaveData(null);
@@ -253,7 +253,7 @@ export function TripForm({ open, onClose, onSave, initial }: TripFormProps) {
                   className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-rose-500 transition-colors z-10 backdrop-blur-md"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setCoverImage(undefined);
+                    setCoverImage(null);
                   }}
                 >
                   <X size={14} />

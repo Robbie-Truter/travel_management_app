@@ -16,7 +16,7 @@ interface DocumentFormProps {
 }
 
 export function DocumentForm({ open, onClose, onSave, initial }: DocumentFormProps) {
-  const getMimeFromBase64 = (b64?: string) => {
+  const getMimeFromBase64 = (b64?: string | null) => {
     if (!b64 || !b64.startsWith("data:")) return undefined;
     return b64.split(";")[0].split(":")[1];
   };
@@ -24,7 +24,7 @@ export function DocumentForm({ open, onClose, onSave, initial }: DocumentFormPro
   const [form, setForm] = useState({
     name: initial?.name ?? "",
     description: initial?.description ?? "",
-    file: initial?.file,
+    file: initial?.file ?? null,
     mimeType: initial?.mimeType ?? getMimeFromBase64(initial?.file),
     type: (() => {
       const isCustomType = DOCUMENT_TYPES.some((t) => t.value === initial?.type);
@@ -51,7 +51,7 @@ export function DocumentForm({ open, onClose, onSave, initial }: DocumentFormPro
     setForm({
       name: initial?.name ?? "",
       description: initial?.description ?? "",
-      file: initial?.file,
+      file: initial?.file ?? null,
       mimeType: initial?.mimeType ?? getMimeFromBase64(initial?.file),
       type: (() => {
         const isCustomType = DOCUMENT_TYPES.some((t) => t.value === initial?.type);

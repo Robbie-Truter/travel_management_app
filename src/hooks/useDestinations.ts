@@ -28,19 +28,21 @@ export function useDestinations(tripId: number) {
 
       if (error) throw error;
 
-      return data.map((doc) => ({
-        ...doc,
-        tripId: doc.trip_id,
-        tripCountryId: doc.trip_country_id,
-        countryId: doc.country_id,
-        cityLookupId: doc.city_lookup_id ?? undefined,
-        createdAt: doc.created_at,
-        image: doc.image
-          ? doc.image.startsWith("data:") || doc.image.startsWith("http")
-            ? doc.image
-            : getFileUrl("destination-images", doc.image)
-          : undefined,
-      })) as Destination[];
+      return Promise.all(
+        data.map(async (doc) => ({
+          ...doc,
+          tripId: doc.trip_id,
+          tripCountryId: doc.trip_country_id,
+          countryId: doc.country_id,
+          cityLookupId: doc.city_lookup_id ?? undefined,
+          createdAt: doc.created_at,
+          image: doc.image
+            ? doc.image.startsWith("data:") || doc.image.startsWith("http")
+              ? doc.image
+              : await getFileUrl("destination-images", doc.image)
+            : undefined,
+        }))
+      ) as Promise<Destination[]>;
     },
     enabled: !!user && !!tripId,
     retry: 3,
@@ -98,16 +100,14 @@ export function useDestinations(tripId: number) {
           .eq("id", id)
           .single();
 
-        if (
-          oldDest?.image &&
-          oldDest.image !== changes.image &&
-          !oldDest.image.startsWith("http")
-        ) {
+        const isRemoved = changes.image === null;
+        const isNewUpload = changes.image?.startsWith("data:");
+
+        if (oldDest?.image && !oldDest.image.startsWith("http") && (isRemoved || isNewUpload)) {
           try {
             await deleteFile("destination-images", oldDest.image);
           } catch (error) {
             console.error(error);
-            throw new Error("Could not update destination - error deleting old image");
           }
         }
 
@@ -130,7 +130,6 @@ export function useDestinations(tripId: number) {
       if (changes.cityLookupId !== undefined)
         dbUpdates.city_lookup_id = changes.cityLookupId ?? null;
       if (changes.order !== undefined) dbUpdates.order = changes.order;
-      if (!changes.image) dbUpdates.image = null;
 
       const { error } = await supabase.from("destinations").update(dbUpdates).eq("id", id);
       if (error) throw error;

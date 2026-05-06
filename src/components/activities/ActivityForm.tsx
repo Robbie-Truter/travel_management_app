@@ -9,7 +9,6 @@ import { fileToBase64, getFlagEmoji } from "@/lib/utils";
 import type { Activity, Currency, TripCountry, Destination } from "@/db/types";
 import { ACTIVITY_TAGS } from "./activity-types";
 
-
 interface ActivityFormProps {
   open: boolean;
   onClose: () => void;
@@ -46,14 +45,12 @@ export function ActivityForm({
     currency: initial?.currency ?? tripCurrency,
     link: initial?.link ?? "",
     notes: initial?.notes ?? "",
-    image: initial?.image ?? "",
+    image: initial?.image ?? null,
     isConfirmed: initial?.isConfirmed ?? false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-
 
   const set = (k: string, v: string | boolean | number | undefined) =>
     setForm((prev) => ({ ...prev, [k]: v }));
@@ -86,7 +83,7 @@ export function ActivityForm({
       currency: initial?.currency ?? tripCurrency,
       link: initial?.link ?? "",
       notes: initial?.notes ?? "",
-      image: initial?.image ?? "",
+      image: initial?.image ?? null,
       isConfirmed: initial?.isConfirmed ?? false,
     });
     setErrors({});
@@ -114,7 +111,7 @@ export function ActivityForm({
         currency: form.currency as Currency,
         link: form.link || undefined,
         notes: form.notes || undefined,
-        image: form.image || undefined,
+        image: form.image || null,
         isConfirmed: form.isConfirmed,
         order: initial?.order ?? 0,
       });
@@ -202,9 +199,14 @@ export function ActivityForm({
         />
         <div className="flex justify-end -mb-2 mt-1">
           <div className="relative group flex items-center">
-            <Info size={14} className="text-text-muted hover:text-lavender-500 transition-colors cursor-help" />
+            <Info
+              size={14}
+              className="text-text-muted hover:text-lavender-500 transition-colors cursor-help"
+            />
             <div className="absolute right-0 bottom-full mb-1.5 w-max max-w-[200px] px-2 py-1.5 bg-surface border border-border rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-              <p className="text-[10px] text-text-primary text-center font-medium">Missing a location? Add it in the Itinerary tab.</p>
+              <p className="text-[10px] text-text-primary text-center font-medium">
+                Missing a location? Add it in the Itinerary tab.
+              </p>
             </div>
           </div>
         </div>
@@ -255,10 +257,7 @@ export function ActivityForm({
             value={form.date}
             onChange={(date) => set("date", date ? date.toISOString() : "")}
             defaultMonth={form.date ? new Date(form.date) : new Date(tripStartDate)}
-            disabled={[
-              { before: new Date(tripStartDate) },
-              { after: new Date(tripEndDate) },
-            ]}
+            disabled={[{ before: new Date(tripStartDate) }, { after: new Date(tripEndDate) }]}
             error={errors.date}
           />
         </div>

@@ -27,24 +27,26 @@ export function useAccommodations(tripId: number) {
 
       if (error) throw error;
 
-      return data.map((doc) => ({
-        ...doc,
-        tripId: doc.trip_id,
-        tripCountryId: doc.trip_country_id,
-        destinationId: doc.destination_id,
-        checkIn: doc.check_in,
-        checkOut: doc.check_out,
-        checkInAfter: doc.check_in_after,
-        checkOutBefore: doc.check_out_before,
-        bookingLink: doc.booking_link,
-        isConfirmed: doc.is_confirmed,
-        createdAt: doc.created_at,
-        image: doc.image
-          ? doc.image.startsWith("data:") || doc.image.startsWith("http")
-            ? doc.image
-            : getFileUrl("accommodation-images", doc.image)
-          : undefined,
-      })) as Accommodation[];
+      return Promise.all(
+        data.map(async (doc) => ({
+          ...doc,
+          tripId: doc.trip_id,
+          tripCountryId: doc.trip_country_id,
+          destinationId: doc.destination_id,
+          checkIn: doc.check_in,
+          checkOut: doc.check_out,
+          checkInAfter: doc.check_in_after,
+          checkOutBefore: doc.check_out_before,
+          bookingLink: doc.booking_link,
+          isConfirmed: doc.is_confirmed,
+          createdAt: doc.created_at,
+          image: doc.image
+            ? doc.image.startsWith("data:") || doc.image.startsWith("http")
+              ? doc.image
+              : await getFileUrl("accommodation-images", doc.image)
+            : undefined,
+        }))
+      ) as Promise<Accommodation[]>;
     },
     enabled: !!user && !!tripId,
     retry: 3,
@@ -107,12 +109,14 @@ export function useAccommodations(tripId: number) {
           .eq("id", id)
           .single();
 
-        if (oldAcc?.image && oldAcc.image !== changes.image && !oldAcc.image.startsWith("http")) {
+        const isRemoved = changes.image === null;
+        const isNewUpload = changes.image?.startsWith("data:");
+
+        if (oldAcc?.image && !oldAcc.image.startsWith("http") && (isRemoved || isNewUpload)) {
           try {
             await deleteFile("accommodation-images", oldAcc.image);
           } catch (error) {
             console.error(error);
-            throw new Error("Could not update accommodation - error deleting old image");
           }
         }
 
@@ -145,7 +149,6 @@ export function useAccommodations(tripId: number) {
       if (changes.bookingLink !== undefined) updateData.booking_link = changes.bookingLink;
       if (changes.notes !== undefined) updateData.notes = changes.notes;
       if (changes.isConfirmed !== undefined) updateData.is_confirmed = changes.isConfirmed;
-      if (!changes.image) updateData.image = null;
 
       const { data, error } = await supabase
         .from("accommodations")

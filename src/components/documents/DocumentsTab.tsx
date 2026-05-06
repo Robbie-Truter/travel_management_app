@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/Button";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus, Search, Upload } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { DocumentCard } from "./DocumentCard";
 import { useDocuments } from "@/hooks/useDocuments";
 import { DocumentForm } from "./DocumentForm";
@@ -14,6 +14,7 @@ export function DocumentsTab({ tripId }: { tripId: number }) {
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingDocument, setEditingDocument] = useState<Document | undefined>();
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   const {
     documents,
@@ -25,31 +26,34 @@ export function DocumentsTab({ tripId }: { tripId: number }) {
     deleteDocument,
     updateDocument,
   } = useDocuments(tripId);
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
-  const filtered = documents?.filter((d) => {
-    const matchesSearch =
-      d.name.toLowerCase().includes(search.toLowerCase()) ||
-      d.description?.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || d.type === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filtered = useMemo(() => {
+    return documents?.filter((d) => {
+      const matchesSearch =
+        d.name.toLowerCase().includes(search.toLowerCase()) ||
+        d.description?.toLowerCase().includes(search.toLowerCase());
+      const matchesCategory = selectedCategory === "all" || d.type === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [documents, search, selectedCategory]);
 
   // Grouping logic
-  const groupedDocuments = filtered?.reduce(
-    (acc, doc) => {
-      const type = doc.type || "other";
-      if (!acc[type]) acc[type] = [];
-      acc[type].push(doc);
-      return acc;
-    },
-    {} as Record<string, Document[]>,
-  );
+  const groupedDocuments = useMemo(() => {
+    return filtered?.reduce(
+      (acc, doc) => {
+        const type = doc.type || "other";
+        if (!acc[type]) acc[type] = [];
+        acc[type].push(doc);
+        return acc;
+      },
+      {} as Record<string, Document[]>,
+    );
+  }, [filtered]);
 
   // Sort categories based on DOCUMENT_TYPES order
-  const sortedCategories = DOCUMENT_TYPES.filter((t) => groupedDocuments?.[t.value]).map(
-    (t) => t.value,
-  );
+  const sortedCategories = useMemo(() => {
+    return DOCUMENT_TYPES.filter((t) => groupedDocuments?.[t.value]).map((t) => t.value);
+  }, [groupedDocuments]);
 
   // Add any categories not in DOCUMENT_TYPES (if any) at the end
   if (groupedDocuments) {
@@ -263,13 +267,15 @@ export function DocumentsTab({ tripId }: { tripId: number }) {
         )}
       </div>
 
-      <DocumentForm
-        key={editingDocument?.id ?? "new"}
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={handleSave}
-        initial={editingDocument}
-      />
+      {modalOpen && (
+        <DocumentForm
+          key={editingDocument?.id ?? "new"}
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSave={handleSave}
+          initial={editingDocument}
+        />
+      )}
     </div>
   );
 }
