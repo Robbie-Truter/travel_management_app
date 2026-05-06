@@ -142,7 +142,7 @@ export function useDocuments(tripId: number) {
           .single();
 
         // 2. Delete the old file from storage ONLY if it's being explicitly removed or replaced by a new upload
-        let isRemoved = updates.file === null;
+        const isRemoved = updates.file === null;
         const isNewUpload = updates.file?.startsWith("data:");
 
         if (oldDoc?.file && !oldDoc.file.startsWith("http") && (isRemoved || isNewUpload)) {
