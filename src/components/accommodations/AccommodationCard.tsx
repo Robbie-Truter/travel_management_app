@@ -54,7 +54,7 @@ export function AccommodationCard({ acc, onEdit, onDelete, onConfirm }: Accommod
           {/* Header Area - Consistent with TripCountries and Destinations */}
           <div
             className={cn(
-              "p-4 flex items-center gap-3 border-b border-border transition-colors rounded-md",
+              "p-4 flex items-center gap-3 border-b border-border transition-colors rounded-t-2xl",
               acc.isConfirmed
                 ? "bg-sage-50/50 dark:bg-sage-900/10"
                 : "bg-surface-2/80 backdrop-blur-xs",
@@ -246,7 +246,7 @@ export function AccommodationCard({ acc, onEdit, onDelete, onConfirm }: Accommod
           {/* Integrated Actions */}
           <CardFooter
             className={cn(
-              "border-t border-border flex justify-between items-center h-12 p-4 mt-auto transition-colors",
+              "border-t border-border flex justify-between items-center h-12 transition-colors",
               acc.isConfirmed ? "bg-sage-50/30" : "bg-surface-2/40",
             )}
           >
