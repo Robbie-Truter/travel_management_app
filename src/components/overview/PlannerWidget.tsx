@@ -19,7 +19,7 @@ type PlannerItem = {
   title: string;
   sub: string;
   icon: React.ReactNode;
-  image?: string;
+  image?: string | null;
 };
 
 export default function PlannerWidget({ tripId }: PlannerWidgetProps) {
