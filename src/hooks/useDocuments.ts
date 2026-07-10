@@ -8,10 +8,34 @@ import type { Document } from "@/db/types";
 // Helper to determine accurate file extensions from MIME types
 const getExtensionFromMime = (mime?: string, defaultExt = "file") => {
   if (!mime) return defaultExt;
-  if (mime === "application/pdf") return "pdf";
-  if (mime === "application/json") return "json";
-  if (mime.startsWith("image/")) return mime.split("/")[1];
-  return defaultExt;
+
+  switch (mime) {
+    case "application/pdf":
+      return "pdf";
+    case "application/json":
+      return "json";
+    case "text/csv":
+      return "csv";
+    case "text/plain":
+      return "txt";
+    case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+    case "application/msword":
+      return "docx";
+    case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+    case "application/vnd.ms-excel":
+      return "xlsx";
+    case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+    case "application/vnd.ms-powerpoint":
+      return "pptx";
+    case "application/zip":
+    case "application/x-zip-compressed":
+      return "zip";
+    default:
+      if (mime.startsWith("image/")) {
+        return mime.split("/")[1];
+      }
+      return defaultExt;
+  }
 };
 
 export function useDocuments(tripId: number) {
@@ -44,7 +68,11 @@ export function useDocuments(tripId: number) {
       const docPathMap = new Map<number, string>();
 
       dbDocs.forEach((doc) => {
-        if (doc.file && !doc.file.startsWith("data:") && !doc.file.startsWith("http")) {
+        if (
+          doc.file &&
+          !doc.file.startsWith("data:") &&
+          !doc.file.startsWith("http")
+        ) {
           pathsToSign.push(doc.file);
           docPathMap.set(doc.id!, doc.file);
         }
@@ -104,7 +132,11 @@ export function useDocuments(tripId: number) {
         const mime = document.file.split(";")[0].split(":")[1];
         const extension = getExtensionFromMime(mime);
         const fileName = `${Date.now()}_doc.${extension}`;
-        filePath = await uploadFile("user-documents", `${user.id}/${fileName}`, document.file);
+        filePath = await uploadFile(
+          "user-documents",
+          `${user.id}/${fileName}`,
+          document.file,
+        );
       }
 
       const dbDoc = {
@@ -118,7 +150,11 @@ export function useDocuments(tripId: number) {
         created_at: new Date().toISOString(),
       };
 
-      const { data, error } = await supabase.from("documents").insert([dbDoc]).select().single();
+      const { data, error } = await supabase
+        .from("documents")
+        .insert([dbDoc])
+        .select()
+        .single();
       if (error) throw error;
       return data;
     },
@@ -129,7 +165,13 @@ export function useDocuments(tripId: number) {
   });
 
   const updateDocumentMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: number; updates: Partial<Document> }) => {
+    mutationFn: async ({
+      id,
+      updates,
+    }: {
+      id: number;
+      updates: Partial<Document>;
+    }) => {
       if (!user) throw new Error("Not authenticated");
       const dbUpdates: Record<string, unknown> = {};
 
@@ -145,7 +187,11 @@ export function useDocuments(tripId: number) {
         const isRemoved = updates.file === null;
         const isNewUpload = updates.file?.startsWith("data:");
 
-        if (oldDoc?.file && !oldDoc.file.startsWith("http") && (isRemoved || isNewUpload)) {
+        if (
+          oldDoc?.file &&
+          !oldDoc.file.startsWith("http") &&
+          (isRemoved || isNewUpload)
+        ) {
           try {
             await deleteFile("user-documents", oldDoc.file);
           } catch (error) {
@@ -170,11 +216,16 @@ export function useDocuments(tripId: number) {
       }
 
       if (updates.name !== undefined) dbUpdates.name = updates.name;
-      if (updates.description !== undefined) dbUpdates.description = updates.description;
+      if (updates.description !== undefined)
+        dbUpdates.description = updates.description;
       if (updates.type !== undefined) dbUpdates.type = updates.type;
-      if (updates.mimeType !== undefined) dbUpdates.mime_type = updates.mimeType;
+      if (updates.mimeType !== undefined)
+        dbUpdates.mime_type = updates.mimeType;
 
-      const { error } = await supabase.from("documents").update(dbUpdates).eq("id", id);
+      const { error } = await supabase
+        .from("documents")
+        .update(dbUpdates)
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["documents"] }),
@@ -186,7 +237,11 @@ export function useDocuments(tripId: number) {
   const deleteDocumentMutation = useMutation({
     mutationFn: async (id: number) => {
       // 1. Get document to find file path
-      const { data: doc } = await supabase.from("documents").select("file").eq("id", id).single();
+      const { data: doc } = await supabase
+        .from("documents")
+        .select("file")
+        .eq("id", id)
+        .single();
 
       // 2. Delete file if exists
       if (doc?.file && !doc.file.startsWith("http")) {
@@ -214,6 +269,7 @@ export function useDocuments(tripId: number) {
       addDocumentMutation.mutateAsync(document),
     updateDocument: async (id: number, updates: Partial<Document>) =>
       updateDocumentMutation.mutateAsync({ id, updates }),
-    deleteDocument: async (id: number) => deleteDocumentMutation.mutateAsync(id),
+    deleteDocument: async (id: number) =>
+      deleteDocumentMutation.mutateAsync(id),
   };
 }
