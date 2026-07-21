@@ -55,7 +55,7 @@ export function AIAssistant() {
 
   return (
     <div className="fixed bottom-6 right-6 z-50 font-sans">
-      <AnimatePresence initial={false}>
+      <AnimatePresence mode={"wait"} initial={false}>
         {isOpen ? (
           /* Open State - Rounded Chat Window */
           <motion.div

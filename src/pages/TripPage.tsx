@@ -34,6 +34,7 @@ import { formatDate, tripDuration, cn } from "@/lib/utils";
 import type { Trip, TripStatus } from "@/db/types";
 import BudgetBreakdownTab from "@/components/budget_breakdown/BudgetBreakdownTab";
 import OverviewTab from "@/components/overview/OverviewTab";
+import { AIAssistant } from "@/components/AIAssistant";
 
 type Tab =
   | "overview"
@@ -82,7 +83,9 @@ export function TripPage() {
         <div className="w-16 h-16 rounded-2xl bg-rose-pastel-50 dark:bg-rose-pastel-900/30 flex items-center justify-center text-rose-pastel-500 border border-rose-pastel-200 dark:border-rose-pastel-800 mb-6 mx-auto">
           <AlertCircle size={32} />
         </div>
-        <h3 className="text-xl font-bold text-text-primary tracking-tight">Failed to load trip</h3>
+        <h3 className="text-xl font-bold text-text-primary tracking-tight">
+          Failed to load trip
+        </h3>
         <p className="text-sm text-text-secondary mb-8 max-w-xs mx-auto font-medium">
           {error instanceof Error
             ? error.message
@@ -109,7 +112,9 @@ export function TripPage() {
         >
           <Loader2 size={40} />
         </motion.div>
-        <p className="text-text-secondary font-medium animate-pulse">Loading your trip...</p>
+        <p className="text-text-secondary font-medium animate-pulse">
+          Loading your trip...
+        </p>
       </div>
     );
   }
@@ -157,7 +162,9 @@ export function TripPage() {
 
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Badge variant={trip.status as TripStatus}>{statusLabels[trip.status]}</Badge>
+              <Badge variant={trip.status as TripStatus}>
+                {statusLabels[trip.status]}
+              </Badge>
             </div>
             <h1 className="text-2xl font-bold text-white">{trip.name}</h1>
             <div className="flex items-center gap-3 mt-1 text-white/80 text-sm">
@@ -202,7 +209,9 @@ export function TripPage() {
                   initial={false}
                   animate={{
                     scale: isActive ? 1.05 : 1,
-                    backgroundColor: isActive ? "rgb(139, 92, 246)" : "rgba(139, 92, 246, 0)",
+                    backgroundColor: isActive
+                      ? "rgb(139, 92, 246)"
+                      : "rgba(139, 92, 246, 0)",
                     color: isActive ? "#ffffff" : "currentColor",
                   }}
                   transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}
@@ -322,6 +331,8 @@ export function TripPage() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      <AIAssistant />
     </div>
   );
 }
