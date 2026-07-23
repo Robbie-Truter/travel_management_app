@@ -1,14 +1,18 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, Map, Upload } from "lucide-react";
+import { Plus, Search, Map, Upload, Bot } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { TripCard } from "@/components/trips/TripCard";
 import { TripForm } from "@/components/trips/TripForm";
-import { TripSkeleton, RefetchingIndicator } from "@/components/trips/TripLoadingStates";
+import {
+  TripSkeleton,
+  RefetchingIndicator,
+} from "@/components/trips/TripLoadingStates";
 import TripErrorState from "@/components/trips/TripErrorState";
 import { useTrips } from "@/hooks/useTrips";
 import { importTripFromJSON } from "@/lib/export";
 import { useNotification } from "@/hooks/useNotification";
+import { supabase } from "@/lib/supabase";
 import type { Trip } from "@/db/types";
 
 export function DashboardPage() {
@@ -16,8 +20,17 @@ export function DashboardPage() {
   const [editingTrip, setEditingTrip] = useState<Trip | undefined>();
   const [search, setSearch] = useState("");
 
-  const { trips, addTrip, updateTrip, deleteTrip, loading, isRefetching, isError, error, refetch } =
-    useTrips();
+  const {
+    trips,
+    addTrip,
+    updateTrip,
+    deleteTrip,
+    loading,
+    isRefetching,
+    isError,
+    error,
+    refetch,
+  } = useTrips();
   const { showToast } = useNotification();
 
   const importRef = useRef<HTMLInputElement>(null);
@@ -25,10 +38,14 @@ export function DashboardPage() {
   const filtered = trips.filter(
     (t) =>
       t.name.toLowerCase().includes(search.toLowerCase()) ||
-      t.tripCountries.some((tc) => tc.countryName.toLowerCase().includes(search.toLowerCase())),
+      t.tripCountries.some((tc) =>
+        tc.countryName.toLowerCase().includes(search.toLowerCase()),
+      ),
   );
 
-  const handleSave = async (data: Omit<Trip, "id" | "createdAt" | "updatedAt">) => {
+  const handleSave = async (
+    data: Omit<Trip, "id" | "createdAt" | "updatedAt">,
+  ) => {
     if (editingTrip?.id) {
       await updateTrip(editingTrip.id, data);
     } else {
@@ -52,9 +69,38 @@ export function DashboardPage() {
       refetch(); // Ensure new trip shows up
     } catch (err) {
       console.error("Import failed", err);
-      showToast(err instanceof Error ? err.message : "Failed to import trip", "error");
+      showToast(
+        err instanceof Error ? err.message : "Failed to import trip",
+        "error",
+      );
     }
     e.target.value = "";
+  };
+
+  const handleTestAssistant = async () => {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const { data, error } = await supabase.functions.invoke("assistant", {
+        headers: session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : {},
+      });
+
+      if (error) throw error;
+
+      showToast(data?.user, "success");
+    } catch (err) {
+      console.error("Assistant test failed", err);
+      showToast(
+        err instanceof Error
+          ? err.message
+          : "Failed to invoke assistant function",
+        "error",
+      );
+    }
   };
 
   return (
@@ -76,7 +122,8 @@ export function DashboardPage() {
           </div>
           <p className="text-base text-text-secondary font-medium">
             Discover and manage your{" "}
-            <span className="text-lavender-500 font-bold">{trips.length}</span> active journey
+            <span className="text-lavender-500 font-bold">{trips.length}</span>{" "}
+            active journey
             {trips.length !== 1 ? "s" : ""}
           </p>
         </div>
@@ -99,6 +146,14 @@ export function DashboardPage() {
 
           {/* Action Group */}
           <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              className="flex-1 md:flex-none h-11 px-4 rounded-2xl border-border bg-surface/50 backdrop-blur-sm"
+              onClick={handleTestAssistant}
+            >
+              <Bot size={16} className="text-lavender-500" />
+              <span>Test Assistant</span>
+            </Button>
             <Button
               variant="secondary"
               className="flex-1 md:flex-none h-11 px-6 rounded-2xl border-border bg-surface/50 backdrop-blur-sm"
@@ -127,7 +182,9 @@ export function DashboardPage() {
         {isError ? (
           <TripErrorState
             key="error"
-            message={error instanceof Error ? error.message : "Something went wrong"}
+            message={
+              error instanceof Error ? error.message : "Something went wrong"
+            }
             onRetry={refetch}
           />
         ) : loading ? (

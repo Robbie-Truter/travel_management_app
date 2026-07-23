@@ -6,32 +6,48 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { withSupabase } from "@supabase/server";
 
-console.log("Hello from Functions!");
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
-// This endpoint uses 'publishable' | 'secret' access, apiKey is required.
-// Use publishable for Client-facing, key-validated endpoints
-// Use secret for Server-to-server, internal calls
+const handler = withSupabase({ auth: "user" }, async (req, ctx) => {
+  try {
+    const { data: trips, error: tripsError } = await ctx.supabase
+      .from("trips")
+      .select("id, name");
+
+    const {
+      data: { user },
+      error: userError,
+    } = await ctx.supabase.auth.getUser();
+
+    return Response.json(
+      {
+        user: user?.email || null,
+        trips,
+        error: tripsError || userError,
+      },
+      { headers: corsHeaders }
+    );
+  } catch (error) {
+    return Response.json(
+      {
+        error: error.message,
+      },
+      { headers: corsHeaders }
+    );
+  }
+});
+
 export default {
-  fetch: withSupabase({ auth: ["publishable", "secret"] }, async (req, ctx) => {
-    // Called by another service with a secret key
-    // ctx.supabaseAdmin bypasses RLS — use for privileged operations
-    /*
-    if (ctx.authMode === "secret") {
-      const { user_id } = await req.json();
-      const { data } = await ctx.supabaseAdmin.auth.admin.getUserById(user_id);
-
-      return Response.json({
-        email: data?.user?.email,
-      });
+  fetch: async (req, connInfo) => {
+    if (req.method === "OPTIONS") {
+      return new Response("ok", { headers: corsHeaders });
     }
-    */
 
-    const { name } = await req.json();
-
-    return Response.json({
-      message: `Hello ${name}!`,
-    });
-  }),
+    return handler(req, connInfo);
+  },
 };
 
 /* To invoke locally:
