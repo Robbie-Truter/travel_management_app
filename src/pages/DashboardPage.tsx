@@ -79,19 +79,16 @@ export function DashboardPage() {
 
   const handleTestAssistant = async () => {
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
       const { data, error } = await supabase.functions.invoke("assistant", {
-        headers: session?.access_token
-          ? { Authorization: `Bearer ${session.access_token}` }
-          : {},
+        body: {
+          message: "Plan my week in Vietnam",
+          tripIds: [28],
+        },
       });
 
       if (error) throw error;
 
-      showToast(data?.user, "success");
+      showToast("Test assistant succesfull", "success");
     } catch (err) {
       console.error("Assistant test failed", err);
       showToast(
