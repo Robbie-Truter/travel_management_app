@@ -64,7 +64,6 @@ const handler = withSupabase({ auth: "user" }, async (req, ctx) => {
     // Send response
     return Response.json(
       {
-        flights,
         context,
         message,
       },
