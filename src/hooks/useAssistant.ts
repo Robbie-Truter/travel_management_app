@@ -7,15 +7,19 @@ type AssistantRequest = {
     tripIds: number[];
 }
 
+type AssistantResponse = {
+    response: string;
+};
+
 export const useAssistant = () => {
     const { showToast } = useNotification();
 
-    const { data, error, isPending, mutateAsync } = useMutation({
-        mutationFn: async ({prompt, tripIds}: AssistantRequest) => {
-            const { data, error } = await supabase.functions.invoke("assistant", {
+    const { isPending, mutateAsync } = useMutation({
+        mutationFn: async ({ prompt, tripIds }: AssistantRequest) => {
+            const { data, error } = await supabase.functions.invoke<AssistantResponse>("assistant", {
                 body: {
                     message: prompt,
-                    tripIds: tripIds ?? 28 //28 for testing,
+                    tripIds: (tripIds?.length === 0 || !tripIds) ? 28 : tripIds
                 },
             });
 
@@ -27,6 +31,6 @@ export const useAssistant = () => {
             showToast(error.message || "Failed to update flight", "error");
         },
     })
-    return { data, error, isPending, promptAssistant: mutateAsync, }
+    return { isPending, promptAssistant: mutateAsync, }
 
 }

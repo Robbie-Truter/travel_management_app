@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAssistant } from "@/hooks/useAssistant";
 import {
   Sparkles,
   X,
@@ -26,27 +27,22 @@ export function AIAssistant() {
     },
   ]);
 
-  const handleSend = () => {
+  const { isPending, promptAssistant } = useAssistant();
+
+  const handleSend = async () => {
     if (!prompt.trim()) return;
 
-    // Add user message
-    const newMessages: Message[] = [
-      ...messages,
-      { sender: "user", text: prompt },
-    ];
-    setMessages(newMessages);
+    setMessages((prev) => [...prev, { sender: "user", text: prompt }]);
     setPrompt("");
 
-    // Simulate AI response response after a short delay
-    setTimeout(() => {
+    const result = await promptAssistant({ prompt, tripIds: [28] });
+
+    if (result?.response) {
       setMessages((prev) => [
         ...prev,
-        {
-          sender: "bot",
-          text: `That sounds exciting! I'm ready to help you analyze that. (This is a mockup response for "${prompt.slice(0, 30)}...")`,
-        },
+        { sender: "bot", text: result.response },
       ]);
-    }, 1000);
+    }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -64,7 +60,7 @@ export function AIAssistant() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.85, y: 30 }}
             transition={{ type: "spring", duration: 0.5, bounce: 0.15 }}
-            className="w-96 max-w-[calc(100vw-3rem)] h-[500px] max-h-[calc(100vh-6rem)] bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xl flex flex-col overflow-hidden"
+            className="w-96 max-w-[calc(100vw-3rem)] h-125 max-h-[calc(100vh-6rem)] bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xl flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="p-4 bg-linear-to-r from-lavender-500 to-indigo-600 dark:from-lavender-700 dark:to-indigo-800 text-white flex items-center justify-between shrink-0 shadow-sm">
@@ -124,6 +120,20 @@ export function AIAssistant() {
                   </div>
                 </div>
               ))}
+
+              {/* Typing / loading indicator */}
+              {isPending && (
+                <div className="flex gap-2.5 max-w-[85%] mr-auto">
+                  <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center bg-lavender-100 text-lavender-700 dark:bg-lavender-900/40 dark:text-lavender-300">
+                    <Bot size={13} />
+                  </div>
+                  <div className="p-3 rounded-2xl rounded-tl-none bg-slate-100 dark:bg-slate-800 border border-slate-100 dark:border-slate-800/40 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500 animate-bounce [animation-delay:-0.3s]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500 animate-bounce [animation-delay:-0.15s]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500 animate-bounce" />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Quick Suggestion Chips */}
