@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, Map, Upload, Bot } from "lucide-react";
+import { Plus, Search, Map, Upload } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { TripCard } from "@/components/trips/TripCard";
 import { TripForm } from "@/components/trips/TripForm";
@@ -12,7 +12,6 @@ import TripErrorState from "@/components/trips/TripErrorState";
 import { useTrips } from "@/hooks/useTrips";
 import { importTripFromJSON } from "@/lib/export";
 import { useNotification } from "@/hooks/useNotification";
-import { supabase } from "@/lib/supabase";
 import type { Trip } from "@/db/types";
 
 export function DashboardPage() {
@@ -77,29 +76,6 @@ export function DashboardPage() {
     e.target.value = "";
   };
 
-  const handleTestAssistant = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke("assistant", {
-        body: {
-          message: "Plan my week in Vietnam",
-          tripIds: [28],
-        },
-      });
-
-      if (error) throw error;
-
-      showToast("Test assistant succesfull", "success");
-    } catch (err) {
-      console.error("Assistant test failed", err);
-      showToast(
-        err instanceof Error
-          ? err.message
-          : "Failed to invoke assistant function",
-        "error",
-      );
-    }
-  };
-
   return (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
@@ -143,14 +119,6 @@ export function DashboardPage() {
 
           {/* Action Group */}
           <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              className="flex-1 md:flex-none h-11 px-4 rounded-2xl border-border bg-surface/50 backdrop-blur-sm"
-              onClick={handleTestAssistant}
-            >
-              <Bot size={16} className="text-lavender-500" />
-              <span>Test Assistant</span>
-            </Button>
             <Button
               variant="secondary"
               className="flex-1 md:flex-none h-11 px-6 rounded-2xl border-border bg-surface/50 backdrop-blur-sm"
