@@ -6,6 +6,8 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { withSupabase } from "@supabase/server";
 import { buildItineraryContext, throwIfError } from "./utils.ts"
+import { generateWithGemini } from "./llm/gemini.ts";
+import { buildPrompt } from "./llm/prompt.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -61,11 +63,16 @@ const handler = withSupabase({ auth: "user" }, async (req, ctx) => {
       accommodations: accommodations || [],
     });
 
-    // Send response
+    // Build prompt for gemini
+    const prompt = buildPrompt(context, message)
+
+
+    // Get AI response
+    const geminiResponse = await generateWithGemini(prompt);
+
     return Response.json(
       {
-        context,
-        message,
+        response: geminiResponse,
       },
       { headers: corsHeaders }
     );
