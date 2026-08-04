@@ -79,7 +79,7 @@ export function TripPage() {
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[400px] p-6 text-center">
+      <div className="flex flex-col items-center justify-center h-full min-h-100 p-6 text-center">
         <div className="w-16 h-16 rounded-2xl bg-rose-pastel-50 dark:bg-rose-pastel-900/30 flex items-center justify-center text-rose-pastel-500 border border-rose-pastel-200 dark:border-rose-pastel-800 mb-6 mx-auto">
           <AlertCircle size={32} />
         </div>
@@ -104,7 +104,7 @@ export function TripPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[400px]">
+      <div className="flex flex-col items-center justify-center h-full min-h-100">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 1, ease: "linear" }}

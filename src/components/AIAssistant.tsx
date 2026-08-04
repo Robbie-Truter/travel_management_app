@@ -11,6 +11,7 @@ import {
   Compass,
   CheckSquare,
 } from "lucide-react";
+import Markdown from "react-markdown";
 
 type Message = {
   sender: "user" | "bot";
@@ -116,7 +117,7 @@ export function AIAssistant() {
                         : "bg-slate-100 dark:bg-slate-800 text-text-primary rounded-tl-none border border-slate-100 dark:border-slate-800/40"
                     }`}
                   >
-                    {msg.text}
+                    <Markdown>{msg.text}</Markdown>
                   </div>
                 </div>
               ))}
