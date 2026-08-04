@@ -66,7 +66,7 @@ export function AIAssistant() {
             {/* Header */}
             <div className="p-4 bg-linear-to-r from-lavender-500 to-indigo-600 dark:from-lavender-700 dark:to-indigo-800 text-white flex items-center justify-between shrink-0 shadow-sm">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center backdrop-blur-xs">
+                <div className="w-12 h-8 rounded-lg bg-white/20 flex items-center justify-center backdrop-blur-xs">
                   <Sparkles size={16} className="text-white animate-pulse" />
                 </div>
                 <div>
@@ -74,7 +74,8 @@ export function AIAssistant() {
                     AI Travel Assistant
                   </h3>
                   <span className="text-[10px] text-white/70 font-medium">
-                    Ready to optimize your trip
+                    Hi! I can help plan your itinerary, recommend places nearby,
+                    explain your bookings, and answer questions about this trip.
                   </span>
                 </div>
               </div>
@@ -182,6 +183,7 @@ export function AIAssistant() {
                 placeholder="Ask me anything..."
                 rows={2}
                 className="flex-1 bg-slate-50 dark:bg-slate-800 text-xs text-text-primary placeholder:text-text-muted rounded-xl px-3 py-2 border border-slate-200 dark:border-slate-700/60 focus:outline-none focus:ring-2 focus:ring-lavender-400/40 focus:border-transparent resize-none transition-all"
+                disabled={isPending}
               />
               <button
                 onClick={handleSend}
