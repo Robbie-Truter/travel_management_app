@@ -166,7 +166,7 @@ export function DocumentForm({ open, onClose, onSave, initial }: DocumentFormPro
                 <Upload size={24} />
                 <span className="text-sm">Click to upload a document or image</span>
                 <span className="text-[10px] uppercase tracking-wider opacity-60">
-                  JSON, PDF, IMG
+                  PDF, Images, Word, Excel, CSV, ZIP, TXT, JSON
                 </span>
               </div>
             )}
@@ -174,8 +174,8 @@ export function DocumentForm({ open, onClose, onSave, initial }: DocumentFormPro
           <input
             ref={fileInputRef}
             type="file"
-            // Matching the restricted types from DocumentsPage
-            accept=".json, image/*, application/pdf"
+            // Matching the expanded formats
+            accept=".json, image/*, application/pdf, .doc, .docx, .xls, .xlsx, .csv, .txt, .zip, .rar"
             className="hidden"
             onChange={handleFileUpload}
           />

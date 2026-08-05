@@ -41,7 +41,7 @@ export function useDestinations(tripId: number) {
               ? doc.image
               : await getFileUrl("destination-images", doc.image)
             : undefined,
-        }))
+        })),
       ) as Promise<Destination[]>;
     },
     enabled: !!user && !!tripId,
@@ -79,7 +79,9 @@ export function useDestinations(tripId: number) {
         .insert([dbDest])
         .select()
         .single();
+
       if (error) throw error;
+
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["destinations"] }),
@@ -107,7 +109,7 @@ export function useDestinations(tripId: number) {
           try {
             await deleteFile("destination-images", oldDest.image);
           } catch (error) {
-            console.error(error);
+            console.error("Storage cleanup failed for destination:", error);
           }
         }
 
@@ -132,6 +134,7 @@ export function useDestinations(tripId: number) {
       if (changes.order !== undefined) dbUpdates.order = changes.order;
 
       const { error } = await supabase.from("destinations").update(dbUpdates).eq("id", id);
+
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["destinations"] }),
@@ -150,7 +153,7 @@ export function useDestinations(tripId: number) {
       ]);
 
       if (destRes.error || accsRes.error || actsRes.error) {
-        throw new Error("Failed to fetch destination items for storage cleanup");
+        console.error("Failed to fetch destination items for storage cleanup");
       }
 
       const dest = destRes.data;
@@ -185,12 +188,12 @@ export function useDestinations(tripId: number) {
       if (imageDeletions.length > 0) {
         await Promise.all(imageDeletions).catch((err) => {
           console.error("Storage cleanup failed during destination deletion", err);
-          showToast("Some images could not be deleted from storage", "warning");
         });
       }
 
       // 4. Finally delete the destination (DB cascade handles the rest)
       const { error } = await supabase.from("destinations").delete().eq("id", id);
+
       if (error) throw error;
     },
     onSuccess: () => {

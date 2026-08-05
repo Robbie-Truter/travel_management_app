@@ -4,7 +4,10 @@ import { Plus, Search, Map, Upload } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { TripCard } from "@/components/trips/TripCard";
 import { TripForm } from "@/components/trips/TripForm";
-import { TripSkeleton, RefetchingIndicator } from "@/components/trips/TripLoadingStates";
+import {
+  TripSkeleton,
+  RefetchingIndicator,
+} from "@/components/trips/TripLoadingStates";
 import TripErrorState from "@/components/trips/TripErrorState";
 import { useTrips } from "@/hooks/useTrips";
 import { importTripFromJSON } from "@/lib/export";
@@ -16,8 +19,17 @@ export function DashboardPage() {
   const [editingTrip, setEditingTrip] = useState<Trip | undefined>();
   const [search, setSearch] = useState("");
 
-  const { trips, addTrip, updateTrip, deleteTrip, loading, isRefetching, isError, error, refetch } =
-    useTrips();
+  const {
+    trips,
+    addTrip,
+    updateTrip,
+    deleteTrip,
+    loading,
+    isRefetching,
+    isError,
+    error,
+    refetch,
+  } = useTrips();
   const { showToast } = useNotification();
 
   const importRef = useRef<HTMLInputElement>(null);
@@ -25,10 +37,14 @@ export function DashboardPage() {
   const filtered = trips.filter(
     (t) =>
       t.name.toLowerCase().includes(search.toLowerCase()) ||
-      t.tripCountries.some((tc) => tc.countryName.toLowerCase().includes(search.toLowerCase())),
+      t.tripCountries.some((tc) =>
+        tc.countryName.toLowerCase().includes(search.toLowerCase()),
+      ),
   );
 
-  const handleSave = async (data: Omit<Trip, "id" | "createdAt" | "updatedAt">) => {
+  const handleSave = async (
+    data: Omit<Trip, "id" | "createdAt" | "updatedAt">,
+  ) => {
     if (editingTrip?.id) {
       await updateTrip(editingTrip.id, data);
     } else {
@@ -52,7 +68,10 @@ export function DashboardPage() {
       refetch(); // Ensure new trip shows up
     } catch (err) {
       console.error("Import failed", err);
-      showToast(err instanceof Error ? err.message : "Failed to import trip", "error");
+      showToast(
+        err instanceof Error ? err.message : "Failed to import trip",
+        "error",
+      );
     }
     e.target.value = "";
   };
@@ -76,7 +95,8 @@ export function DashboardPage() {
           </div>
           <p className="text-base text-text-secondary font-medium">
             Discover and manage your{" "}
-            <span className="text-lavender-500 font-bold">{trips.length}</span> active journey
+            <span className="text-lavender-500 font-bold">{trips.length}</span>{" "}
+            active journey
             {trips.length !== 1 ? "s" : ""}
           </p>
         </div>
@@ -127,7 +147,9 @@ export function DashboardPage() {
         {isError ? (
           <TripErrorState
             key="error"
-            message={error instanceof Error ? error.message : "Something went wrong"}
+            message={
+              error instanceof Error ? error.message : "Something went wrong"
+            }
             onRetry={refetch}
           />
         ) : loading ? (
