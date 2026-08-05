@@ -59,6 +59,9 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "budget_breakdown", label: "Budget Breakdown", icon: PiggyBank },
 ];
 
+// Determine if AI is enabled based on .env
+const isAiEnabled = import.meta.env.VITE_IS_AI_ENABLED === "true";
+
 export function TripPage() {
   const { tripId } = useParams<{ tripId: string }>();
   const navigate = useNavigate();
@@ -332,7 +335,7 @@ export function TripPage() {
         </AnimatePresence>
       </div>
 
-      <AIAssistant />
+      {isAiEnabled && <AIAssistant />}
     </div>
   );
 }
