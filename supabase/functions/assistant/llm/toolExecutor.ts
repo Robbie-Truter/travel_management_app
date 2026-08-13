@@ -13,6 +13,10 @@ export const executeTool = async (
 ): Promise<string> => {
     const tool = toolRegistry[name];
 
+    console.log("Tool: ", name);
+    console.log("Context: ", ctx);
+    console.log("Args: ", args);
+
     if (!tool) {
         throw new Error(
             `Gemini requested unavailable tool "${name}". ` +
