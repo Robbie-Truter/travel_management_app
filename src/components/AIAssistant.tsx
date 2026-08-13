@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAssistant } from "@/hooks/useAssistant";
 import {
@@ -12,6 +12,7 @@ import {
   CheckSquare,
 } from "lucide-react";
 import Markdown from "react-markdown";
+import { useRef } from "react";
 
 type Message = {
   sender: "user" | "bot";
@@ -19,6 +20,8 @@ type Message = {
 };
 
 export function AIAssistant() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   const [isOpen, setIsOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [messages, setMessages] = useState<Message[]>([
@@ -46,10 +49,22 @@ export function AIAssistant() {
     }
   };
 
+  const scrollToBottom = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: "auto",
+      });
+    }
+  };
+
   const handleSuggestionClick = (suggestion: string) => {
     setPrompt(suggestion);
   };
 
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isPending]);
   return (
     <div className="fixed bottom-6 right-6 z-50 font-sans">
       <AnimatePresence mode={"wait"} initial={false}>
@@ -88,7 +103,10 @@ export function AIAssistant() {
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
+            <div
+              ref={scrollRef}
+              className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 scrollbar-thin"
+            >
               {messages.map((msg, idx) => (
                 <div
                   key={idx}
