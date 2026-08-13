@@ -1,6 +1,11 @@
 {
   "imports": {
-    "@supabase/functions-js": "jsr:@supabase/functions-js@^2",
-    "@supabase/server": "npm:@supabase/server@^1"
+    "@google/genai": "npm:@google/genai@^1",
+    "@supabase/server": "npm:@supabase/server@^1",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@^2",
+    "edge-runtime": "https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts"
+  },
+  "fmt": {
+    "indentWidth": 4
   }
 }

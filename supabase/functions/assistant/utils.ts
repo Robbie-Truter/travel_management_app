@@ -1,10 +1,10 @@
-import { PostgrestError } from "https://esm.sh/@supabase/supabase-js";
+import type { PostgrestError } from "@supabase/supabase-js";
 import type {
-    TripRow,
-    ActivityRow,
-    FlightRow,
     AccommodationRow,
+    ActivityRow,
     DocumentRow,
+    FlightRow,
+    TripRow,
 } from "../../../src/db/types.ts";
 
 export interface ItineraryContextData {
@@ -15,13 +15,15 @@ export interface ItineraryContextData {
     documents: DocumentRow[] | null;
 }
 
-export const throwIfError = (...errors: { label: string; error: PostgrestError | null }[]) => {
+export const throwIfError = (
+    ...errors: { label: string; error: PostgrestError | null }[]
+) => {
     for (const { label, error } of errors) {
         if (error) {
             throw new Error(`Error fetching ${label}: ${error.message}`);
         }
     }
-}
+};
 
 export const buildItineraryContext = (data: ItineraryContextData) => {
     const lines: string[] = [];
@@ -36,8 +38,9 @@ export const buildItineraryContext = (data: ItineraryContextData) => {
         // Activities
         lines.push("\n## Activities");
 
-        const tripActivities =
-            data.activities?.filter(a => a.trip_id === trip.id) ?? [];
+        const tripActivities = data.activities?.filter((a) =>
+            a.trip_id === trip.id
+        ) ?? [];
 
         if (tripActivities.length) {
             for (const activity of tripActivities) {
@@ -50,11 +53,12 @@ export const buildItineraryContext = (data: ItineraryContextData) => {
                         `- Notes: ${activity.notes ?? "None"}`,
                         `- Cost: ${
                             activity.cost != null
-                                ? `${activity.cost} ${activity.currency ?? ""}`.trim()
+                                ? `${activity.cost} ${activity.currency ?? ""}`
+                                    .trim()
                                 : "None"
                         }`,
-                        `- Confirmed: ${activity.is_confirmed ? "Yes" : "No"}`
-                    ].join("\n")
+                        `- Confirmed: ${activity.is_confirmed ? "Yes" : "No"}`,
+                    ].join("\n"),
                 );
             }
         } else {
@@ -65,7 +69,7 @@ export const buildItineraryContext = (data: ItineraryContextData) => {
         lines.push("\n## Flights");
 
         const tripFlights =
-            data.flights?.filter(f => f.trip_id === trip.id) ?? [];
+            data.flights?.filter((f) => f.trip_id === trip.id) ?? [];
 
         if (tripFlights.length) {
             for (const flight of tripFlights) {
@@ -86,11 +90,12 @@ export const buildItineraryContext = (data: ItineraryContextData) => {
                         `- Arrival: ${last?.arrivalTime ?? "Unknown"}`,
                         `- Price: ${
                             flight.price != null
-                                ? `${flight.price} ${flight.currency ?? ""}`.trim()
+                                ? `${flight.price} ${flight.currency ?? ""}`
+                                    .trim()
                                 : "Unknown"
                         }`,
-                        `- Confirmed: ${flight.is_confirmed ? "Yes" : "No"}`
-                    ].join("\n")
+                        `- Confirmed: ${flight.is_confirmed ? "Yes" : "No"}`,
+                    ].join("\n"),
                 );
             }
         } else {
@@ -101,7 +106,7 @@ export const buildItineraryContext = (data: ItineraryContextData) => {
         lines.push("\n## Accommodations");
 
         const tripAccommodations =
-            data.accommodations?.filter(a => a.trip_id === trip.id) ?? [];
+            data.accommodations?.filter((a) => a.trip_id === trip.id) ?? [];
 
         if (tripAccommodations.length) {
             for (const accommodation of tripAccommodations) {
@@ -116,12 +121,16 @@ export const buildItineraryContext = (data: ItineraryContextData) => {
                         `- Check-out: ${accommodation.check_out ?? "Unknown"}`,
                         `- Price: ${
                             accommodation.price != null
-                                ? `${accommodation.price} ${accommodation.currency ?? ""}`.trim()
+                                ? `${accommodation.price} ${
+                                    accommodation.currency ?? ""
+                                }`.trim()
                                 : "Unknown"
                         }`,
                         `- Notes: ${accommodation.notes ?? "None"}`,
-                        `- Confirmed: ${accommodation.is_confirmed ? "Yes" : "No"}`
-                    ].join("\n")
+                        `- Confirmed: ${
+                            accommodation.is_confirmed ? "Yes" : "No"
+                        }`,
+                    ].join("\n"),
                 );
             }
         } else {
