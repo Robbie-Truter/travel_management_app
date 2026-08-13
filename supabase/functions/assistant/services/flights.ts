@@ -23,3 +23,56 @@ export const getFlights = async function (
 
     return data ?? [];
 };
+
+// Adds a flight to the user's itinerary.
+export const addFlight = async function (
+    supabase: SupabaseClient,
+    tripIds: number[],
+    args: Record<string, unknown>,
+): Promise<string> {
+    const {
+        airline,
+        destinationId,
+        departureTime,
+        arrivalTime,
+        departureAirport,
+        arrivalAirport,
+    } = args;
+
+    if (
+        typeof airline !== "string" ||
+        typeof destinationId !== "number" ||
+        typeof departureTime !== "string" ||
+        typeof arrivalTime !== "string" ||
+        typeof departureAirport !== "string" ||
+        typeof arrivalAirport !== "string"
+    ) {
+        return "Missing or invalid flight information.";
+    }
+
+    if (tripIds.length === 0) {
+        return "No trip selected.";
+    }
+
+    const { error } = await supabase
+        .from("flights")
+        .insert({
+            trip_id: tripIds[0],
+            destination_id: destinationId,
+            segments: [
+                {
+                    airline,
+                    departureAirport,
+                    arrivalAirport,
+                    departureTime,
+                    arrivalTime,
+                },
+            ],
+        });
+
+    if (error) {
+        return `Error adding flight: ${error.message}`;
+    }
+
+    return "Flight added successfully.";
+};

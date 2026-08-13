@@ -16,4 +16,33 @@ export const flightsRegistry: Record<string, ToolDefinition> = {
             return buildFlightsContext(flights);
         },
     },
+    /*add_flight: {
+        declaration: {
+            name: "add_flight",
+            description: "Adds a flight to the user's itinerary.",
+            parameters: {
+                type: "OBJECT",
+                properties: {
+                    airline: { type: "string" },
+                    destination: { type: "string" },
+                    departureTime: { type: "string" },
+                    arrivalTime: { type: "string" },
+                    departureAirport: { type: "string" },
+                    arrivalAirport: { type: "string" },
+                },
+                required: [
+                    "airline",
+                    "destination",
+                    "departureTime",
+                    "arrivalTime",
+                    "departureAirport",
+                    "arrivalAirport",
+                ],
+            },
+        },
+
+        execute: async ({ supabase, tripIds }, args) => {
+            return await addFlight(supabase, tripIds, args);
+        },
+    },*/
 };
