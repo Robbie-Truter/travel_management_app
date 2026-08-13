@@ -1,9 +1,11 @@
 import { flightsRegistry } from "./flights.ts";
+import { tripCountriesRegistry } from "./tripCountries.ts";
 import type { ToolDefinition } from "./types.ts";
 
 // Combine registries from all tool files
 export const toolRegistry: Record<string, ToolDefinition> = {
     ...flightsRegistry,
+    ...tripCountriesRegistry,
 };
 
 // Formats the tool declarations for Gemini's request structure
