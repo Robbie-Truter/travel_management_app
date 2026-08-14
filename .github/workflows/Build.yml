@@ -6,7 +6,7 @@ on:
 
 jobs:
   ci:
-    name: Lint + Build + Test
+    name: Lint + Type Check + Build + Test
     runs-on: ubuntu-latest
 
     strategy:
@@ -16,6 +16,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Run Deno Check
+        run: find supabase/functions/assistant -name "*.ts" | xargs deno check --config supabase/functions/assistant/deno.json
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -28,6 +36,9 @@ jobs:
 
       - name: Run ESLint
         run: npm run lint
+
+      - name: Type Check
+        run: npx tsc --noEmit
 
       - name: Build project
         run: npm run build
