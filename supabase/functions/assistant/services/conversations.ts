@@ -16,3 +16,27 @@ export async function addConversationMessage(
         throw new Error(`Error adding conversation message: ${error.message}`);
     }
 }
+
+export async function getConversationMessages(
+    supabase: SupabaseClient,
+    conversationId: number,
+): Promise<
+    Array<{
+        role: "user" | "assistant";
+        content: string;
+    }>
+> {
+    const { data, error } = await supabase
+        .from("conversation_messages")
+        .select("role, content")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: true });
+
+    if (error) {
+        throw new Error(
+            `Error fetching conversation messages: ${error.message}`,
+        );
+    }
+
+    return data ?? [];
+}

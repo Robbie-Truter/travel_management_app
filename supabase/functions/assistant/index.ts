@@ -3,6 +3,7 @@ import { withSupabase } from "@supabase/server";
 import { generateWithGemini } from "./llm/gemini.ts";
 import type { ToolContext } from "./llm/toolExecutor.ts";
 import { buildPrompt } from "./llm/prompt.ts";
+import { addConversationMessage } from "./services/conversations.ts";
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -34,6 +35,20 @@ const handler = withSupabase({ auth: "user" }, async (req, ctx) => {
 
         // Get AI response
         const geminiResponse = await generateWithGemini(prompt, toolCtx);
+
+        // Add conversation messages
+        await addConversationMessage(
+            ctx.supabase,
+            conversationId,
+            "user",
+            message,
+        );
+        await addConversationMessage(
+            ctx.supabase,
+            conversationId,
+            "assistant",
+            geminiResponse,
+        );
 
         return Response.json(
             {
