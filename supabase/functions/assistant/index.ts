@@ -3,7 +3,10 @@ import { withSupabase } from "@supabase/server";
 import { generateWithGemini } from "./llm/gemini.ts";
 import type { ToolContext } from "./llm/toolExecutor.ts";
 import { buildPrompt } from "./llm/prompt.ts";
-import { addConversationMessage } from "./services/conversations.ts";
+import {
+    addConversationMessage,
+    getOrCreateConversation,
+} from "./services/conversations.ts";
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -13,12 +16,32 @@ const corsHeaders = {
 
 const handler = withSupabase({ auth: "user" }, async (req, ctx) => {
     try {
+        const {
+            data: { user },
+            error: userError,
+        } = await ctx.supabase.auth.getUser();
+
+        if (userError || !user) {
+            throw new Error("User is not authenticated.");
+        }
         // Request body
         const { message, tripIds } = await req.json();
 
+        const { data, error } = await ctx.supabase
+            .from("trips")
+            .select("id")
+            .in("id", tripIds);
+
+        if (error || !data || data.length !== tripIds.length) {
+            return Response.json({ error: "Unauthorized" }, {
+                status: 403,
+                headers: corsHeaders,
+            });
+        }
+
         // Basic body validation
-        if (!Array.isArray(tripIds)) {
-            throw new Error("tripIds must be an array");
+        if (!Array.isArray(tripIds) || tripIds.length === 0) {
+            throw new Error("tripIds must be a non-empty array");
         }
 
         if (typeof message !== "string") {
@@ -37,6 +60,11 @@ const handler = withSupabase({ auth: "user" }, async (req, ctx) => {
         const geminiResponse = await generateWithGemini(prompt, toolCtx);
 
         // Add conversation messages
+        const conversationId = await getOrCreateConversation(
+            ctx.supabase,
+            tripIds[0],
+            user.id,
+        );
         await addConversationMessage(
             ctx.supabase,
             conversationId,
