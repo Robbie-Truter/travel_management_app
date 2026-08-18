@@ -1,4 +1,16 @@
-export function buildPrompt(message: string): string {
+export interface ConversationMessage {
+    role: "user" | "assistant";
+    content: string;
+}
+
+export function buildPrompt(
+    message: string,
+    conversationHistory: ConversationMessage[] = [],
+): string {
+    const history = conversationHistory
+        .map((m) => `${m.role}: ${m.content}`)
+        .join("\n");
+
     return `
 You are an AI travel assistant.
 
@@ -12,7 +24,10 @@ IMPORTANT:
 - If the user asks about something for which no tool is available, say that you don't currently have access to that information.
 - Do not invent, infer, or guess itinerary data.
 
-User message:
+Conversation history:
+${history.length > 0 ? history : "No conversation history available."}
+
+Current user message:
 ${message}
 `.trim();
 }
