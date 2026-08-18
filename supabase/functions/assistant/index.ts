@@ -2,7 +2,12 @@ import "edge-runtime";
 import { withSupabase } from "@supabase/server";
 import { generateWithGemini } from "./llm/gemini.ts";
 import type { ToolContext } from "./llm/toolExecutor.ts";
-import { buildPrompt } from "./llm/prompt.ts";
+import { buildPrompt } from "./llm/buildPrompt.ts";
+import {
+    addConversationMessage,
+    getConversationMessages,
+    getOrCreateConversation,
+} from "./services/conversations.ts";
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -12,28 +17,77 @@ const corsHeaders = {
 
 const handler = withSupabase({ auth: "user" }, async (req, ctx) => {
     try {
+        const { userClaims } = ctx;
+
+        if (!userClaims) {
+            throw new Error("User is not authenticated.");
+        }
+
         // Request body
         const { message, tripIds } = await req.json();
 
+        const { data, error } = await ctx.supabase
+            .from("trips")
+            .select("id")
+            .in("id", tripIds)
+            .eq("user_id", userClaims.id);
+
+        if (error || !data || data.length !== tripIds.length) {
+            return Response.json({ error: "Unauthorized" }, {
+                status: 403,
+                headers: corsHeaders,
+            });
+        }
+
         // Basic body validation
-        if (!Array.isArray(tripIds)) {
-            throw new Error("tripIds must be an array");
+        if (!Array.isArray(tripIds) || tripIds.length === 0) {
+            throw new Error("tripIds must be a non-empty array");
         }
 
         if (typeof message !== "string") {
             throw new Error("message must be a string");
         }
 
+        // Add conversation messages
+        const conversationId = await getOrCreateConversation(
+            ctx.supabase,
+            tripIds[0],
+            userClaims.id,
+        );
+
         // Build prompt for gemini
-        const prompt = buildPrompt(message);
+        const currentPrompt = buildPrompt(message);
 
         const toolCtx: ToolContext = {
             supabase: ctx.supabase,
             tripIds,
         };
 
+        // Retrieve previous conversation history, if any
+        const historicalMessages = await getConversationMessages(
+            ctx.supabase,
+            conversationId,
+        );
+
         // Get AI response
-        const geminiResponse = await generateWithGemini(prompt, toolCtx);
+        const geminiResponse = await generateWithGemini(
+            currentPrompt,
+            historicalMessages,
+            toolCtx,
+        );
+
+        await addConversationMessage(
+            ctx.supabase,
+            conversationId,
+            "user",
+            message,
+        );
+        await addConversationMessage(
+            ctx.supabase,
+            conversationId,
+            "assistant",
+            geminiResponse,
+        );
 
         return Response.json(
             {

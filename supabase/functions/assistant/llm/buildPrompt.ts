@@ -1,4 +1,11 @@
-export function buildPrompt(message: string): string {
+export interface ConversationMessage {
+    role: "user" | "assistant";
+    content: string;
+}
+
+export function buildPrompt(
+    message: string,
+): string {
     return `
 You are an AI travel assistant.
 
@@ -12,7 +19,7 @@ IMPORTANT:
 - If the user asks about something for which no tool is available, say that you don't currently have access to that information.
 - Do not invent, infer, or guess itinerary data.
 
-User message:
+Current user message:
 ${message}
 `.trim();
 }

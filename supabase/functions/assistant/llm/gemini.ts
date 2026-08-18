@@ -7,6 +7,10 @@ const MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-3.5-flash";
 
 export async function generateWithGemini(
     prompt: string,
+    historicalMessages: {
+        role: "user" | "assistant";
+        content: string;
+    }[],
     ctx: ToolContext,
 ): Promise<string> {
     if (!GEMINI_API_KEY) {
@@ -24,6 +28,14 @@ export async function generateWithGemini(
 
     // Prompt for the model
     const contents: Content[] = [
+        ...historicalMessages.map((msg) => ({
+            role: msg.role === "assistant" ? "model" : "user",
+            parts: [
+                {
+                    text: msg.content,
+                },
+            ],
+        })),
         {
             role: "user",
             parts: [
