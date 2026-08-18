@@ -55,22 +55,26 @@ const handler = withSupabase({ auth: "user" }, async (req, ctx) => {
             userClaims.id,
         );
 
-        // Retrieve previous conversation history, if any
-        const historicalMessages = await getConversationMessages(
-            ctx.supabase,
-            conversationId,
-        );
-
         // Build prompt for gemini
-        const prompt = buildPrompt(message, historicalMessages);
+        const currentPrompt = buildPrompt(message);
 
         const toolCtx: ToolContext = {
             supabase: ctx.supabase,
             tripIds,
         };
 
+        // Retrieve previous conversation history, if any
+        const historicalMessages = await getConversationMessages(
+            ctx.supabase,
+            conversationId,
+        );
+
         // Get AI response
-        const geminiResponse = await generateWithGemini(prompt, toolCtx);
+        const geminiResponse = await generateWithGemini(
+            currentPrompt,
+            historicalMessages,
+            toolCtx,
+        );
 
         await addConversationMessage(
             ctx.supabase,
