@@ -61,6 +61,7 @@ const handler = withSupabase({ auth: "user" }, async (req, ctx) => {
         const toolCtx: ToolContext = {
             supabase: ctx.supabase,
             tripIds,
+            userId: userClaims.id,
         };
 
         // Retrieve previous conversation history, if any
