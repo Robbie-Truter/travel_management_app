@@ -66,11 +66,6 @@ export const tripCountriesRegistry: Record<string, ToolDefinition> = {
             parameters: {
                 type: "OBJECT",
                 properties: {
-                    trip_id: {
-                        type: "NUMBER",
-                        description:
-                            "The ID of the trip to add the country to. Must be one of the currently selected trip IDs.",
-                    },
                     country_id: {
                         type: "NUMBER",
                         description:
@@ -87,22 +82,15 @@ export const tripCountriesRegistry: Record<string, ToolDefinition> = {
                             "Optional free-text notes about this country in the trip.",
                     },
                 },
-                required: ["trip_id", "country_id"],
+                required: ["country_id"],
             },
         },
 
         execute: async ({ supabase, tripIds, userId }, args) => {
-            const tripId = args["trip_id"] as number;
+            const tripId = tripIds[0];
             const countryId = args["country_id"] as number;
             const budgetLimit = args["budget_limit"] as number | undefined;
             const notes = args["notes"] as string | undefined;
-
-            // Validate trip_id is in the authorised set
-            if (!tripIds.includes(tripId)) {
-                throw new Error(
-                    `trip_id ${tripId} is not in the currently selected trips.`,
-                );
-            }
 
             const inserted = await insertTripCountry(supabase, {
                 tripId,
