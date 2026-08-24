@@ -26,6 +26,7 @@ const handler = withSupabase({ auth: "user" }, async (req, ctx) => {
         // Request body
         const { message, tripIds } = await req.json();
 
+        // Validate that the user is authorised to access the trips
         const { data, error } = await ctx.supabase
             .from("trips")
             .select("id")
