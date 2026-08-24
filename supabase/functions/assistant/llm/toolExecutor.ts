@@ -4,6 +4,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 export type ToolContext = {
     supabase: SupabaseClient;
     tripIds: number[];
+    userId: string;
 };
 
 export const executeTool = async (

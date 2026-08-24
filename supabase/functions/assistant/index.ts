@@ -26,6 +26,7 @@ const handler = withSupabase({ auth: "user" }, async (req, ctx) => {
         // Request body
         const { message, tripIds } = await req.json();
 
+        // Validate that the user is authorised to access the trips
         const { data, error } = await ctx.supabase
             .from("trips")
             .select("id")
@@ -61,6 +62,7 @@ const handler = withSupabase({ auth: "user" }, async (req, ctx) => {
         const toolCtx: ToolContext = {
             supabase: ctx.supabase,
             tripIds,
+            userId: userClaims.id,
         };
 
         // Retrieve previous conversation history, if any

@@ -39,13 +39,20 @@ export function AIAssistant() {
     setMessages((prev) => [...prev, { sender: "user", text: prompt }]);
     setPrompt("");
 
-    const result = await promptAssistant({ prompt, tripIds: [28] });
+    try {
+      const result = await promptAssistant({ prompt, tripIds: [28] });
 
-    if (result?.response) {
-      setMessages((prev) => [
-        ...prev,
-        { sender: "bot", text: result.response },
-      ]);
+      if (result?.response) {
+        setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: result.response },
+        ]);
+      }
+    } catch {
+      const message =
+        "Something went wrong. Please try again or rephrase your question.";
+
+      setMessages((prev) => [...prev, { sender: "bot", text: message }]);
     }
   };
 
