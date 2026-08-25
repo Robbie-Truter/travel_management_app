@@ -99,6 +99,7 @@ const handler = withSupabase({ auth: "user" }, async (req, ctx) => {
             { headers: corsHeaders },
         );
     } catch (error) {
+        console.error("[AI Assistant] Handler error:", error);
         const message = error instanceof Error
             ? error.message
             : "An unexpected error occurred.";

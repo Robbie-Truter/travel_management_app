@@ -342,7 +342,7 @@ export const flightsRegistry: Record<string, ToolDefinition> = {
 
                 return {
                     airline: airline.id,
-                    flightNumber: (s["flight_number"] as string).trim(),
+                    flightNumber: (s["flight_number"] as string | undefined)?.trim() ?? "",
                     departureAirport: departureAirport.iata,
                     arrivalAirport: arrivalAirport.iata,
                     departureTime,

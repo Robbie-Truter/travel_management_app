@@ -79,6 +79,7 @@ export async function generateWithGemini(
             try {
                 toolResult = await executeTool(name, ctx, args ?? {});
             } catch (error) {
+                console.error(`[AI Assistant] Tool "${name}" failed with error:`, error);
                 toolResult =
                     `Error executing tool "${name}": ` +
                     `${error instanceof Error ? error.message : "Unknown error"}. ` +
