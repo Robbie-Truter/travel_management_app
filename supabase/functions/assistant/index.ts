@@ -84,6 +84,7 @@ const handler = withSupabase({ auth: "user" }, async (req, ctx) => {
             "user",
             message,
         );
+
         await addConversationMessage(
             ctx.supabase,
             conversationId,
