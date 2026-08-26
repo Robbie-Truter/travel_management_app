@@ -136,3 +136,36 @@ export const insertDestination = async function (
 
     return data as DestinationRow;
 };
+
+// Deletes a destination by its ID, scoped to the given trip for safety.
+export const deleteDestination = async function (
+    supabase: SupabaseClient,
+    destinationId: number,
+    tripId: number,
+): Promise<DestinationRow> {
+    // Fetch first so we can return a useful confirmation message.
+    const { data: existing, error: fetchError } = await supabase
+        .from("destinations")
+        .select("*")
+        .eq("id", destinationId)
+        .eq("trip_id", tripId)
+        .single();
+
+    if (fetchError || !existing) {
+        throw new Error(
+            `destination_id ${destinationId} does not belong to trip ${tripId} or does not exist.`,
+        );
+    }
+
+    const { error } = await supabase
+        .from("destinations")
+        .delete()
+        .eq("id", destinationId)
+        .eq("trip_id", tripId);
+
+    if (error) {
+        throw new Error(`Error deleting destination: ${error.message}`);
+    }
+
+    return existing as DestinationRow;
+};

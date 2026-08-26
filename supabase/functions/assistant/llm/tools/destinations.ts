@@ -1,6 +1,7 @@
 import {
     getDestinations,
     insertDestination,
+    deleteDestination,
     searchCityLookup,
 } from "../../services/destinations.ts";
 import { buildDestinationsContext } from "../../context/destinations.ts";
@@ -130,6 +131,44 @@ export const destinationsRegistry: Record<string, ToolDefinition> = {
                 `Successfully added destination "${inserted.name}" ` +
                 `to trip ${tripId} (trip_country_id: ${inserted.trip_country_id}). ` +
                 `Destination ID: ${inserted.id}.`
+            );
+        },
+    },
+
+    delete_destination: {
+        declaration: {
+            name: "delete_destination",
+            description:
+                "Removes a destination (and all its linked activities, accommodations, and flights) from the currently selected trip. " +
+                "Call get_destinations first to confirm the correct destination_id before deleting. " +
+                "This action is irreversible.",
+            parameters: {
+                type: "OBJECT",
+                properties: {
+                    destination_id: {
+                        type: "NUMBER",
+                        description:
+                            "The destination ID to delete (from get_destinations).",
+                    },
+                },
+                required: ["destination_id"],
+            },
+        },
+
+        execute: async ({ supabase, tripIds }, args) => {
+            const tripId = tripIds[0];
+            const destinationId = args["destination_id"] as number;
+
+            const deleted = await deleteDestination(
+                supabase,
+                destinationId,
+                tripId,
+            );
+
+            return (
+                `Successfully removed destination "${deleted.name}" ` +
+                `(destination_id: ${deleted.id}, trip_country_id: ${deleted.trip_country_id}) ` +
+                `from trip ${tripId}. All linked data has been deleted.`
             );
         },
     },
