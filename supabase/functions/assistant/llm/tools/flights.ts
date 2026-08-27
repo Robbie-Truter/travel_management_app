@@ -449,6 +449,16 @@ export const flightsRegistry: Record<string, ToolDefinition> = {
                         description:
                             "The flight ID to update (from get_flights).",
                     },
+                    trip_country_id: {
+                        type: "NUMBER",
+                        description:
+                            "Updated trip_countries ID this flight belongs to (from get_destinations or get_trip_countries).",
+                    },
+                    destination_id: {
+                        type: "NUMBER",
+                        description:
+                            "Updated destination ID this flight is linked to (from get_destinations).",
+                    },
                     description: {
                         type: "STRING",
                         description:
@@ -542,6 +552,8 @@ export const flightsRegistry: Record<string, ToolDefinition> = {
         execute: async ({ supabase, tripIds }, args) => {
             const tripId = tripIds[0];
             const flightId = args["flight_id"] as number;
+            const tripCountryId = args["trip_country_id"] as number | undefined;
+            const destinationId = args["destination_id"] as number | undefined;
             const description = args["description"] as string | undefined;
             const price = args["price"] as number | undefined;
             const currency = args["currency"] as string | undefined;
@@ -610,10 +622,9 @@ export const flightsRegistry: Record<string, ToolDefinition> = {
 
                     return {
                         airline: airline.name,
-                        flightNumber:
-                            (s["flight_number"] as string | undefined)
-                                ?.trim() ??
-                                "",
+                        flightNumber: (s["flight_number"] as string | undefined)
+                            ?.trim() ??
+                            "",
                         departureAirport: departureAirport.iata,
                         arrivalAirport: arrivalAirport.iata,
                         departureTime,
@@ -629,6 +640,8 @@ export const flightsRegistry: Record<string, ToolDefinition> = {
             }
 
             const updated = await updateFlight(supabase, flightId, tripId, {
+                tripCountryId,
+                destinationId,
                 description,
                 segments,
                 price,
