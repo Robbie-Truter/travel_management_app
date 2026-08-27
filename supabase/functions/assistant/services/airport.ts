@@ -7,6 +7,9 @@ export type AirportLookup = {
     name: string;
     city: string;
     country: string;
+    lat?: number;
+    lng?: number;
+    tz?: string;
 };
 
 export function searchAirports(query: string): AirportLookup[] {

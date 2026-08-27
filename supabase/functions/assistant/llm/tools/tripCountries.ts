@@ -1,6 +1,7 @@
 import {
     getTripCountries,
     insertTripCountry,
+    deleteTripCountry,
     searchCountryLookup,
 } from "../../services/tripCountries.ts";
 import { buildTripCountriesContext } from "../../context/tripCountries.ts";
@@ -103,6 +104,44 @@ export const tripCountriesRegistry: Record<string, ToolDefinition> = {
             return (
                 `Successfully added country "${inserted.country_name}" (${inserted.country_code}) ` +
                 `to trip ${tripId}. Trip-Country ID: ${inserted.id}.`
+            );
+        },
+    },
+
+    delete_trip_country: {
+        declaration: {
+            name: "delete_trip_country",
+            description:
+                "Removes a country (and all its destinations, accommodations, and other linked data) from the currently selected trip. " +
+                "Call get_trip_countries first to confirm the correct trip_country_id before deleting. " +
+                "This action is irreversible.",
+            parameters: {
+                type: "OBJECT",
+                properties: {
+                    trip_country_id: {
+                        type: "NUMBER",
+                        description:
+                            "The trip_countries ID to delete (from get_trip_countries).",
+                    },
+                },
+                required: ["trip_country_id"],
+            },
+        },
+
+        execute: async ({ supabase, tripIds }, args) => {
+            const tripId = tripIds[0];
+            const tripCountryId = args["trip_country_id"] as number;
+
+            const deleted = await deleteTripCountry(
+                supabase,
+                tripCountryId,
+                tripId,
+            );
+
+            return (
+                `Successfully removed country "${deleted.country_name}" (${deleted.country_code}) ` +
+                `(trip_country_id: ${deleted.id}) from trip ${tripId}. ` +
+                `All associated destinations and linked data have been deleted.`
             );
         },
     },

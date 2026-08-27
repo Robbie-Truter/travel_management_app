@@ -71,8 +71,20 @@ export async function generateWithGemini(
                 );
             }
 
-            // Call the function and get the response.
-            const toolResponse = await executeTool(name, ctx, args ?? {});
+            // Call the function. Tool errors are returned to the model as a
+            // functionResponse instead of failing the request, so Gemini can
+            // correct its arguments or ask the user for missing information.
+            let toolResult: string;
+
+            try {
+                toolResult = await executeTool(name, ctx, args ?? {});
+            } catch (error) {
+                console.error(`[AI Assistant] Tool "${name}" failed with error:`, error);
+                toolResult =
+                    `Error executing tool "${name}": ` +
+                    `${error instanceof Error ? error.message : "Unknown error"}. ` +
+                    `Do not repeat the same arguments — fix the problem or ask the user for the missing information.`;
+            }
 
             const modelContent = response.candidates?.[0]?.content;
 
@@ -88,7 +100,7 @@ export async function generateWithGemini(
                 functionResponse: {
                     name,
                     response: {
-                        result: toolResponse,
+                        result: toolResult,
                     },
                     id: functionCall.id,
                 },

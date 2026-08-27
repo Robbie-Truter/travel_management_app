@@ -113,3 +113,36 @@ export const insertTripCountry = async function (
 
     return data as TripCountryRow;
 };
+
+// Deletes a trip country by its ID, scoped to the given trip for safety.
+export const deleteTripCountry = async function (
+    supabase: SupabaseClient,
+    tripCountryId: number,
+    tripId: number,
+): Promise<TripCountryRow> {
+    // Fetch first so we can return a useful confirmation message.
+    const { data: existing, error: fetchError } = await supabase
+        .from("trip_countries")
+        .select("*")
+        .eq("id", tripCountryId)
+        .eq("trip_id", tripId)
+        .single();
+
+    if (fetchError || !existing) {
+        throw new Error(
+            `trip_country_id ${tripCountryId} does not belong to trip ${tripId} or does not exist.`,
+        );
+    }
+
+    const { error } = await supabase
+        .from("trip_countries")
+        .delete()
+        .eq("id", tripCountryId)
+        .eq("trip_id", tripId);
+
+    if (error) {
+        throw new Error(`Error deleting trip country: ${error.message}`);
+    }
+
+    return existing as TripCountryRow;
+};

@@ -17,6 +17,7 @@ export function buildFlightsContext(
         lines.push(
             [
                 "Flight",
+                `ID: ${flight.id}`,
                 `- Name: ${flight.description ?? "Unnamed Flight"}`,
                 `- Airline: ${first?.airline ?? "Unknown"}`,
                 `- Route: ${
