@@ -14,6 +14,7 @@ export function buildAccommodationsContext(
         lines.push(
             [
                 "Accommodation",
+                `- ID: ${accommodation.id}`,
                 `- Trip ID: ${accommodation.trip_id}`,
                 `- Trip Country ID: ${accommodation.trip_country_id}`,
                 `- Name: ${accommodation.name ?? "Unknown"}`,
