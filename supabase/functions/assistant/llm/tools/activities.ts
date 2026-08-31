@@ -1,7 +1,11 @@
 import type { ToolDefinition } from "./types.ts";
 import { buildActivitiesContext } from "../../context/activities.ts";
-import { getActivities } from "../../services/activities.ts";
-import { insertActivity } from "../../services/activities.ts";
+import {
+    deleteActivity,
+    getActivities,
+    insertActivity,
+    updateActivity,
+} from "../../services/activities.ts";
 
 // Function definitions for gemini
 export const activitiesRegistry: Record<string, ToolDefinition> = {
@@ -127,6 +131,132 @@ export const activitiesRegistry: Record<string, ToolDefinition> = {
             });
 
             return `Successfully added activity "${inserted.name}" to trip ${tripId}. Activity ID: ${inserted.id}.`;
+        },
+    },
+
+    delete_activity: {
+        declaration: {
+            name: "delete_activity",
+            description:
+                "Permanently removes an activity from the currently selected trip. " +
+                "Call get_activities first to confirm the correct activity_id before deleting. " +
+                "This action is irreversible.",
+            parameters: {
+                type: "OBJECT",
+                properties: {
+                    activity_id: {
+                        type: "NUMBER",
+                        description:
+                            "The activity ID to delete (from get_activities).",
+                    },
+                },
+                required: ["activity_id"],
+            },
+        },
+
+        execute: async ({ supabase, tripIds }, args) => {
+            const tripId = tripIds[0];
+            const activityId = args["activity_id"] as number;
+
+            const deleted = await deleteActivity(supabase, activityId, tripId);
+
+            return (
+                `Successfully deleted activity "${deleted.name}" ` +
+                `(activity_id: ${deleted.id}) from trip ${tripId}.`
+            );
+        },
+    },
+
+    update_activity: {
+        declaration: {
+            name: "update_activity",
+            description:
+                "Updates one or more fields on an existing activity in the currently selected trip. " +
+                "Only the fields you provide will be changed; omitted fields are left as-is. " +
+                "Call get_activities first to confirm the correct activity_id.",
+            parameters: {
+                type: "OBJECT",
+                properties: {
+                    activity_id: {
+                        type: "NUMBER",
+                        description:
+                            "The activity ID to update (from get_activities).",
+                    },
+                    name: {
+                        type: "STRING",
+                        description: "Updated activity name.",
+                    },
+                    date: {
+                        type: "STRING",
+                        description:
+                            "Updated activity date in ISO 8601 format (e.g. '2025-06-15').",
+                    },
+                    type: {
+                        type: "STRING",
+                        description:
+                            "Updated activity type (e.g. 'tour', 'museum', 'restaurant').",
+                    },
+                    link: {
+                        type: "STRING",
+                        description:
+                            "Updated URL for more information about the activity.",
+                    },
+                    notes: {
+                        type: "STRING",
+                        description:
+                            "Updated free-text notes about the activity.",
+                    },
+                    duration: {
+                        type: "INTEGER",
+                        description: "Updated activity duration in minutes.",
+                    },
+                    cost: {
+                        type: "NUMBER",
+                        description: "Updated activity cost.",
+                    },
+                    currency: {
+                        type: "STRING",
+                        description:
+                            "Updated currency code (e.g. 'USD', 'EUR').",
+                    },
+                    is_confirmed: {
+                        type: "BOOLEAN",
+                        description: "Updated confirmation status.",
+                    },
+                },
+                required: ["activity_id"],
+            },
+        },
+
+        execute: async ({ supabase, tripIds }, args) => {
+            const tripId = tripIds[0];
+            const activityId = args["activity_id"] as number;
+            const name = args["name"] as string | undefined;
+            const date = args["date"] as string | undefined;
+            const type = args["type"] as string | undefined;
+            const link = args["link"] as string | undefined;
+            const notes = args["notes"] as string | undefined;
+            const duration = args["duration"] as number | undefined;
+            const cost = args["cost"] as number | undefined;
+            const currency = args["currency"] as string | undefined;
+            const is_confirmed = args["is_confirmed"] as boolean | undefined;
+
+            const updated = await updateActivity(supabase, activityId, tripId, {
+                name,
+                date,
+                type,
+                link,
+                notes,
+                duration,
+                cost,
+                currency,
+                is_confirmed,
+            });
+
+            return (
+                `Successfully updated activity "${updated.name}" ` +
+                `(activity_id: ${updated.id}).`
+            );
         },
     },
 };

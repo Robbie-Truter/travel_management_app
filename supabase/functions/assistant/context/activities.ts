@@ -14,6 +14,7 @@ export function buildActivitiesContext(
         lines.push(
             [
                 "Activity",
+                `- ID: ${activity.id}`,
                 `- Trip ID: ${activity.trip_id}`,
                 `- Trip Country ID: ${activity.trip_country_id}`,
                 `- Destination ID: ${activity.destination_id ?? "Unknown"}`,

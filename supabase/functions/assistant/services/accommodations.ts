@@ -175,8 +175,6 @@ export const updateAccommodation = async function (
         return existing as AccommodationRow;
     }
 
-    console.log(patch);
-
     const { data, error } = await supabase
         .from("accommodations")
         .update(patch)
