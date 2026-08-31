@@ -11,7 +11,7 @@ export const TYPE_OPTIONS = [
 
 export const PLATFORM_OPTIONS = [
   {
-    value: "booking",
+    value: "booking.com",
     label: "Booking.com",
     icon: (
       <img
@@ -55,7 +55,7 @@ export const PLATFORM_OPTIONS = [
     ),
   },
   {
-    value: "hotels",
+    value: "hotels.com",
     label: "Hotels.com",
     icon: (
       <img
@@ -65,6 +65,14 @@ export const PLATFORM_OPTIONS = [
       />
     ),
   },
-  { value: "direct", label: "Direct", icon: <Phone size={14} className="text-slate-400" /> },
-  { value: "other", label: "Other", icon: <HelpCircle size={14} className="text-slate-400" /> },
+  {
+    value: "direct",
+    label: "Direct",
+    icon: <Phone size={14} className="text-slate-400" />,
+  },
+  {
+    value: "other",
+    label: "Other",
+    icon: <HelpCircle size={14} className="text-slate-400" />,
+  },
 ];
